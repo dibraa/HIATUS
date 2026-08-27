@@ -1,13 +1,20 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/ui/page-header";
+import { FilterTabs } from "@/components/ui/filter-tabs";
+import { FormError } from "@/components/ui/field";
 import type { BestSellingFlavor } from "@/types/database";
 import { BestSellerChart } from "./best-seller-chart";
 
+export const metadata: Metadata = { title: "Analytics" };
+
 const RANGES = [
-  { label: "Last 7 days", days: 7 },
-  { label: "Last 30 days", days: 30 },
-  { label: "All time", days: null },
+  { label: "Last 7 days", value: "7" },
+  { label: "Last 30 days", value: "30" },
+  { label: "All time", value: "all" },
 ];
+
+const DEFAULT_RANGE = "30";
 
 export default async function AdminAnalyticsPage({
   searchParams,
@@ -15,7 +22,8 @@ export default async function AdminAnalyticsPage({
   searchParams: Promise<{ days?: string }>;
 }) {
   const { days: daysParam } = await searchParams;
-  const days = daysParam === undefined ? 30 : daysParam === "all" ? null : Number(daysParam);
+  const selected = daysParam ?? DEFAULT_RANGE;
+  const days = selected === "all" ? null : Number(selected);
 
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("best_selling_flavors", { days_back: days });
@@ -24,31 +32,22 @@ export default async function AdminAnalyticsPage({
 
   return (
     <div>
-      <h1 className="mb-4 font-serif text-2xl font-semibold">Best-selling flavors</h1>
+      <PageHeader
+        title="Best-selling flavors"
+        description="Units sold per flavour across completed orders. A plain rollup of order history, not a forecast."
+      />
 
-      <div className="mb-6 flex gap-2">
-        {RANGES.map((r) => {
-          const value = r.days === null ? "all" : String(r.days);
-          const active = value === (daysParam ?? "30");
-          return (
-            <Link
-              key={r.label}
-              href={`/admin?days=${value}`}
-              className={`rounded-full px-3 py-1 text-sm ${
-                active ? "bg-stone-900 text-white" : "bg-stone-200 text-stone-700"
-              }`}
-            >
-              {r.label}
-            </Link>
-          );
-        })}
-      </div>
+      <FilterTabs
+        label="Filter analytics by date range"
+        className="mb-6"
+        tabs={RANGES.map((r) => ({
+          label: r.label,
+          href: "/admin?days=" + r.value,
+          active: r.value === selected,
+        }))}
+      />
 
-      {error ? (
-        <p className="text-sm text-red-600">{error.message}</p>
-      ) : (
-        <BestSellerChart data={flavors} />
-      )}
+      {error ? <FormError>{error.message}</FormError> : <BestSellerChart data={flavors} />}
     </div>
   );
 }

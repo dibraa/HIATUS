@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/components/sign-out-button";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Small-screen navigation sheet.
@@ -85,7 +86,7 @@ export function MobileNav({
           <div
             // top-16 matches the header height, so the scrim never covers the
             // close button it is meant to sit behind
-            className="fixed inset-0 top-16 z-30 bg-ink/20 lg:hidden"
+            className="fixed inset-0 top-16 z-30 bg-scrim lg:hidden"
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
@@ -98,6 +99,12 @@ export function MobileNav({
             <Link href="/" className={linkClass}>
               Menu
             </Link>
+
+            {/* Below sm the header has no room for the toggle, so it lives
+                here. Above sm both are rendered but only one is visible. */}
+            <div className="sm:hidden">
+              <ThemeToggle variant="row" />
+            </div>
 
             {isLoggedIn ? (
               <>

@@ -1,22 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export function SignOutButton() {
   const router = useRouter();
-  const supabase = createClient();
+  const [pending, setPending] = useState(false);
 
   return (
     <button
-      className="text-sm font-medium text-stone-600 hover:text-stone-900"
+      type="button"
+      disabled={pending}
+      className="text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:text-ink disabled:opacity-50"
       onClick={async () => {
+        // Guards the double-click: signOut then push then refresh is slow
+        // enough on a poor connection to be pressed twice.
+        setPending(true);
+        const supabase = createClient();
         await supabase.auth.signOut();
         router.push("/");
         router.refresh();
       }}
     >
-      Sign out
+      {pending ? "Signing out…" : "Sign out"}
     </button>
   );
 }

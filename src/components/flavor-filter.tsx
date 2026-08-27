@@ -32,10 +32,10 @@ export function FlavorFilter({
 
   const chip = (isActive: boolean) =>
     [
-      "inline-flex h-9 shrink-0 items-center rounded-full border px-4 text-xs font-medium",
+      "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-xs font-medium",
       "transition-colors duration-150 ease-hi",
       isActive
-        ? "border-ink bg-ink text-accent-fg"
+        ? "border-accent bg-accent text-accent-fg"
         : "border-line bg-card text-ink-soft hover:border-ink hover:text-ink",
     ].join(" ");
 

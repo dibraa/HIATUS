@@ -4,6 +4,7 @@ import { CartBadge } from "@/components/cart-badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { MobileNav } from "@/components/mobile-nav";
 import { SearchField } from "@/components/search-field";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Sticky site header.
@@ -101,6 +102,13 @@ export async function Navbar() {
               </Link>
             </>
           )}
+
+          {/* Hidden on the narrowest screens, where the header already has
+              the wordmark, cart and menu trigger competing for 320px — the
+              mobile sheet carries it there instead. */}
+          <span className="hidden sm:inline-flex">
+            <ThemeToggle />
+          </span>
 
           <CartBadge />
           <MobileNav isLoggedIn={!!user} isAdmin={isAdmin} />

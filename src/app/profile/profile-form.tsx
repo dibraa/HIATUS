@@ -2,6 +2,8 @@
 
 import { useActionState } from "react";
 import { updateProfile, type ProfileState } from "@/app/actions/profile";
+import { Field, TextField, FormError, FormSuccess } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 import type { Profile } from "@/types/database";
 
 const initialState: ProfileState = { error: null, success: false };
@@ -11,47 +13,45 @@ export function ProfileForm({ profile, email }: { profile: Profile; email: strin
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-1">
-        <label className="text-sm font-medium text-stone-700">Email</label>
+      {/* Read-only mirror of the account email. It previously carried a <label>
+          with no htmlFor, which is markup that looks labelled and is not —
+          screen readers announced an unlabelled disabled input. */}
+      <Field id="account-email" label="Email" hint="Changing this means changing your login — contact the shop.">
         <input
+          id="account-email"
           value={email}
           disabled
-          className="rounded-lg border border-stone-200 bg-stone-100 px-3 py-2 text-sm text-stone-500"
+          readOnly
+          className="w-full rounded-md border border-line bg-raised px-3 py-2.5 text-sm text-muted"
         />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="full_name" className="text-sm font-medium text-stone-700">
-          Full name
-        </label>
-        <input
-          id="full_name"
-          name="full_name"
-          defaultValue={profile.full_name ?? ""}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="phone" className="text-sm font-medium text-stone-700">
-          Phone
-        </label>
-        <input
-          id="phone"
-          name="phone"
-          defaultValue={profile.phone ?? ""}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-        />
-      </div>
+      </Field>
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-      {state.success && <p className="text-sm text-emerald-700">Saved.</p>}
+      <TextField
+        id="full_name"
+        name="full_name"
+        label="Full name"
+        defaultValue={profile.full_name ?? ""}
+        autoComplete="name"
+        hint="Called out when your order is ready."
+      />
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="self-start rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-700 disabled:opacity-50"
-      >
-        {pending ? "Saving..." : "Save changes"}
-      </button>
+      <TextField
+        id="phone"
+        name="phone"
+        label="Phone"
+        type="tel"
+        inputMode="tel"
+        defaultValue={profile.phone ?? ""}
+        autoComplete="tel"
+        hint="Only used if the shop needs to reach you about an order."
+      />
+
+      <FormError>{state.error}</FormError>
+      {state.success && <FormSuccess>Saved.</FormSuccess>}
+
+      <Button type="submit" size="md" disabled={pending} className="mt-1 self-start">
+        {pending ? "Saving…" : "Save changes"}
+      </Button>
     </form>
   );
 }

@@ -10,20 +10,49 @@ import {
   YAxis,
 } from "recharts";
 import { formatPrice } from "@/lib/format";
+import { useTokenColors } from "@/lib/use-token-colors";
 import type { BestSellingFlavor } from "@/types/database";
 
-const BAR_COLOR = "#92400e"; // amber-800, matches the shop's brand accent
+/** Token names, with their light-theme values as the SSR fallback. */
+const TOKENS = {
+  "--hi-accent": "#6f4e37",
+  "--hi-line": "#d6d3d1",
+  "--hi-muted": "#736c67",
+  "--hi-ink": "#1c1917",
+  "--hi-ink-soft": "#44403c",
+  "--hi-raised": "#f5f5f4",
+  "--hi-card": "#ffffff",
+};
+
+/** Row height that keeps bars readable as the flavour list grows. */
+const ROW_HEIGHT = 44;
+const MIN_HEIGHT = 240;
 
 export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
+  const c = useTokenColors(TOKENS);
+
   if (data.length === 0) {
-    return <p className="text-sm text-stone-500">No completed orders in this range yet.</p>;
+    return (
+      <p className="rounded-lg border border-dashed border-line-strong bg-card px-6 py-12 text-center text-sm text-muted">
+        No completed orders in this range yet.
+      </p>
+    );
   }
 
+  // Recharts draws a vertical bar chart bottom-up, so ascending order here
+  // puts the best seller at the top of the rendered axis.
   const chartData = [...data].sort((a, b) => a.total_quantity - b.total_quantity);
+  const ranked = [...data].sort((a, b) => b.total_quantity - a.total_quantity);
 
   return (
     <div>
-      <div style={{ height: Math.max(240, chartData.length * 44) }}>
+      {/* aria-hidden on the chart, because the table below is the same data in
+          a form a screen reader can actually navigate. Two representations,
+          one of them exposed — not a chart with an alt text that lies. */}
+      <div
+        aria-hidden="true"
+        style={{ height: Math.max(MIN_HEIGHT, chartData.length * ROW_HEIGHT) }}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={chartData}
@@ -31,11 +60,11 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
             margin={{ top: 8, right: 24, bottom: 8, left: 8 }}
             barCategoryGap={10}
           >
-            <CartesianGrid horizontal={false} stroke="#e7e5e4" />
+            <CartesianGrid horizontal={false} stroke={c["--hi-line"]} />
             <XAxis
               type="number"
-              tick={{ fontSize: 12, fill: "#78716c" }}
-              axisLine={{ stroke: "#e7e5e4" }}
+              tick={{ fontSize: 12, fill: c["--hi-muted"] }}
+              axisLine={{ stroke: c["--hi-line"] }}
               tickLine={false}
               allowDecimals={false}
             />
@@ -43,23 +72,25 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
               type="category"
               dataKey="flavor"
               width={110}
-              tick={{ fontSize: 12, fill: "#44403c" }}
+              tick={{ fontSize: 12, fill: c["--hi-ink-soft"] }}
               axisLine={false}
               tickLine={false}
             />
             <Tooltip
-              cursor={{ fill: "#f5f5f4" }}
+              cursor={{ fill: c["--hi-raised"] }}
               formatter={(value) => [`${value} sold`, "Quantity"]}
-              labelStyle={{ color: "#1c1917", fontWeight: 600 }}
+              labelStyle={{ color: c["--hi-ink"], fontWeight: 600 }}
               contentStyle={{
                 borderRadius: 8,
-                border: "1px solid #e7e5e4",
+                border: `1px solid ${c["--hi-line"]}`,
+                background: c["--hi-card"],
+                color: c["--hi-ink"],
                 fontSize: 12,
               }}
             />
             <Bar
               dataKey="total_quantity"
-              fill={BAR_COLOR}
+              fill={c["--hi-accent"]}
               radius={[0, 4, 4, 0]}
               maxBarSize={22}
             />
@@ -68,31 +99,37 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
       </div>
 
       <div className="mt-6 overflow-x-auto">
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b border-stone-200 text-stone-500">
-            <th className="py-2 pr-4 font-medium">Flavor</th>
-            <th className="py-2 pr-4 font-medium">Units sold</th>
-            <th className="py-2 pr-4 font-medium">Orders</th>
-            <th className="py-2 font-medium">Revenue</th>
-          </tr>
-        </thead>
-        <tbody>
-          {[...data]
-            .sort((a, b) => b.total_quantity - a.total_quantity)
-            .map((row, i) => (
-              <tr key={row.flavor} className="border-b border-stone-100">
-                <td className="whitespace-nowrap py-2 pr-4 font-medium text-stone-900">
-                  {i === 0 && "🏆 "}
+        <table className="w-full min-w-[30rem] text-left text-sm">
+          <caption className="sr-only">
+            Flavours by units sold, with order count and revenue.
+          </caption>
+          <thead>
+            <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
+              <th scope="col" className="py-2 pr-4 font-medium">Flavor</th>
+              <th scope="col" className="py-2 pr-4 font-medium">Units sold</th>
+              <th scope="col" className="py-2 pr-4 font-medium">Orders</th>
+              <th scope="col" className="py-2 font-medium">Revenue</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ranked.map((row, i) => (
+              <tr key={row.flavor} className="border-b border-line last:border-0">
+                {/* scope="row" ties every figure in the row to its flavour */}
+                <th scope="row" className="whitespace-nowrap py-2.5 pr-4 text-left font-medium text-ink">
                   {row.flavor}
-                </td>
-                <td className="whitespace-nowrap py-2 pr-4 text-stone-700">{row.total_quantity}</td>
-                <td className="whitespace-nowrap py-2 pr-4 text-stone-700">{row.order_count}</td>
-                <td className="whitespace-nowrap py-2 text-stone-700">{formatPrice(row.total_revenue)}</td>
+                  {i === 0 && (
+                    <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-accent">
+                      Top
+                    </span>
+                  )}
+                </th>
+                <td className="whitespace-nowrap py-2.5 pr-4 tabular-nums text-ink-soft">{row.total_quantity}</td>
+                <td className="whitespace-nowrap py-2.5 pr-4 tabular-nums text-ink-soft">{row.order_count}</td>
+                <td className="whitespace-nowrap py-2.5 tabular-nums text-ink-soft">{formatPrice(row.total_revenue)}</td>
               </tr>
             ))}
-        </tbody>
-      </table>
+          </tbody>
+        </table>
       </div>
     </div>
   );

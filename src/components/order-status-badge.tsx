@@ -1,11 +1,25 @@
 import type { OrderStatus } from "@/types/database";
 
+/**
+ * Order lifecycle badge.
+ *
+ * Three redundant cues carry the state, so none of them is load-bearing alone:
+ * the written label, the fill weight (outlined → filled → emphasised), and a
+ * dot. That ordering is deliberate — a customer scanning a list should be able
+ * to spot "Ready for pickup" by weight alone, and still read it if their
+ * display or their vision drops the hue (WCAG 1.4.1).
+ */
+
 const STYLES: Record<OrderStatus, string> = {
-  pending: "bg-amber-100 text-amber-800",
-  preparing: "bg-blue-100 text-blue-800",
-  ready: "bg-emerald-100 text-emerald-800",
-  completed: "bg-stone-200 text-stone-700",
-  cancelled: "bg-red-100 text-red-700",
+  /* Waiting on the shop — outlined, lowest weight. */
+  pending: "border-line-strong bg-transparent text-ink-soft",
+  /* Being made — neutral fill, more presence than pending. */
+  preparing: "border-transparent bg-raised text-ink",
+  /* The one the customer is waiting for — the only emphasised state. */
+  ready: "border-transparent bg-success-soft-bg text-success-soft-fg",
+  /* Done — recedes; it needs to be findable, not noticed. */
+  completed: "border-line bg-transparent text-muted",
+  cancelled: "border-transparent bg-danger-soft-bg text-danger-soft-fg",
 };
 
 const LABELS: Record<OrderStatus, string> = {
@@ -18,7 +32,11 @@ const LABELS: Record<OrderStatus, string> = {
 
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
   return (
-    <span className={`inline-block rounded-full px-2.5 py-1 text-xs font-medium ${STYLES[status]}`}>
+    <span
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${STYLES[status]}`}
+    >
+      {/* currentColor ties the dot to the label, so the pair can never drift */}
+      <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />
       {LABELS[status]}
     </span>
   );

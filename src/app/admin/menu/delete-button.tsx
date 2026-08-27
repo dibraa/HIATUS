@@ -11,10 +11,13 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
 
   return (
     <button
+      type="button"
       disabled={pending}
-      className="text-xs text-stone-400 hover:text-red-600 disabled:opacity-50"
+      // Muted until hovered, then danger-coloured: destructive actions should
+      // be reachable without being the most eye-catching thing in the row.
+      className="text-sm font-medium text-muted transition-colors duration-150 ease-hi hover:text-danger disabled:opacity-50"
       onClick={() => {
-        if (!window.confirm(`Delete "${name}"? This can't be undone.`)) return;
+        if (!window.confirm('Delete "' + name + '"? This cannot be undone.')) return;
         startTransition(async () => {
           const result = await deleteMenuItem(id);
           if (result.error) {
@@ -26,7 +29,10 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
         });
       }}
     >
-      Delete
+      {pending ? "Deleting…" : "Delete"}
+      {/* Names the target, so a list of "Delete" links is navigable by voice
+          and readable out of context. */}
+      <span className="sr-only"> {name}</span>
     </button>
   );
 }

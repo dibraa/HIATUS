@@ -30,7 +30,10 @@ const VARIANTS: Record<ButtonVariant, string> = {
   ghost: "bg-transparent text-ink-soft hover:bg-raised hover:text-ink active:bg-line/60",
   /** For use ON a dark surface (hero, featured card), where primary would vanish. */
   inverse:
-    "bg-inverse-fg text-inverse-bg hover:bg-white active:bg-line " +
+    // Hover dims toward the panel behind it rather than brightening to pure
+    // white - white was an off-token value that only made sense in the light
+    // theme, where the panel underneath happened to be near-black.
+    "bg-inverse-fg text-inverse-bg hover:bg-inverse-fg/85 active:bg-inverse-fg/75 " +
     "focus-visible:outline-inverse-fg",
 };
 

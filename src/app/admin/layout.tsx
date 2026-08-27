@@ -1,6 +1,6 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { AdminNav } from "@/components/admin-nav";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -16,22 +16,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq("id", user.id)
     .single();
 
+  // Belt and braces: src/proxy.ts gates /admin/* at the request boundary and
+  // RLS gates the data. This is the third check, and the cheapest to keep.
   if (profile?.role !== "admin") redirect("/");
 
   return (
     <div>
-      <nav className="mb-6 flex gap-4 border-b border-stone-200 pb-3 text-sm font-medium">
-        <Link href="/admin" className="text-stone-700 hover:text-stone-900">
-          Analytics
-        </Link>
-        <Link href="/admin/menu" className="text-stone-700 hover:text-stone-900">
-          Menu
-        </Link>
-        <Link href="/admin/orders" className="text-stone-700 hover:text-stone-900">
-          Orders
-        </Link>
-      </nav>
-      {children}
+      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+        Staff area
+      </p>
+      <AdminNav />
+      <div className="mt-6">{children}</div>
     </div>
   );
 }

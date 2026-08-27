@@ -1,6 +1,10 @@
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/ui/page-header";
 import type { Profile } from "@/types/database";
 import { ProfileForm } from "./profile-form";
+
+export const metadata: Metadata = { title: "Profile" };
 
 export default async function ProfilePage() {
   const supabase = await createClient();
@@ -15,8 +19,11 @@ export default async function ProfilePage() {
     .single<Profile>();
 
   return (
-    <div className="mx-auto max-w-sm py-6">
-      <h1 className="mb-6 font-serif text-2xl font-semibold">Profile</h1>
+    <div className="mx-auto max-w-sm py-2">
+      <PageHeader
+        title="Profile"
+        description="How the shop identifies your order at the counter."
+      />
       {profile && <ProfileForm profile={profile} email={user!.email ?? ""} />}
     </div>
   );

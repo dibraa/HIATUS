@@ -4,6 +4,16 @@ import { useActionState, useState } from "react";
 import toast from "react-hot-toast";
 import { createClient } from "@/lib/supabase/client";
 import { saveMenuItem, type MenuFormState } from "@/app/actions/menu";
+import {
+  Field,
+  TextField,
+  TextAreaField,
+  CheckboxField,
+  FormError,
+} from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
+import { ProductImage } from "@/components/ui/product-image";
+import { SIZE_OPTIONS } from "@/lib/sizes";
 import type { MenuItem } from "@/types/database";
 
 const initialState: MenuFormState = { error: null };
@@ -12,18 +22,24 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
   const [state, formAction, pending] = useActionState(saveMenuItem, initialState);
   const [imageUrl, setImageUrl] = useState(item?.image_url ?? "");
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
+    setUploadError(null);
+
     const supabase = createClient();
-    const path = `${Date.now()}-${file.name}`;
+    const path = Date.now() + "-" + file.name;
     const { error } = await supabase.storage.from("menu-images").upload(path, file);
 
     if (error) {
-      toast.error(`Upload failed: ${error.message}`);
+      // Shown inline as well as toasted: a toast that has already faded is no
+      // help to someone who looked away, and this failure blocks the save.
+      setUploadError(error.message);
+      toast.error("Upload failed: " + error.message);
       setUploading(false);
       return;
     }
@@ -34,109 +50,111 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form action={formAction} className="flex flex-col gap-5">
       {item && <input type="hidden" name="id" value={item.id} />}
       <input type="hidden" name="image_url" value={imageUrl} />
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="name" className="text-sm font-medium text-stone-700">
-          Name
-        </label>
-        <input
-          id="name"
-          name="name"
+      <TextField
+        id="name"
+        name="name"
+        label="Name"
+        required
+        defaultValue={item?.name}
+        placeholder="e.g. Spanish Latte"
+      />
+
+      <div className="grid gap-5 sm:grid-cols-2">
+        <TextField
+          id="flavor"
+          name="flavor"
+          label="Flavor"
           required
-          defaultValue={item?.name}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
+          placeholder="e.g. Caramel"
+          defaultValue={item?.flavor}
+          hint="Drives the storefront filter and the best-seller report."
+        />
+        <TextField
+          id="category"
+          name="category"
+          label="Category"
+          defaultValue={item?.category ?? "coffee"}
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1">
-          <label htmlFor="flavor" className="text-sm font-medium text-stone-700">
-            Flavor
-          </label>
-          <input
-            id="flavor"
-            name="flavor"
-            required
-            placeholder="e.g. Caramel"
-            defaultValue={item?.flavor}
-            className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label htmlFor="category" className="text-sm font-medium text-stone-700">
-            Category
-          </label>
-          <input
-            id="category"
-            name="category"
-            defaultValue={item?.category ?? "coffee"}
-            className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-          />
-        </div>
-      </div>
+      {/* The price/size relationship is a rule the admin cannot see anywhere
+          else, so the field states it rather than leaving it to be discovered
+          when a customer is charged an unexpected amount. */}
+      <TextField
+        id="price"
+        name="price"
+        label="Price (PHP)"
+        type="number"
+        min="0"
+        step="0.01"
+        required
+        inputMode="decimal"
+        defaultValue={item?.price}
+        hint={"This is the MEDIUM price. Small is " + SIZE_OPTIONS[0].priceDelta + ", large is +" + SIZE_OPTIONS[2].priceDelta + "."}
+      />
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="price" className="text-sm font-medium text-stone-700">
-          Price (PHP)
-        </label>
-        <input
-          id="price"
-          name="price"
-          type="number"
-          min="0"
-          step="0.01"
-          required
-          defaultValue={item?.price}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-        />
-      </div>
+      <TextAreaField
+        id="description"
+        name="description"
+        label="Description"
+        rows={3}
+        defaultValue={item?.description ?? ""}
+        hint="One or two lines. Shown on the card and the product page."
+      />
 
-      <div className="flex flex-col gap-1">
-        <label htmlFor="description" className="text-sm font-medium text-stone-700">
-          Description
-        </label>
-        <textarea
-          id="description"
-          name="description"
-          rows={3}
-          defaultValue={item?.description ?? ""}
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-        />
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label htmlFor="image" className="text-sm font-medium text-stone-700">
-          Photo
-        </label>
-        <input id="image" type="file" accept="image/*" onChange={handleFileChange} />
-        {uploading && <p className="text-xs text-stone-500">Uploading...</p>}
-        {imageUrl && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={imageUrl} alt="Preview" className="mt-2 h-24 w-24 rounded-lg object-cover" />
-        )}
-      </div>
-
-      <label className="flex items-center gap-2 text-sm font-medium text-stone-700">
-        <input
-          type="checkbox"
-          name="is_available"
-          defaultChecked={item?.is_available ?? true}
-        />
-        Available on the menu
-      </label>
-
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-
-      <button
-        type="submit"
-        disabled={pending || uploading}
-        className="self-start rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-700 disabled:opacity-50"
+      <Field
+        id="image"
+        label="Photo"
+        hint="Square images crop best. Optional — items without one get a placeholder."
+        error={uploadError}
       >
-        {pending ? "Saving..." : "Save item"}
-      </button>
+        <input
+          id="image"
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          aria-describedby={uploadError ? "image-error" : "image-hint"}
+          className="w-full text-sm text-ink-soft file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-card file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-raised"
+        />
+      </Field>
+
+      {/* Status of the upload, announced rather than only shown. */}
+      <p aria-live="polite" className="sr-only">
+        {uploading ? "Uploading photo" : imageUrl ? "Photo ready" : ""}
+      </p>
+
+      {uploading && <p className="text-xs text-muted">Uploading…</p>}
+
+      {imageUrl && !uploading && (
+        <div className="w-24">
+          <ProductImage src={imageUrl} alt="Current photo for this item" sizes="96px" rounded="rounded-md" />
+        </div>
+      )}
+
+      <CheckboxField
+        id="is_available"
+        name="is_available"
+        label="Available on the menu"
+        defaultChecked={item?.is_available ?? true}
+        hint="Unchecked items still appear, marked sold out, and cannot be added to a cart."
+      />
+
+      <FormError>{state.error}</FormError>
+
+      <Button
+        type="submit"
+        size="md"
+        // Blocked during upload: submitting now would save the item with the
+        // previous photo URL, silently discarding the one being uploaded.
+        disabled={pending || uploading}
+        className="self-start"
+      >
+        {pending ? "Saving…" : "Save item"}
+      </Button>
     </form>
   );
 }

@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
+import { PageHeader } from "@/components/ui/page-header";
 import { MenuItemForm } from "../menu-item-form";
+
+export const metadata: Metadata = { title: "Add menu item" };
 
 export default function NewMenuItemPage() {
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-6 font-serif text-2xl font-semibold">Add menu item</h1>
+      <PageHeader
+        title="Add menu item"
+        description="The price you set is the medium; small and large are derived from it."
+      />
       <MenuItemForm />
     </div>
   );

@@ -3,6 +3,8 @@
 import { useActionState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn, type AuthState } from "@/app/actions/auth";
+import { TextField, FormError } from "@/components/ui/field";
+import { Button } from "@/components/ui/button";
 
 const initialState: AuthState = { error: null };
 
@@ -14,40 +16,33 @@ export function LoginForm() {
   return (
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
-      <div className="flex flex-col gap-1">
-        <label htmlFor="email" className="text-sm font-medium text-stone-700">
-          Email
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          required
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-        />
-      </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="password" className="text-sm font-medium text-stone-700">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          className="rounded-lg border border-stone-300 px-3 py-2 text-sm focus:border-stone-500 focus:outline-none"
-        />
-      </div>
 
-      {state.error && <p className="text-sm text-red-600">{state.error}</p>}
+      <TextField
+        id="email"
+        name="email"
+        label="Email"
+        type="email"
+        required
+        autoComplete="email"
+      />
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="rounded-full bg-stone-900 px-4 py-2 text-sm font-medium text-white hover:bg-stone-700 disabled:opacity-50"
-      >
-        {pending ? "Signing in..." : "Log in"}
-      </button>
+      <TextField
+        id="password"
+        name="password"
+        label="Password"
+        type="password"
+        required
+        autoComplete="current-password"
+      />
+
+      {/* Sign-in failures are deliberately not attached to a single field:
+          saying which of the two was wrong tells an attacker whether the
+          address is registered. */}
+      <FormError>{state.error}</FormError>
+
+      <Button type="submit" size="md" disabled={pending} className="mt-1 w-full">
+        {pending ? "Signing in…" : "Log in"}
+      </Button>
     </form>
   );
 }

@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
+import { PageHeader } from "@/components/ui/page-header";
 import type { MenuItem } from "@/types/database";
 import { MenuItemForm } from "../menu-item-form";
+
+export const metadata: Metadata = { title: "Edit menu item" };
 
 export default async function EditMenuItemPage({
   params,
@@ -20,7 +24,10 @@ export default async function EditMenuItemPage({
 
   return (
     <div className="mx-auto max-w-md">
-      <h1 className="mb-6 font-serif text-2xl font-semibold">Edit {item.name}</h1>
+      <PageHeader
+        title={"Edit " + item.name}
+        description="The price you set is the medium; small and large are derived from it."
+      />
       <MenuItemForm item={item} />
     </div>
   );
