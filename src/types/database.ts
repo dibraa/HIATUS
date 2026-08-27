@@ -36,6 +36,12 @@ export type OrderItem = {
   menu_item_id: string | null;
   item_name: string;
   flavor: string;
+  /**
+   * Drink size ordered. Optional because the column only exists once
+   * supabase/patches/001_size_pricing.sql has been run, and is null on rows
+   * created before it — read a missing value as medium.
+   */
+  size?: "S" | "M" | "L" | null;
   unit_price: number;
   quantity: number;
   subtotal: number;

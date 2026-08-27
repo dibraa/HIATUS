@@ -1,9 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { SignOutButton } from "@/components/sign-out-button";
 
+/**
+ * Small-screen navigation sheet.
+ *
+ * Keyboard and screen-reader behaviour that a plain toggle would miss:
+ * - Escape closes it and returns focus to the trigger (WCAG 2.1.2, No Keyboard Trap)
+ * - `aria-expanded` / `aria-controls` tie the trigger to the panel
+ * - it closes on route change, so a tap-through does not leave it hanging open
+ * - background scroll is locked while it is open
+ */
 export function MobileNav({
   isLoggedIn,
   isAdmin,
@@ -12,60 +22,116 @@ export function MobileNav({
   isAdmin: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const pathname = usePathname();
+
+  // Close on navigation — the panel outlives the tap that caused it otherwise.
+  // Adjusted during render rather than in an effect: React re-runs this
+  // component immediately with the new state, so the open panel never paints
+  // on the destination route (and it avoids the cascading-render effect).
+  const [renderedPathname, setRenderedPathname] = useState(pathname);
+  if (pathname !== renderedPathname) {
+    setRenderedPathname(pathname);
+    setOpen(false);
+  }
+
+  useEffect(() => {
+    if (!open) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+        triggerRef.current?.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  const linkClass =
+    "flex min-h-11 items-center rounded-md px-3 text-sm font-medium text-ink-soft " +
+    "transition-colors duration-150 ease-hi hover:bg-raised hover:text-ink";
 
   return (
-    <div className="sm:hidden">
+    <>
       <button
+        ref={triggerRef}
+        type="button"
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
-        className="flex h-9 w-9 items-center justify-center rounded-full text-stone-700 hover:bg-stone-200"
+        aria-controls="mobile-nav-panel"
+        className="flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors duration-150 ease-hi hover:bg-raised lg:hidden"
         onClick={() => setOpen((v) => !v)}
       >
-        {open ? (
-          <span className="text-xl leading-none">✕</span>
-        ) : (
-          <span className="text-xl leading-none">☰</span>
-        )}
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
+          {open ? (
+            <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+          ) : (
+            <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+          )}
+        </svg>
       </button>
 
       {open && (
-        <nav
-          className="absolute inset-x-0 top-full flex flex-col gap-1 border-b border-stone-200 bg-stone-50 px-4 py-3 shadow-sm"
-          onClick={() => setOpen(false)}
-        >
-          <Link href="/" className="rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200">
-            Menu
-          </Link>
+        <>
+          {/* Scrim: closing on an outside tap is the expected gesture */}
+          <div
+            // top-16 matches the header height, so the scrim never covers the
+            // close button it is meant to sit behind
+            className="fixed inset-0 top-16 z-30 bg-ink/20 lg:hidden"
+            onClick={() => setOpen(false)}
+            aria-hidden="true"
+          />
 
-          {isLoggedIn ? (
-            <>
-              <Link href="/orders" className="rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200">
-                My orders
-              </Link>
-              <Link href="/profile" className="rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200">
-                Profile
-              </Link>
-              {isAdmin && (
-                <Link href="/admin" className="rounded-lg px-3 py-2 text-sm font-medium text-amber-800 hover:bg-stone-200">
-                  Admin
+          <nav
+            id="mobile-nav-panel"
+            aria-label="Main"
+            className="absolute inset-x-0 top-full z-40 flex flex-col gap-0.5 border-b border-line bg-card p-3 shadow-md lg:hidden"
+          >
+            <Link href="/" className={linkClass}>
+              Menu
+            </Link>
+
+            {isLoggedIn ? (
+              <>
+                <Link href="/orders" className={linkClass}>
+                  My orders
                 </Link>
-              )}
-              <div className="px-3 py-2">
-                <SignOutButton />
-              </div>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200">
-                Log in
-              </Link>
-              <Link href="/signup" className="rounded-lg px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-200">
-                Sign up
-              </Link>
-            </>
-          )}
-        </nav>
+                <Link href="/profile" className={linkClass}>
+                  Profile
+                </Link>
+                {isAdmin && (
+                  <Link href="/admin" className={linkClass}>
+                    Admin
+                  </Link>
+                )}
+                <div className="mt-1 border-t border-line px-3 pt-3">
+                  <SignOutButton />
+                </div>
+              </>
+            ) : (
+              <>
+                <Link href="/login" className={linkClass}>
+                  Log in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="mt-1 flex min-h-11 items-center justify-center rounded-full bg-accent px-4 text-sm font-medium text-accent-fg transition-colors duration-150 ease-hi hover:bg-accent-hover"
+                >
+                  Create account
+                </Link>
+              </>
+            )}
+          </nav>
+        </>
       )}
-    </div>
+    </>
   );
 }

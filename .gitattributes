@@ -1,0 +1,22 @@
+# Normalise line endings to LF, in the repository and in the working copy.
+#
+# Why: core.autocrlf=true gives Windows checkouts CRLF line endings. A JSX
+# className attribute written across several lines then keeps the carriage
+# return in the server-rendered HTML but not in the client render, and React
+# reports it as a hydration mismatch ("some attributes of the server rendered
+# HTML didn't match the client properties"). Checking out LF everywhere removes
+# that whole class of bug rather than patching it one component at a time.
+#
+# Existing files keep their current endings until they are next checked out.
+* text=auto eol=lf
+
+# Binary assets must never be line-ending converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pdf binary

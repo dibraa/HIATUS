@@ -3,15 +3,24 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { OrderStatus } from "@/types/database";
+import type { DrinkSize } from "@/lib/sizes";
 
 export async function placeOrder(
-  items: { menuItemId: string; quantity: number }[],
+  items: { menuItemId: string; quantity: number; size: DrinkSize }[],
   pickupNote: string
 ): Promise<{ orderId: string | null; error: string | null }> {
   const supabase = await createClient();
 
+  // `size` is sent per line so `create_order` can apply the size price delta
+  // itself. Pricing stays server-derived — the client sends the choice, never
+  // the price. Requires supabase/patches/001_size_pricing.sql; the pre-patch
+  // function simply ignores the extra key and prices everything as medium.
   const { data, error } = await supabase.rpc("create_order", {
-    items: items.map((i) => ({ menu_item_id: i.menuItemId, quantity: i.quantity })),
+    items: items.map((i) => ({
+      menu_item_id: i.menuItemId,
+      quantity: i.quantity,
+      size: i.size,
+    })),
     pickup_note: pickupNote || null,
   });
 

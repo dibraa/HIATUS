@@ -1,26 +1,233 @@
 @import "tailwindcss";
 
+/* ==========================================================================
+   Hiatus design tokens
+   --------------------------------------------------------------------------
+   Monochrome foundation, warm-stone based. Every colour the storefront paints
+   goes through a token here, so introducing brand colour later is an edit to
+   this block only - no component churn.
+
+   Naming is by ROLE, not by shade ("ink", "muted", "line"), so a future
+   re-palette can change the hex without leaving component classes lying about
+   what they are (a `text-stone-500` sitting on a colour that is no longer
+   stone).
+   ========================================================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- Neutral ramp -----------------------------------------------------
+     Ratios are measured against --hi-surface (#FAFAF9) and were computed, not
+     estimated. WCAG 2.1 AA needs 4.5:1 for body text and 3:1 for UI component
+     boundaries (1.4.11). Text tokens are also checked against --hi-raised,
+     the lightest surface they ever sit on. */
+  --hi-ink: #1c1917;         /* 16.74:1 - headings, primary text             */
+  --hi-ink-soft: #44403c;    /*  9.84:1 - secondary text                     */
+  --hi-muted: #736c67;       /*  4.94:1 - captions, metadata                 */
+                             /*           (4.73:1 on raised — still AA)      */
+  --hi-line: #d6d3d1;        /*  1.51:1 - decorative dividers ONLY. Never    */
+                             /*           text, never an input's only edge.  */
+  --hi-line-strong: #948e88; /*  3.10:1 - interactive borders (AA non-text)  */
+  --hi-raised: #f5f5f4;      /* subtle panel / image placeholder fill        */
+  --hi-surface: #fafaf9;     /* page background                              */
+  --hi-card: #ffffff;        /* card / elevated background                   */
+
+  /* Inverted surfaces (hero, featured card, primary buttons) */
+  --hi-inverse-bg: #1c1917;
+  --hi-inverse-fg: #fafaf9;      /* 16.74:1 on inverse-bg                    */
+  --hi-inverse-muted: #a8a29e;   /*  6.93:1 on inverse-bg - AA body          */
+  --hi-inverse-line: #44403c;
+
+  /* --- Accent -----------------------------------------------------------
+     Deliberately points at ink while the palette is monochrome. Swapping in a
+     brand colour is a one-line change here; re-check the contrast pairing at
+     that point, since --hi-accent-fg is what sits ON --hi-accent. */
+  --hi-accent: #1c1917;
+  --hi-accent-hover: #44403c;
+  --hi-accent-fg: #fafaf9;
+
+  /* --- Status -----------------------------------------------------------
+     Colour is never the sole carrier of meaning - these always ship with a
+     text label or icon alongside. */
+  --hi-danger: #b91c1c;      /*  6.19:1 on surface                           */
+  --hi-success: #15803d;     /*  4.80:1 on surface                           */
+
+  /* --- Focus ------------------------------------------------------------ */
+  --hi-focus: #1c1917;
+
+  /* --- Elevation --------------------------------------------------------
+     Low-spread, warm-tinted shadows. A monochrome design leans on these
+     instead of colour to separate planes. */
+  --hi-shadow-sm: 0 1px 2px 0 rgb(28 25 23 / 0.05);
+  --hi-shadow-md: 0 4px 12px -2px rgb(28 25 23 / 0.08), 0 2px 4px -2px rgb(28 25 23 / 0.04);
+  --hi-shadow-lg: 0 18px 40px -12px rgb(28 25 23 / 0.18), 0 4px 10px -4px rgb(28 25 23 / 0.06);
+
+  /* --- Motion -----------------------------------------------------------
+     Short and few. Honoured by the reduced-motion block at the bottom. */
+  --hi-ease: cubic-bezier(0.2, 0, 0.2, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Colour roles -> Tailwind utilities (bg-ink, text-muted, border-line, ...) */
+  --color-ink: var(--hi-ink);
+  --color-ink-soft: var(--hi-ink-soft);
+  --color-muted: var(--hi-muted);
+  --color-line: var(--hi-line);
+  --color-line-strong: var(--hi-line-strong);
+  --color-raised: var(--hi-raised);
+  --color-surface: var(--hi-surface);
+  --color-card: var(--hi-card);
+
+  --color-inverse-bg: var(--hi-inverse-bg);
+  --color-inverse-fg: var(--hi-inverse-fg);
+  --color-inverse-muted: var(--hi-inverse-muted);
+  --color-inverse-line: var(--hi-inverse-line);
+
+  --color-accent: var(--hi-accent);
+  --color-accent-hover: var(--hi-accent-hover);
+  --color-accent-fg: var(--hi-accent-fg);
+
+  --color-danger: var(--hi-danger);
+  --color-success: var(--hi-success);
+
+  /* Kept so pages not yet redesigned keep rendering unchanged */
+  --color-background: var(--hi-surface);
+  --color-foreground: var(--hi-ink);
+
+  /* --- Type scale -------------------------------------------------------
+     Body copy sits at 16px/1.6. Display sizes tighten as they grow so large
+     headlines do not read as airy. */
+  --text-2xs: 0.6875rem;      /* 11px - tracked overline labels             */
+  --text-2xs--line-height: 1.4;
+  --text-xs: 0.75rem;         /* 12px                                       */
+  --text-xs--line-height: 1.5;
+  --text-sm: 0.875rem;        /* 14px                                       */
+  --text-sm--line-height: 1.6;
+  --text-base: 1rem;          /* 16px - body                                */
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem;        /* 18px                                       */
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.375rem;        /* 22px                                       */
+  --text-xl--line-height: 1.4;
+  --text-2xl: 1.75rem;        /* 28px                                       */
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 2.25rem;        /* 36px                                       */
+  --text-3xl--line-height: 1.15;
+  --text-4xl: 3rem;           /* 48px                                       */
+  --text-4xl--line-height: 1.05;
+  --text-5xl: 3.75rem;        /* 60px - hero display only                   */
+  --text-5xl--line-height: 1;
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* --- Radii ------------------------------------------------------------ */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+
+  --shadow-sm: var(--hi-shadow-sm);
+  --shadow-md: var(--hi-shadow-md);
+  --shadow-lg: var(--hi-shadow-lg);
+
+  --ease-hi: var(--hi-ease);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* ==========================================================================
+   Base
+   ========================================================================== */
+
+body {
+  background: var(--hi-surface);
+  color: var(--hi-ink);
+  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* One consistent focus ring everywhere. :focus-visible keeps it off mouse
+   clicks while guaranteeing it for keyboard and other non-pointer input. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--hi-focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* Roomier hit areas on touch pointers - 44px is the WCAG 2.5.5 target size. */
+@media (pointer: coarse) {
+  :where(button, a[href], [role="button"]) {
+    min-height: 44px;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+::selection {
+  background: var(--hi-ink);
+  color: var(--hi-surface);
 }
+
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+/* Skip link: off-screen until focused, then pinned top-left. Lets keyboard
+   users jump the header nav and land straight on the menu grid. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
+  padding: 0.625rem 1rem;
+  background: var(--hi-ink);
+  color: var(--hi-surface);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+}
+
+/* Horizontal carousels: keep the swipe, drop the scrollbar chrome. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Skeleton shimmer for loading states. */
+@keyframes hi-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+.skeleton {
+  background: var(--hi-raised);
+  animation: hi-pulse 1.6s var(--hi-ease) infinite;
+}
+
+/* ==========================================================================
+   Reduced motion - honour the OS preference rather than merely shortening
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Dark mode is intentionally NOT enabled yet.
+
+   The token layer above is all a dark theme needs - redefining the `--hi-*`
+   values inside `@media (prefers-color-scheme: dark)` and/or a
+   `[data-theme="dark"]` block would theme every redesigned surface at once.
+   It is off because cart, checkout, orders, auth and admin still hardcode
+   light Tailwind classes (`bg-white`, `text-stone-900`); enabling dark mode
+   now would theme the storefront and leave those pages unreadable. Turn it on
+   once those pages are migrated onto these tokens.
+   -------------------------------------------------------------------------- */
