@@ -17,9 +17,12 @@ import { ThemeToggle } from "@/components/theme-toggle";
  */
 export function MobileNav({
   isLoggedIn,
+  isStaff,
   isAdmin,
 }: {
   isLoggedIn: boolean;
+  /** True for admins too — an owner working the counter is the normal case. */
+  isStaff: boolean;
   isAdmin: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -111,13 +114,29 @@ export function MobileNav({
                 <Link href="/orders" className={linkClass}>
                   My orders
                 </Link>
+                <Link href="/favorites" className={linkClass}>
+                  Saved
+                </Link>
                 <Link href="/profile" className={linkClass}>
                   Profile
                 </Link>
-                {isAdmin && (
-                  <Link href="/admin" className={linkClass}>
-                    Admin
-                  </Link>
+
+                {/* Work links are separated by a rule: they go somewhere a
+                    customer never does, and running them into the account
+                    links makes the sheet read as one undifferentiated list. */}
+                {(isStaff || isAdmin) && (
+                  <div className="mt-1 flex flex-col gap-0.5 border-t border-line pt-1">
+                    {isStaff && (
+                      <Link href="/staff" className={linkClass}>
+                        Counter
+                      </Link>
+                    )}
+                    {isAdmin && (
+                      <Link href="/admin" className={linkClass}>
+                        Admin
+                      </Link>
+                    )}
+                  </div>
                 )}
                 <div className="mt-1 border-t border-line px-3 pt-3">
                   <SignOutButton />

@@ -13,10 +13,12 @@
 import Link from "next/link";
 import { MenuItemCard } from "@/components/menu-item-card";
 import { FeaturedCarousel, type FeaturedItem } from "@/components/featured-carousel";
-import { FlavorFilter } from "@/components/flavor-filter";
+import { MenuFilters } from "@/components/menu-filters";
 import { SearchField } from "@/components/search-field";
 import { ButtonLink } from "@/components/ui/button";
 import type { MenuItem } from "@/types/database";
+
+const CATEGORIES = ["Coffee", "Beverages", "Pastries", "Breakfast", "Food"];
 
 const drink = (
   id: string,
@@ -143,8 +145,12 @@ export default function DemoPage() {
           {/* Stacks below sm: the chip row bleeds past its padding (-mx-4) to sit
               flush with the screen edge, which would slide it under a sibling
               on the same line. */}
-          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-            <FlavorFilter flavors={flavors} />
+          <div className="flex flex-col gap-3">
+            <MenuFilters
+              categories={CATEGORIES}
+              flavors={flavors}
+              state={{}}
+            />
             <Link
               href="/demo#menu"
               className="text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"

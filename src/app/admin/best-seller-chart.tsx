@@ -15,13 +15,13 @@ import type { BestSellingFlavor } from "@/types/database";
 
 /** Token names, with their light-theme values as the SSR fallback. */
 const TOKENS = {
-  "--hi-accent": "#6f4e37",
-  "--hi-line": "#d6d3d1",
-  "--hi-muted": "#736c67",
-  "--hi-ink": "#1c1917",
-  "--hi-ink-soft": "#44403c",
-  "--hi-raised": "#f5f5f4",
-  "--hi-card": "#ffffff",
+  "--hi-accent": "#c87137",
+  "--hi-line": "#ded0b6",
+  "--hi-muted": "#6d6152",
+  "--hi-ink": "#1a1a1a",
+  "--hi-ink-soft": "#3d352c",
+  "--hi-raised": "#ece0c6",
+  "--hi-card": "#fffdf9",
 };
 
 /** Row height that keeps bars readable as the flavour list grows. */
@@ -118,7 +118,7 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
                 <th scope="row" className="whitespace-nowrap py-2.5 pr-4 text-left font-medium text-ink">
                   {row.flavor}
                   {i === 0 && (
-                    <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-accent">
+                    <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-accent-ink">
                       Top
                     </span>
                   )}

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser, accessOf } from "@/lib/auth";
+import { isAdmin, isStaff } from "@/lib/roles";
 import { CartBadge } from "@/components/cart-badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { MobileNav } from "@/components/mobile-nav";
@@ -16,22 +17,17 @@ import { ThemeToggle } from "@/components/theme-toggle";
  *
  * Sticky because the cart and search are the two controls a shopper reaches for
  * repeatedly while scrolling a long menu.
+ *
+ * The work links are role-gated. A barista sees "Counter", an owner sees both
+ * "Counter" and "Admin", and a customer sees neither — a nav link to a page
+ * that will bounce you is worse than no link at all.
  */
 export async function Navbar() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
+  const access = accessOf(user);
 
-  let isAdmin = false;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    isAdmin = profile?.role === "admin";
-  }
+  const staff = isStaff(access);
+  const admin = isAdmin(access);
 
   const navLink =
     "text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:text-ink";
@@ -47,7 +43,7 @@ export async function Navbar() {
         >
           <span
             aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-sm font-semibold text-accent-fg"
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-inverse-bg text-sm font-semibold text-inverse-fg"
           >
             H
           </span>
@@ -62,11 +58,21 @@ export async function Navbar() {
             Menu
           </Link>
           {user && (
-            <Link href="/orders" className={navLink}>
-              My orders
+            <>
+              <Link href="/orders" className={navLink}>
+                My orders
+              </Link>
+              <Link href="/favorites" className={navLink}>
+                Saved
+              </Link>
+            </>
+          )}
+          {staff && (
+            <Link href="/staff" className={navLink}>
+              Counter
             </Link>
           )}
-          {isAdmin && (
+          {admin && (
             <Link href="/admin" className={navLink}>
               Admin
             </Link>
@@ -111,7 +117,7 @@ export async function Navbar() {
           </span>
 
           <CartBadge />
-          <MobileNav isLoggedIn={!!user} isAdmin={isAdmin} />
+          <MobileNav isLoggedIn={!!user} isStaff={staff} isAdmin={admin} />
         </div>
       </div>
     </header>

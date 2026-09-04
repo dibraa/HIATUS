@@ -10,7 +10,13 @@ import type { ComponentProps } from "react";
  * accessibility tree.
  */
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "inverse";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "outline"
+  | "ghost"
+  | "inverse"
+  | "danger";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const BASE =
@@ -21,20 +27,31 @@ const BASE =
   "[&_svg]:pointer-events-none [&_svg]:shrink-0";
 
 const VARIANTS: Record<ButtonVariant, string> = {
-  /** Highest-emphasis action: Add to cart, Checkout. One per view where possible. */
-  primary: "bg-accent text-accent-fg hover:bg-accent-hover active:bg-ink",
-  /** Supporting action that still needs an edge. */
+  /** Highest-emphasis action: Add to cart, Checkout. One per view where possible.
+   *  Burnt orange with CHARCOAL text — white on this orange is 3.58:1 and fails
+   *  AA, so the foreground is the brand charcoal (4.87:1). Hover LIGHTENS for
+   *  the same reason: darkening would drop the pair below AA mid-interaction. */
+  primary: "bg-accent text-accent-fg hover:bg-accent-hover active:bg-accent",
+  /** Supporting action that still carries weight — the brand's forest green. */
   secondary:
+    "bg-secondary text-secondary-fg hover:bg-secondary-hover active:bg-secondary",
+  /** Supporting action that should not compete for attention: a bordered
+   *  surface button. This is what a disabled/sold-out control uses, and what
+   *  sits beside a primary inside an already-busy card. */
+  outline:
     "bg-card text-ink border border-line-strong hover:bg-raised active:bg-line/60",
   /** Lowest emphasis — icon buttons, tertiary links. */
   ghost: "bg-transparent text-ink-soft hover:bg-raised hover:text-ink active:bg-line/60",
-  /** For use ON a dark surface (hero, featured card), where primary would vanish. */
+  /** For use ON an inverted (forest green) panel, where BOTH primary and
+   *  secondary vanish — burnt orange on forest green is 2.59:1, and green on
+   *  green is nothing at all. Cream fill, green text. */
   inverse:
-    // Hover dims toward the panel behind it rather than brightening to pure
-    // white - white was an off-token value that only made sense in the light
-    // theme, where the panel underneath happened to be near-black.
     "bg-inverse-fg text-inverse-bg hover:bg-inverse-fg/85 active:bg-inverse-fg/75 " +
     "focus-visible:outline-inverse-fg",
+  /** Destructive confirmation only — cancelling an order, deleting an item.
+   *  Never the default action in a pair. */
+  danger:
+    "bg-card text-danger border border-danger/50 hover:bg-danger-soft-bg hover:border-danger",
 };
 
 const SIZES: Record<ButtonSize, string> = {

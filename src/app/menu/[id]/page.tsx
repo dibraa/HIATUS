@@ -9,6 +9,8 @@ import { MenuItemCard } from "@/components/menu-item-card";
 import { ProductImage } from "@/components/ui/product-image";
 import { aggregateRatings, type RatingStat } from "@/lib/ratings";
 import type { MenuItem, Rating } from "@/types/database";
+import { FavoriteButton } from "@/components/favorite-button";
+import { getCurrentUser } from "@/lib/auth";
 import { AddToCart } from "./add-to-cart";
 
 type Params = { params: Promise<{ id: string }> };
@@ -43,12 +45,27 @@ export default async function MenuItemPage({ params }: Params) {
 
   if (!item) notFound();
 
-  const { data: ratings } = await supabase
-    .from("ratings")
-    .select("*")
-    .eq("menu_item_id", id)
-    .order("created_at", { ascending: false })
-    .returns<Rating[]>();
+  const [{ data: ratings }, user] = await Promise.all([
+    supabase
+      .from("ratings")
+      .select("*")
+      .eq("menu_item_id", id)
+      .order("created_at", { ascending: false })
+      .returns<Rating[]>(),
+    getCurrentUser(),
+  ]);
+
+  // maybeSingle: "not favourited" is the common case, not an error.
+  const { data: favoriteRow } = user
+    ? await supabase
+        .from("favorites")
+        .select("menu_item_id")
+        .eq("user_id", user.id)
+        .eq("menu_item_id", id)
+        .maybeSingle()
+    : { data: null };
+
+  const isFavorite = Boolean(favoriteRow);
 
   const ratingList = ratings ?? [];
   const averageRating =
@@ -133,9 +150,18 @@ export default async function MenuItemPage({ params }: Params) {
             {item.flavor}
           </p>
 
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
-            {item.name}
-          </h1>
+          <div className="mt-2 flex items-start justify-between gap-4">
+            <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+              {item.name}
+            </h1>
+
+            <FavoriteButton
+              menuItemId={item.id}
+              itemName={item.name}
+              isFavorite={isFavorite}
+              isLoggedIn={!!user}
+            />
+          </div>
 
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <RatingSummary average={averageRating} count={ratingList.length} />

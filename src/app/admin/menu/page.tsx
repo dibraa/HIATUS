@@ -66,7 +66,7 @@ export default async function AdminMenuPage() {
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 text-xs uppercase tracking-wide text-accent">{item.flavor}</p>
+                <p className="mt-0.5 text-xs uppercase tracking-wide text-accent-ink">{item.flavor}</p>
                 <p className="mt-0.5 text-sm tabular-nums text-muted">
                   {formatPrice(item.price)}{" "}
                   <span className="text-xs">(medium)</span>
@@ -76,7 +76,7 @@ export default async function AdminMenuPage() {
               <div className="flex shrink-0 items-center gap-4">
                 <Link
                   href={"/admin/menu/" + item.id}
-                  className="text-sm font-medium text-accent underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-accent-hover"
+                  className="text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
                 >
                   Edit<span className="sr-only"> {item.name}</span>
                 </Link>

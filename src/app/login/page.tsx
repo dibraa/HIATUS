@@ -24,7 +24,7 @@ export default function LoginPage() {
         No account yet?{" "}
         <Link
           href="/signup"
-          className="font-medium text-accent underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-accent-hover"
+          className="font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
         >
           Create one
         </Link>

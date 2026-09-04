@@ -9,6 +9,7 @@ import { DEFAULT_SIZE, getSizeOption, priceForSize } from "@/lib/sizes";
 import { RatingSummary } from "@/components/star-rating";
 import { ProductImage } from "@/components/ui/product-image";
 import { Button } from "@/components/ui/button";
+import { FavoriteButton } from "@/components/favorite-button";
 
 /**
  * Grid product card.
@@ -25,25 +26,28 @@ import { Button } from "@/components/ui/button";
  * absolutely-positioned pseudo-element across the card. That leaves exactly one
  * link in the accessibility tree (named by the product) and keeps the Add
  * button a sibling rather than a button nested inside an anchor, which is
- * invalid HTML.
+ * invalid HTML. Both the Add and the favourite control carry `relative z-10` to
+ * sit above that overlay — without it they would be unclickable.
  */
 export function MenuItemCard({
   item,
   averageRating = null,
   ratingCount = 0,
+  isFavorite = false,
+  isLoggedIn = false,
 }: {
   item: MenuItem;
   averageRating?: number | null;
   ratingCount?: number;
+  isFavorite?: boolean;
+  isLoggedIn?: boolean;
 }) {
   const { addItem } = useCart();
   const defaultPrice = priceForSize(item.price, DEFAULT_SIZE);
   const defaultSizeLabel = getSizeOption(DEFAULT_SIZE).label;
 
   return (
-    <article
-      className="group relative flex w-full gap-3 overflow-hidden rounded-lg border border-line bg-card p-3 transition-shadow duration-200 ease-hi hover:shadow-md focus-within:shadow-md sm:flex-col sm:gap-0"
-    >
+    <article className="group relative flex w-full gap-3 overflow-hidden rounded-lg border border-line bg-card p-3 transition-shadow duration-200 ease-hi hover:shadow-md focus-within:shadow-md sm:flex-col sm:gap-0">
       <div className="relative w-28 shrink-0 sm:w-full">
         <ProductImage
           src={item.image_url}
@@ -55,12 +59,22 @@ export function MenuItemCard({
         />
 
         {!item.is_available && (
-          <span
-            className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider text-accent-fg"
-          >
+          <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider text-surface">
             Sold out
           </span>
         )}
+
+        {/* Sits on the image, opposite corner to the sold-out flag so the two
+            never collide. */}
+        <div className="absolute right-2 top-2">
+          <FavoriteButton
+            menuItemId={item.id}
+            itemName={item.name}
+            isFavorite={isFavorite}
+            isLoggedIn={isLoggedIn}
+            size="sm"
+          />
+        </div>
       </div>
 
       <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:pt-3">
@@ -93,7 +107,7 @@ export function MenuItemCard({
           {/* z-10 lifts the button above the stretched link's overlay */}
           <Button
             size="sm"
-            variant={item.is_available ? "primary" : "secondary"}
+            variant={item.is_available ? "primary" : "outline"}
             className="relative z-10 shrink-0"
             disabled={!item.is_available}
             aria-label={

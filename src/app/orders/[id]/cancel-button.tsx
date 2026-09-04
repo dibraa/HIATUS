@@ -13,7 +13,7 @@ export function CancelButton({ orderId }: { orderId: string }) {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
       <Button
-        variant="secondary"
+        variant="danger"
         size="sm"
         disabled={pending}
         className="border-danger/50 text-danger hover:bg-danger-soft-bg hover:text-danger-soft-fg"

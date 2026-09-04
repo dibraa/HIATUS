@@ -31,6 +31,20 @@ export function SignupForm() {
         autoComplete="email"
       />
 
+      {/* Optional, unlike the email — the account is keyed on the address, and
+          demanding a phone number to buy a coffee is friction with no payoff.
+          It is stored on the profile so the counter can reach someone about an
+          order that has gone wrong. */}
+      <TextField
+        id="phone"
+        name="phone"
+        label="Phone"
+        type="tel"
+        inputMode="tel"
+        autoComplete="tel"
+        hint="Optional. Only used if the shop needs to reach you about an order."
+      />
+
       {/* minLength is echoed in the hint rather than left for the browser to
           reveal on a failed submit — a rule you learn by breaking it is a
           rule stated too late. */}
