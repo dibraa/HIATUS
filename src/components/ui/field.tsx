@@ -1,4 +1,4 @@
-import type { ComponentProps, ReactNode } from "react";
+import { useState, type ComponentProps, type ReactNode } from "react";
 
 /**
  * Form primitives.
@@ -104,6 +104,70 @@ export function TextField({
         {...props}
       />
     </Field>
+  );
+}
+
+type PasswordFieldProps = Omit<ComponentProps<"input">, "id" | "type"> & {
+  id: string;
+  label: string;
+  hint?: string;
+  error?: string | null;
+  hideLabel?: boolean;
+};
+
+export function PasswordField({
+  id,
+  label,
+  hint,
+  error,
+  hideLabel,
+  className,
+  ...props
+}: PasswordFieldProps) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <Field id={id} label={label} hint={hint} error={error} hideLabel={hideLabel}>
+      <div className="relative">
+        <input
+          id={id}
+          type={visible ? "text" : "password"}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={describedBy(id, hint, error)}
+          className={controlClasses(Boolean(error), ["pr-11", className].filter(Boolean).join(" "))}
+          {...props}
+        />
+        <button
+          type="button"
+          aria-label={visible ? "Hide password" : "Show password"}
+          aria-pressed={visible}
+          title={visible ? "Hide password" : "Show password"}
+          onClick={() => setVisible((current) => !current)}
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted transition-colors duration-150 ease-hi hover:text-ink focus-visible:text-ink"
+        >
+          {visible ? <EyeOffIcon /> : <EyeIcon />}
+        </button>
+      </div>
+    </Field>
+  );
+}
+
+function EyeIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="1.8">
+      <path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
+      <circle cx="12" cy="12" r="2.5" />
+    </svg>
+  );
+}
+
+function EyeOffIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="1.8">
+      <path d="m3 3 18 18" />
+      <path d="M10.6 6.2A10.7 10.7 0 0 1 12 6c6 0 9.5 6 9.5 6a17.4 17.4 0 0 1-3.2 3.8M6.2 6.9C3.9 8.5 2.5 12 2.5 12s3.5 6 9.5 6a9.7 9.7 0 0 0 3.2-.5" />
+      <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2" />
+    </svg>
   );
 }
 

@@ -4,7 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn, type AuthState } from "@/app/actions/auth";
-import { TextField, FormError } from "@/components/ui/field";
+import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 
 const initialState: AuthState = { error: null };
@@ -42,11 +42,10 @@ export function LoginForm() {
         autoComplete="email"
       />
 
-      <TextField
+      <PasswordField
         id="password"
         name="password"
         label="Password"
-        type="password"
         required
         autoComplete="current-password"
       />
