@@ -17,7 +17,6 @@ const LINKS = [
   { href: "/admin", label: "Dashboard" },
   { href: "/admin/orders", label: "Orders" },
   { href: "/admin/menu", label: "Menu" },
-  { href: "/admin/promos", label: "Promos" },
   { href: "/admin/reports", label: "Reports" },
   { href: "/admin/team", label: "Team" },
   { href: "/admin/settings", label: "Settings" },
@@ -27,10 +26,8 @@ export function AdminNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Admin sections" className="border-b border-line">
-      {/* Scrolls rather than wraps: seven sections wrap to two rows on a
-          phone, which moves the page content down every time. */}
-      <ul className="no-scrollbar -mb-px flex gap-1 overflow-x-auto">
+    <nav aria-label="Admin sections">
+      <ul className="no-scrollbar flex gap-1 overflow-x-auto lg:flex-col">
         {LINKS.map((link) => {
           // "/admin" would otherwise match every child route, so the index is
           // matched exactly while the sections match their subtree.
@@ -46,8 +43,8 @@ export function AdminNav() {
                 aria-current={active ? "page" : undefined}
                 className={
                   active
-                    ? "inline-flex items-center whitespace-nowrap border-b-2 border-accent px-3 py-2.5 text-sm font-semibold text-ink"
-                    : "inline-flex items-center whitespace-nowrap border-b-2 border-transparent px-3 py-2.5 text-sm font-medium text-muted transition-colors duration-150 ease-hi hover:border-line-strong hover:text-ink"
+                    ? "inline-flex min-h-11 items-center whitespace-nowrap rounded-xl bg-accent px-3 py-2.5 text-sm font-semibold text-accent-fg shadow-sm"
+                    : "inline-flex min-h-11 items-center whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:bg-card hover:text-ink"
                 }
               >
                 {link.label}

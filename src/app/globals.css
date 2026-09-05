@@ -221,6 +221,18 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* The admin workspace is also reachable through client-side navigation, where
+    the root layout stays mounted. Its marker keeps the dedicated canvas from
+    inheriting storefront chrome or the storefront content width. */
+body:has(.admin-workspace) .site-chrome {
+   display: none;
+}
+
+body:has(.admin-workspace) #main {
+   max-width: none;
+   padding: 0;
+}
+
 /* One consistent focus ring everywhere. :focus-visible keeps it off mouse
    clicks while guaranteeing it for keyboard and other non-pointer input. */
 :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {

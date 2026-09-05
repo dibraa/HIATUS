@@ -38,7 +38,7 @@ export function StatCard({
   }[tone];
 
   return (
-    <div className={`rounded-lg border p-4 ${toneClasses}`}>
+    <div className={`rounded-2xl border p-5 shadow-[0_8px_24px_-20px_rgba(81,48,36,0.55)] ${toneClasses}`}>
       <div className="flex items-start justify-between gap-3">
         <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted">
           {label}

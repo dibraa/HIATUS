@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
-import { SIZE_OPTIONS } from "@/lib/sizes";
 import type { MenuItem } from "@/types/database";
 
 const initialState: MenuFormState = { error: null };
@@ -50,7 +49,7 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="grid gap-5 sm:grid-cols-2">
       {item && <input type="hidden" name="id" value={item.id} />}
       <input type="hidden" name="image_url" value={imageUrl} />
 
@@ -63,27 +62,22 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
         placeholder="e.g. Spanish Latte"
       />
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <TextField
-          id="flavor"
-          name="flavor"
-          label="Flavor"
-          required
-          placeholder="e.g. Caramel"
-          defaultValue={item?.flavor}
-          hint="Drives the storefront filter and the best-seller report."
-        />
-        <TextField
-          id="category"
-          name="category"
-          label="Category"
-          defaultValue={item?.category ?? "coffee"}
-        />
-      </div>
+      <TextField
+        id="flavor"
+        name="flavor"
+        label="Flavor"
+        required
+        placeholder="e.g. Caramel"
+        defaultValue={item?.flavor}
+      />
+      <TextField
+        id="category"
+        name="category"
+        label="Category"
+        defaultValue={item?.category ?? "coffee"}
+      />
 
-      {/* The price/size relationship is a rule the admin cannot see anywhere
-          else, so the field states it rather than leaving it to be discovered
-          when a customer is charged an unexpected amount. */}
+
       <TextField
         id="price"
         name="price"
@@ -94,7 +88,6 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
         required
         inputMode="decimal"
         defaultValue={item?.price}
-        hint={"This is the MEDIUM price. Small is " + SIZE_OPTIONS[0].priceDelta + ", large is +" + SIZE_OPTIONS[2].priceDelta + "."}
       />
 
       <TextAreaField
@@ -103,45 +96,51 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
         label="Description"
         rows={3}
         defaultValue={item?.description ?? ""}
-        hint="One or two lines. Shown on the card and the product page."
       />
 
-      <Field
-        id="image"
-        label="Photo"
-        hint="Square images crop best. Optional — items without one get a placeholder."
-        error={uploadError}
-      >
-        <input
+      <div>
+        <Field
           id="image"
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          aria-describedby={uploadError ? "image-error" : "image-hint"}
-          className="w-full text-sm text-ink-soft file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-card file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-raised"
-        />
-      </Field>
+          label="Photo"
+          error={uploadError}
+        >
+          <input
+            id="image"
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            aria-describedby={uploadError ? "image-error" : "image-hint"}
+            className="w-full text-sm text-ink-soft file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-card file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-raised"
+          />
+
+          {uploading && <p className="mt-2 text-xs text-muted">Uploading...</p>}
+
+          {imageUrl && !uploading && (
+            <div className="mt-3 w-24">
+              <ProductImage
+                src={imageUrl}
+                alt="Current photo for this item"
+                sizes="96px"
+                rounded="rounded-md"
+              />
+            </div>
+          )}
+        </Field>
+      </div>
 
       {/* Status of the upload, announced rather than only shown. */}
       <p aria-live="polite" className="sr-only">
         {uploading ? "Uploading photo" : imageUrl ? "Photo ready" : ""}
       </p>
 
-      {uploading && <p className="text-xs text-muted">Uploading…</p>}
-
-      {imageUrl && !uploading && (
-        <div className="w-24">
-          <ProductImage src={imageUrl} alt="Current photo for this item" sizes="96px" rounded="rounded-md" />
-        </div>
-      )}
-
-      <CheckboxField
-        id="is_available"
-        name="is_available"
-        label="Available on the menu"
-        defaultChecked={item?.is_available ?? true}
-        hint="Unchecked items still appear, marked sold out, and cannot be added to a cart."
-      />
+      <div className="flex items-start pt-1">
+        <CheckboxField
+          id="is_available"
+          name="is_available"
+          label="Available on the menu"
+          defaultChecked={item?.is_available ?? true}
+        />
+      </div>
 
       <FormError>{state.error}</FormError>
 
@@ -151,7 +150,7 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
         // Blocked during upload: submitting now would save the item with the
         // previous photo URL, silently discarding the one being uploaded.
         disabled={pending || uploading}
-        className="self-start"
+        className="self-start sm:col-span-2"
       >
         {pending ? "Saving…" : "Save item"}
       </Button>

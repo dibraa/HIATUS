@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -53,7 +54,10 @@ export const viewport: Viewport = {
  */
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("hiatus-theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}})()`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const isAdminRoute = pathname.startsWith("/admin");
+
   return (
     // suppressHydrationWarning: the script above legitimately mutates <html>
     // before React hydrates, so the attribute set will not match the server's.
@@ -72,13 +76,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             Skip to main content
           </a>
 
-          <Navbar />
+          <div className="site-chrome">{!isAdminRoute && <Navbar />}</div>
 
-          <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+          <main
+            id="main"
+            className={
+              isAdminRoute
+                ? "w-full flex-1"
+                : "mx-auto w-full max-w-6xl flex-1 px-4 py-8"
+            }
+          >
             {children}
           </main>
 
-          <SiteFooter />
+          <div className="site-chrome">{!isAdminRoute && <SiteFooter />}</div>
         </Providers>
       </body>
     </html>
