@@ -6,10 +6,9 @@ export const metadata: Metadata = { title: "Add menu item" };
 
 export default function NewMenuItemPage() {
   return (
-    <div className="mx-auto max-w-md">
+    <div className="mx-auto max-w-4xl">
       <PageHeader
         title="Add menu item"
-        description="The price you set is the medium; small and large are derived from it."
       />
       <MenuItemForm />
     </div>

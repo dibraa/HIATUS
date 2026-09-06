@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { headers } from "next/headers";
 import { Anton, Oswald, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -80,13 +81,18 @@ export const viewport: Viewport = {
  */
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("hiatus-theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}})()`;
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
   const fontVars = [
     anton.variable,
     oswald.variable,
     jetbrainsMono.variable,
     geistSans.variable,
   ].join(" ");
+
+  // The admin workspace paints its own full-bleed shell, so it opts out of the
+  // centred container and the site navbar/footer below.
+  const pathname = (await headers()).get("x-pathname") ?? "";
+  const isAdminRoute = pathname.startsWith("/admin");
 
   return (
     // suppressHydrationWarning: the script above legitimately mutates <html>
@@ -106,16 +112,24 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             Skip to main content
           </a>
 
-          <Navbar />
+          <div className="site-chrome">{!isAdminRoute && <Navbar />}</div>
 
           {/* The container every page centres in. Sections that need to reach
               the viewport edge (the tan loyalty band, the partner strip) break
-              out with `.full-bleed` rather than this being unconstrained. */}
-          <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10">
+              out with `.full-bleed` rather than this being unconstrained.
+              Admin skips it entirely and lays out its own workspace. */}
+          <main
+            id="main"
+            className={
+              isAdminRoute
+                ? "w-full flex-1"
+                : "mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10"
+            }
+          >
             {children}
           </main>
 
-          <SiteFooter />
+          <div className="site-chrome">{!isAdminRoute && <SiteFooter />}</div>
         </Providers>
       </body>
     </html>

@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import { signUp, type AuthState } from "@/app/actions/auth";
-import { TextField, FormError } from "@/components/ui/field";
+import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 
 const initialState: AuthState = { error: null };
@@ -48,11 +48,10 @@ export function SignupForm() {
       {/* minLength is echoed in the hint rather than left for the browser to
           reveal on a failed submit — a rule you learn by breaking it is a
           rule stated too late. */}
-      <TextField
+      <PasswordField
         id="password"
         name="password"
         label="Password"
-        type="password"
         required
         minLength={8}
         autoComplete="new-password"

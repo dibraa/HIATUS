@@ -23,10 +23,9 @@ export default async function EditMenuItemPage({
   if (!item) notFound();
 
   return (
-    <div className="mx-auto max-w-md">
+    <div className="mx-auto max-w-4xl">
       <PageHeader
         title={"Edit " + item.name}
-        description="The price you set is the medium; small and large are derived from it."
       />
       <MenuItemForm item={item} />
     </div>

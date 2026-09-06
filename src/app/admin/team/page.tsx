@@ -64,7 +64,7 @@ export default async function TeamPage() {
         description="Who can work the counter, who can see the books, and what everyone has been doing."
       />
 
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
+      <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.78fr)]">
         {/* ---------- Roster ---------- */}
         <section aria-labelledby="roster-heading">
           <h2
@@ -155,7 +155,7 @@ export default async function TeamPage() {
         </section>
 
         {/* ---------- Grant + audit ---------- */}
-        <div className="flex flex-col gap-8">
+        <div className="flex flex-col gap-8 lg:pt-8">
           <GrantRoleForm />
 
           <section aria-labelledby="audit-heading">
