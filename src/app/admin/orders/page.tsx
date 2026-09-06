@@ -91,7 +91,7 @@ export default async function AdminOrdersPage({
                       {phone && (
                         <a
                           href={"tel:" + phone}
-                          className="text-sm text-muted underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+                          className="text-sm text-muted underline underline-offset-4 transition-colors hover:text-ink"
                         >
                           {phone}
                         </a>
@@ -113,7 +113,7 @@ export default async function AdminOrdersPage({
                 <ul className="mt-3 flex flex-col gap-1 border-t border-line pt-3 text-sm text-ink-soft">
                   {order.order_items.map((item) => (
                     <li key={item.id}>
-                      <span className="tabular-nums text-muted">{item.quantity}&times;</span>{" "}
+                      <span className="numeric text-muted">{item.quantity}&times;</span>{" "}
                       {item.item_name}
                       {item.size && (
                         <span className="text-muted"> &middot; {getSizeOption(item.size).label}</span>
@@ -128,7 +128,7 @@ export default async function AdminOrdersPage({
                   </p>
                 )}
 
-                <p className="mt-3 text-sm font-semibold tabular-nums text-ink">
+                <p className="mt-3 text-sm font-semibold numeric text-ink">
                   {formatPrice(order.total_amount)}
                 </p>
               </li>

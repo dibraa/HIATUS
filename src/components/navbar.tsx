@@ -1,22 +1,29 @@
 import Link from "next/link";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin, isStaff } from "@/lib/roles";
+import { Wordmark } from "@/components/brand";
 import { CartBadge } from "@/components/cart-badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { MobileNav } from "@/components/mobile-nav";
-import { SearchField } from "@/components/search-field";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 /**
  * Sticky site header.
  *
- * Three zones, mirroring the reference: identity on the left, search in the
- * middle, account and cart on the right. Search sits in the header from `md`
- * up; below that the home page renders its own search so the header keeps
- * enough room for the wordmark, cart and menu trigger at 320px.
+ * The comp's arrangement: links left, wordmark CENTRED, account and cart
+ * right, all of it small tracked mono caps on the bare cream — no card, no
+ * shadow, just a hairline underneath.
  *
- * Sticky because the cart and search are the two controls a shopper reaches for
- * repeatedly while scrolling a long menu.
+ * The centred mark is absolutely positioned rather than being a flex item,
+ * because a middle flex child centres between its siblings, not in the header
+ * — and the two sides here are never the same width. Below `lg` there is no
+ * room for three zones, so the mark drops back into the flow on the left and
+ * the links move into the sheet.
+ *
+ * Search deliberately does NOT live here. It filters the menu, so it sits with
+ * the menu (see `app/page.tsx`); putting it in the header cost the middle zone
+ * the wordmark now occupies, and made a control that only affects one page
+ * follow the viewer onto every other one.
  *
  * The work links are role-gated. A barista sees "Counter", an owner sees both
  * "Counter" and "Admin", and a customer sees neither — a nav link to a page
@@ -30,37 +37,20 @@ export async function Navbar() {
   const admin = isAdmin(access);
 
   const navLink =
-    "text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:text-ink";
+    "ui-caps text-2xs text-ink-soft transition-colors hover:text-ink";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4">
-        {/* Identity */}
-        <Link
-          href="/"
-          className="flex shrink-0 items-center gap-2.5"
-          aria-label="Hiatus Coffee, go to menu"
-        >
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-inverse-bg text-sm font-semibold text-inverse-fg"
-          >
-            H
-          </span>
-          <span className="text-sm font-semibold uppercase tracking-[0.22em] text-ink">
-            Hiatus
-          </span>
-        </Link>
-
-        {/* Primary nav — collapses into MobileNav below lg */}
-        <nav aria-label="Main" className="hidden shrink-0 items-center gap-5 lg:flex">
+    <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur">
+      <div className="relative mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
+        {/* Left: primary nav from lg up, the mark below it */}
+        <nav aria-label="Main" className="hidden shrink-0 items-center gap-6 lg:flex">
           <Link href="/" className={navLink}>
             Menu
           </Link>
           {user && (
             <>
               <Link href="/orders" className={navLink}>
-                My orders
+                Orders
               </Link>
               <Link href="/favorites" className={navLink}>
                 Saved
@@ -79,17 +69,29 @@ export async function Navbar() {
           )}
         </nav>
 
-        {/* Search takes the slack in the middle */}
-        <div className="ml-auto hidden min-w-0 flex-1 justify-center md:flex md:ml-2">
-          <SearchField id="header-search" className="w-full max-w-sm" />
-        </div>
+        <Link
+          href="/"
+          aria-label="Hiatus Coffee, go to menu"
+          className="shrink-0 text-ink lg:hidden"
+        >
+          <Wordmark size="sm" />
+        </Link>
 
-        {/* Account + cart */}
-        <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 md:ml-0">
+        {/* Centre: the mark, pinned to the header rather than to its siblings */}
+        <Link
+          href="/"
+          aria-label="Hiatus Coffee, go to menu"
+          className="absolute left-1/2 hidden -translate-x-1/2 text-ink lg:block"
+        >
+          <Wordmark />
+        </Link>
+
+        {/* Right: account, theme, cart */}
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
           {user ? (
             <>
               <Link href="/profile" className={`hidden lg:inline ${navLink}`}>
-                Profile
+                Account
               </Link>
               <span className="hidden lg:inline">
                 <SignOutButton />
@@ -102,7 +104,7 @@ export async function Navbar() {
               </Link>
               <Link
                 href="/signup"
-                className="hidden h-10 items-center rounded-full bg-accent px-4 text-sm font-medium text-accent-fg transition-colors duration-150 ease-hi hover:bg-accent-hover lg:inline-flex"
+                className="ui-caps hidden h-9 items-center rounded-md bg-cta px-4 text-2xs text-cta-fg transition-colors hover:bg-cta-hover lg:inline-flex"
               >
                 Sign up
               </Link>

@@ -54,7 +54,7 @@ export default async function EditPromoPage({
         <section aria-labelledby="redemptions-heading" className="mt-10">
           <h2
             id="redemptions-heading"
-            className="mb-3 text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+            className="mb-3 eyebrow text-muted"
           >
             Recent redemptions
           </h2>
@@ -69,12 +69,12 @@ export default async function EditPromoPage({
                   {r.profiles?.full_name?.trim() || "A customer"}
                 </span>
                 <span className="flex shrink-0 items-baseline gap-3">
-                  <span className="font-medium tabular-nums text-ink">
+                  <span className="font-medium numeric text-ink">
                     −{formatPrice(r.discount_amount)}
                   </span>
                   <time
                     dateTime={r.created_at}
-                    className="text-xs tabular-nums text-muted"
+                    className="text-xs numeric text-muted"
                   >
                     {formatDateTime(r.created_at)}
                   </time>

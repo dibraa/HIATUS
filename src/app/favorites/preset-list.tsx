@@ -107,13 +107,13 @@ export function PresetList({
           <li key={preset.id} className="rounded-lg border border-line bg-card p-4">
             <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
               <div className="min-w-0">
-                <h3 className="text-base font-semibold text-ink">{preset.name}</h3>
+                <h3 className="display text-lg text-ink">{preset.name}</h3>
                 <p className="mt-0.5 text-xs text-muted">
                   {lines.length} {lines.length === 1 ? "drink" : "drinks"}
                   {total > 0 && (
                     <>
                       {" · "}
-                      <span className="tabular-nums">{formatPrice(total)}</span>{" "}
+                      <span className="numeric">{formatPrice(total)}</span>{" "}
                       at today&rsquo;s prices
                     </>
                   )}
@@ -160,7 +160,7 @@ export function PresetList({
                   className="flex justify-between gap-4"
                 >
                   <span className="min-w-0 text-ink-soft">
-                    <span className="tabular-nums text-muted">{line.quantity}&times;</span>{" "}
+                    <span className="numeric text-muted">{line.quantity}&times;</span>{" "}
                     {line.item.name}{" "}
                     <span className="text-muted">
                       ({getSizeOption(line.size).label})
@@ -171,7 +171,7 @@ export function PresetList({
                       </span>
                     )}
                   </span>
-                  <span className="shrink-0 tabular-nums text-ink">
+                  <span className="shrink-0 numeric text-ink">
                     {formatPrice(line.unitPrice * line.quantity)}
                   </span>
                 </li>

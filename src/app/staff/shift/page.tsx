@@ -4,7 +4,6 @@ import { getCurrentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
-import { CheckerBand } from "@/components/ui/checker";
 import { formatPrice, formatDateTime, formatElapsed } from "@/lib/format";
 import { PAYMENT_METHOD_LABELS } from "@/lib/order-meta";
 import type { Shift, ShiftReportRow, StaffActivity } from "@/types/database";
@@ -73,12 +72,10 @@ export default async function ShiftPage() {
             aria-labelledby="current-shift"
             className="overflow-hidden rounded-lg border border-line bg-card"
           >
-            <CheckerBand size="sm" className="h-1.5" />
-
             <div className="p-5">
               <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
                 <div>
-                  <h2 id="current-shift" className="text-lg font-semibold text-ink">
+                  <h2 id="current-shift" className="display text-xl text-ink">
                     On shift
                   </h2>
                   <p className="mt-1 text-sm text-muted">
@@ -97,13 +94,13 @@ export default async function ShiftPage() {
               <dl className="mt-4 grid grid-cols-2 gap-3 border-t border-line pt-4 text-sm">
                 <div>
                   <dt className="text-xs text-muted">Opening float</dt>
-                  <dd className="mt-0.5 font-semibold tabular-nums text-ink">
+                  <dd className="mt-0.5 font-semibold numeric text-ink">
                     {formatPrice(openShift.opening_cash)}
                   </dd>
                 </div>
                 <div>
                   <dt className="text-xs text-muted">Cash taken</dt>
-                  <dd className="mt-0.5 font-semibold tabular-nums text-ink">
+                  <dd className="mt-0.5 font-semibold numeric text-ink">
                     {formatPrice(cashTaken)}
                   </dd>
                 </div>
@@ -115,7 +112,7 @@ export default async function ShiftPage() {
                     Takings this shift, by payment method
                   </caption>
                   <thead>
-                    <tr className="text-left text-2xs uppercase tracking-[0.14em] text-muted">
+                    <tr className="text-left eyebrow text-muted">
                       <th scope="col" className="py-2 font-semibold">Tender</th>
                       <th scope="col" className="py-2 text-right font-semibold">Taken</th>
                       <th scope="col" className="py-2 text-right font-semibold">Refunded</th>
@@ -131,13 +128,13 @@ export default async function ShiftPage() {
                             &times;{row.payments_count}
                           </span>
                         </th>
-                        <td className="py-2 text-right tabular-nums text-ink-soft">
+                        <td className="py-2 text-right numeric text-ink-soft">
                           {formatPrice(row.payments_total)}
                         </td>
-                        <td className="py-2 text-right tabular-nums text-muted">
+                        <td className="py-2 text-right numeric text-muted">
                           {row.refunds_total > 0 ? `−${formatPrice(row.refunds_total)}` : "—"}
                         </td>
-                        <td className="py-2 text-right font-semibold tabular-nums text-ink">
+                        <td className="py-2 text-right font-semibold numeric text-ink">
                           {formatPrice(row.net_total)}
                         </td>
                       </tr>
@@ -155,7 +152,7 @@ export default async function ShiftPage() {
             <section aria-labelledby="shift-activity">
               <h2
                 id="shift-activity"
-                className="mb-3 text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+                className="mb-3 eyebrow text-muted"
               >
                 This shift
               </h2>
@@ -170,7 +167,7 @@ export default async function ShiftPage() {
                     </span>
                     <time
                       dateTime={entry.created_at}
-                      className="shrink-0 text-xs tabular-nums text-muted"
+                      className="shrink-0 text-xs numeric text-muted"
                     >
                       {formatElapsed(entry.created_at)} ago
                     </time>
@@ -188,7 +185,7 @@ export default async function ShiftPage() {
       <section aria-labelledby="past-shifts" className="mt-10">
         <h2
           id="past-shifts"
-          className="mb-3 text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+          className="mb-3 eyebrow text-muted"
         >
           Recent shifts
         </h2>
@@ -221,7 +218,7 @@ export default async function ShiftPage() {
                     </p>
                   </div>
 
-                  <p className="mt-1 text-xs tabular-nums text-muted">
+                  <p className="mt-1 text-xs numeric text-muted">
                     Float {formatPrice(shift.opening_cash)}
                     {shift.closing_cash !== null && (
                       <>

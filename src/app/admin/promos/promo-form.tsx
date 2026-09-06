@@ -201,7 +201,7 @@ export function PromoForm({ promotion }: { promotion?: Promotion }) {
         </Button>
         <Link
           href="/admin/promos"
-          className="inline-flex h-12 items-center rounded-full border border-line-strong bg-card px-6 text-base font-medium text-ink transition-colors duration-150 ease-hi hover:bg-raised"
+          className="ui-caps inline-flex h-12 items-center rounded-md border border-line-strong bg-card px-6 text-sm text-ink transition-colors hover:border-cta hover:bg-cta hover:text-cta-fg"
         >
           Cancel
         </Link>

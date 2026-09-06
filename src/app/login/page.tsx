@@ -24,7 +24,7 @@ export default function LoginPage() {
         No account yet?{" "}
         <Link
           href="/signup"
-          className="font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+          className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
         >
           Create one
         </Link>
@@ -39,7 +39,7 @@ function FormSkeleton() {
     <div className="flex flex-col gap-4" aria-hidden="true">
       <div className="skeleton h-[70px] rounded-md" />
       <div className="skeleton h-[70px] rounded-md" />
-      <div className="skeleton h-11 rounded-full" />
+      <div className="skeleton h-11 rounded-md" />
     </div>
   );
 }

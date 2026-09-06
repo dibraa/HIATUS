@@ -20,7 +20,7 @@ export default function Loading() {
           <div className="skeleton h-8 w-40 rounded-md" />
           <div className="mt-4 flex gap-2">
             {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="skeleton h-9 w-24 rounded-full" />
+              <div key={i} className="skeleton h-9 w-24 rounded-md" />
             ))}
           </div>
 

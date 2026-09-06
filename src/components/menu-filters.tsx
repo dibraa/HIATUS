@@ -37,8 +37,8 @@ function chipClass(isActive: boolean, tone: "accent" | "green") {
       : "border-secondary bg-secondary text-secondary-fg";
 
   return [
-    "inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-full border px-4 text-xs font-medium",
-    "transition-colors duration-150 ease-hi",
+    "ui-caps inline-flex h-9 shrink-0 items-center whitespace-nowrap rounded-md border px-4 text-2xs",
+    "transition-colors",
     isActive
       ? active
       : "border-line-strong bg-card text-ink-soft hover:border-ink hover:text-ink",

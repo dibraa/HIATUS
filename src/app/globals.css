@@ -1,92 +1,136 @@
 @import "tailwindcss";
 
 /* ==========================================================================
-   Hiatus design tokens — PineBrew palette
+   Hiatus design tokens — Co-Fi editorial
    --------------------------------------------------------------------------
-   Warm earth tones on a cream ground. Every colour the app paints goes through
-   a token here, so re-paletting is an edit to this block only — no component
-   churn.
+   A cream ground, a pine-green panel, an espresso CTA, and type that does the
+   shouting. Ported from the Co-Fi reference comp; the rules that comp implies
+   are encoded here so components never have to re-derive them:
 
-   Naming is by ROLE, not by shade ("ink", "muted", "line"), so a future
-   re-palette can change the hex without leaving component classes lying about
-   what they are.
+     TYPE      three roles, never mixed up:
+                 display  — Anton, condensed, ALL CAPS, tight. Headlines only.
+                 ui       — JetBrains Mono, ALL CAPS, tracked. Nav, labels,
+                            buttons, prices, metadata. The chrome.
+                 body     — Geist Sans. Prose, descriptions, table cells —
+                            everywhere a reader has to read more than six words.
+               The comp is set in caps end to end, which works for a landing
+               page and fails for an order history. So caps stop at the chrome.
 
-   THE FOUR BRAND COLOURS (design guardrail):
-     forest green  #2d5016   secondary buttons, inverted panels
-     burnt orange  #c87137   primary CTAs, highlights, active states
-     cream         #f5ead8   page background
-     charcoal      #1a1a1a   body text
+     SURFACE   four grounds, in order of lift:
+                 surface  — the cream page
+                 raised   — recessed wells, image placeholders
+                 card     — the near-white card
+                 band     — the tan full-bleed break (loyalty, CTA sections)
+               plus `inverse`, the pine panel, which is a SUBJECT, not a ground.
 
-   Two of those four cannot be used naively, and the tokens below encode the
-   fix rather than leaving it to each component:
+     SHAPE     generously rounded and FLAT. The comp has no drop shadows: depth
+               comes from stacking (a badge over a photo, a caption card over a
+               panel) and from the cream matte gutter around every image. The
+               shadow tokens survive for the one thing that genuinely needs to
+               float — the mobile nav sheet.
 
-     1. WHITE ON BURNT ORANGE IS 3.58:1 — below the 4.5:1 WCAG 2.1 AA needs for
-        text. So --hi-accent-fg is CHARCOAL (4.87:1), not white. Primary buttons
-        are orange with charcoal text.
-     2. BURNT ORANGE AS TEXT on cream is 3.00:1 — also below AA. So inline links
-        and active labels use --hi-accent-ink (#964a1c, 5.36:1), a deepened
-        member of the same hue family. Never set text in --hi-accent.
+   Naming is by ROLE, not by shade ("ink", "muted", "line"), so a re-palette is
+   an edit to this block alone.
 
-   Both brand hues survive intact as the colours you actually see; only the
-   pairings are tuned. Every ratio in this file is computed, not estimated.
+   Every ratio below is computed, not estimated. Two pairings in this palette
+   cannot be used naively and the tokens encode the fix:
+
+     1. WHITE ON BURNT ORANGE IS 3.58:1 — so --hi-accent-fg is charcoal, and
+        orange is never set as text (use --hi-accent-ink, 5.28:1).
+     2. THE SAGE DISPLAY GREEN IS 3.11:1 on the pine panel — fine for a 44px
+        headline (AA large text is 3:1), never for body. It has its own token,
+        --hi-inverse-display, so the distinction cannot be lost by accident.
    ========================================================================== */
 
 :root {
   /* --- Neutral ramp -----------------------------------------------------
-     Warm, cream-based. Ratios are measured against --hi-surface (#f5ead8) and
-     text tokens are additionally checked against --hi-card (the lightest
-     surface they sit on) and --hi-raised (the darkest). */
-  --hi-ink: #1a1a1a;         /* 14.62:1 — headings, primary text             */
-  --hi-ink-soft: #3d352c;    /* 10.12:1 — secondary text                     */
-  --hi-muted: #6d6152;       /*  5.07:1 — captions, metadata                 */
-                             /*           (4.61:1 on raised — still AA)      */
-  --hi-line: #ded0b6;        /*  1.24:1 — decorative dividers ONLY. Never    */
+     Warm, cream-based. Ratios are measured against --hi-surface (#efe9de);
+     text tokens are additionally checked against --hi-raised, the darkest
+     ground they sit on. */
+  --hi-ink: #14120f;         /* 15.71:1 — headings, primary text             */
+  --hi-ink-soft: #3b352c;    /* 10.04:1 — secondary text                     */
+  --hi-muted: #6b6152;       /*  5.01:1 — captions, metadata                 */
+                             /*           (4.58:1 on raised — still AA)      */
+  --hi-line: #ded3bf;        /*  1.20:1 — decorative dividers ONLY. Never    */
                              /*           text, never an input's only edge.  */
-  --hi-line-strong: #8a7757; /*  3.63:1 — interactive borders (AA non-text)  */
-  --hi-raised: #ece0c6;      /* recessed panel / image placeholder fill      */
-  --hi-surface: #f5ead8;     /* page background — the brand cream            */
-  --hi-card: #fffdf9;        /* card / elevated background                   */
+  --hi-line-strong: #8a7c63; /*  3.39:1 — interactive borders (AA non-text)  */
+  --hi-raised: #e7dfcf;      /* recessed panel / image placeholder fill      */
+  --hi-surface: #efe9de;     /* page background — the comp's cream           */
+  --hi-card: #fffdf8;        /* card / matte frame / elevated background     */
 
-  /* --- Inverted surfaces ------------------------------------------------
-     Forest green, not charcoal. The hero, the featured card and the site
-     footer are the places the brand's darkest colour gets to be the subject,
-     and in this palette that colour is green.
+  /* --- Band -------------------------------------------------------------
+     The tan full-bleed break. In the comp this is where the page changes
+     subject — the loyalty offer sits on it — so it is a real surface with its
+     own text ramp, not a one-off background colour.
 
-     NOTE: burnt orange on forest green is 2.59:1 and must never be used —
-     a CTA sitting on an inverse panel uses the `inverse` button variant
-     (cream fill, green text), which is why that variant exists. */
-  --hi-inverse-bg: #2d5016;
-  --hi-inverse-fg: #f5ead8;      /* 7.77:1 on inverse-bg                     */
-  --hi-inverse-muted: #bcd0a8;   /* 5.60:1 on inverse-bg — AA body           */
-  --hi-inverse-line: #7aa855;    /* 3.33:1 — AA non-text (1.4.11)            */
+     Note --hi-muted is only 3.10:1 on tan and must NOT be used here; that is
+     the whole reason --hi-band-muted exists. */
+  --hi-band: #c9b99b;
+  --hi-band-fg: #14120f;     /*  8.94:1 on band                              */
+  --hi-band-muted: #4a4133;  /*  5.15:1 on band — AA body                    */
+  --hi-band-line: #6b5f4a;   /*  3.18:1 on band — AA non-text (1.4.11)       */
+
+  /* --- Inverted surface: the pine panel ---------------------------------
+     The comp's green feature panel. Lighter and greyer than a forest green so
+     cream text clears AA on it (5.10:1) without the panel going black.
+
+     Burnt orange on this green is 2.59:1 and must never be used — a CTA on an
+     inverse panel uses the `inverse` button variant (cream fill, pine text),
+     which is exactly why that variant exists. */
+  --hi-inverse-bg: #3e6b53;
+  --hi-inverse-fg: #f5ead8;      /*  5.10:1 on inverse-bg — AA body          */
+  --hi-inverse-muted: #d2e4d6;   /*  4.56:1 on inverse-bg — AA body          */
+  --hi-inverse-line: #a6c9b2;    /*  3.32:1 — AA non-text (1.4.11)           */
+  --hi-inverse-display: #9cc4a8; /*  3.11:1 — DISPLAY TEXT ONLY (AA large).
+                                    The comp's sage headline. Anything under
+                                    24px bold using this fails AA. */
+
+  /* The dark caption card that straddles the pine panel's photograph. It is a
+     SURFACE, not a button, and it needs its own role for one reason: the CTA
+     token inverts between themes (espresso in light, cream in dark), so a card
+     painted with it turned into a cream slab in dark mode with sage text on
+     top of it — unreadable. This one stays dark in both themes and only gets
+     darker, so everything layered on it keeps its contrast.
+     Cream on it: 13.96:1. Sage on it: 8.51:1. */
+  --hi-inverse-card: #241d18;
+  --hi-inverse-card-fg: #f5ead8;
+
+  /* --- CTA: espresso ----------------------------------------------------
+     The comp's primary action is near-black, not orange: `ADD TO CART` fills
+     to espresso on hover, `JOIN THE CLUB` is espresso at rest. So the loudest
+     button in the app is this, and burnt orange is demoted to a HIGHLIGHT —
+     active chips, sale prices, small marks. Flipping that decision back is an
+     edit to the `primary` variant in ui/button.tsx and nothing else. */
+  --hi-cta: #241d18;
+  --hi-cta-hover: #3a2f26;
+  --hi-cta-fg: #f5ead8;       /* 13.96:1 on --hi-cta                         */
 
   /* --- Accent: burnt orange ---------------------------------------------
-     The primary CTA colour. Spent on the one action per view that matters
-     most, plus active filter chips and the current-section underline. */
-  --hi-accent: #c87137;       /* fill only — 3.00:1 on surface, a UI boundary */
+     Retained from the brand, spent sparingly: active filter chips, the
+     current-section mark, a discounted price. Never a page's main button. */
+  --hi-accent: #c87137;       /* fill only — 3.01:1 on surface, a UI boundary */
   --hi-accent-hover: #d4834b; /* LIGHTENS on hover, see below                 */
-  --hi-accent-fg: #1a1a1a;    /* 4.87:1 on --hi-accent — charcoal, not white  */
-  --hi-accent-ink: #964a1c;   /* 5.36:1 on surface, 6.28:1 on card — TEXT use */
-  --hi-accent-soft: #f6e3d2;  /* tint behind active chips; ink on it 13.95:1  */
+  --hi-accent-fg: #14120f;    /* 4.99:1 on --hi-accent — charcoal, not white  */
+  --hi-accent-ink: #964a1c;   /* 5.28:1 on surface, 6.19:1 on card — TEXT use */
+  --hi-accent-soft: #f6e3d2;  /* tint behind active chips; ink on it 13.61:1  */
 
   /* Hover lightens rather than darkens. The usual "darken on hover" would
-     drop charcoal-on-orange below AA (#a85a28 gives 3.45:1), so the button
-     would fail exactly while being interacted with. Lifting to #d4834b takes
-     it to 5.92:1 and still reads as a state change. */
+     drop charcoal-on-orange below AA (#a85a28 gives 3.45:1), so the control
+     would fail exactly while being interacted with. */
 
-  /* --- Secondary: forest green ------------------------------------------
-     Supporting actions that still need to be filled — the guardrail's "green
-     buttons for secondary actions". */
-  --hi-secondary: #2d5016;
-  --hi-secondary-hover: #3d6b1f; /* 5.31:1 against --hi-secondary-fg          */
-  --hi-secondary-fg: #f5ead8;    /* 7.77:1 on --hi-secondary                  */
+  /* --- Secondary: pine --------------------------------------------------
+     Supporting actions that still need to be filled. Same hue as the inverse
+     panel, so a green button reads as a member of the same family. */
+  --hi-secondary: #3e6b53;
+  --hi-secondary-hover: #4a7d62; /* 4.40:1 against --hi-secondary-fg          */
+  --hi-secondary-fg: #f5ead8;    /* 5.10:1 on --hi-secondary                  */
 
   /* --- Status -----------------------------------------------------------
      Colour is never the sole carrier of meaning — these always ship with a
      text label or icon alongside. */
-  --hi-danger: #a51f18;      /*  6.28:1 on surface                           */
-  --hi-success: #1f6b34;     /*  5.49:1 on surface                           */
-  --hi-warning: #8a4708;     /*  5.91:1 on surface                           */
+  --hi-danger: #a51f18;      /*  6.20:1 on surface                           */
+  --hi-success: #1f6b34;     /*  5.35:1 on surface                           */
+  --hi-warning: #8a4708;     /*  5.82:1 on surface                           */
 
   /* Badge pairs. An order status is a lifecycle, not a mood, so the badge
      always renders its label as text — the tint is a second, redundant cue,
@@ -99,31 +143,73 @@
   --hi-warning-soft-fg: #7a3d09;  /*  6.92:1 on its own bg                    */
 
   /* --- Focus ------------------------------------------------------------ */
-  --hi-focus: #1a1a1a;
+  --hi-focus: #14120f;
 
   /* --- Scrim ------------------------------------------------------------
      The wash behind the mobile nav sheet. It gets its own token rather than
      reusing ink at low alpha because ink INVERTS between themes: in dark mode
      an ink-based scrim would be a pale film brightening the page it is meant
      to push back. A scrim must always darken. */
-  --hi-scrim: rgb(26 26 26 / 0.35);
+  --hi-scrim: rgb(20 18 15 / 0.4);
 
   /* --- Elevation --------------------------------------------------------
-     Warm-tinted, low-spread. Tinted toward the brown end so a card on cream
-     does not cast a grey shadow onto a warm ground. */
-  --hi-shadow-sm: 0 1px 2px 0 rgb(61 53 44 / 0.06);
-  --hi-shadow-md: 0 4px 12px -2px rgb(61 53 44 / 0.10), 0 2px 4px -2px rgb(61 53 44 / 0.05);
-  --hi-shadow-lg: 0 18px 40px -12px rgb(61 53 44 / 0.20), 0 4px 10px -4px rgb(61 53 44 / 0.08);
+     The comp is flat. `sm` and `md` are hairline-quiet on purpose — they exist
+     so an existing hover:shadow-md does not turn into a 2010 drop shadow — and
+     `lg` is reserved for the one element that genuinely floats over the page,
+     the mobile nav sheet. */
+  --hi-shadow-sm: 0 1px 0 0 rgb(59 53 44 / 0.04);
+  --hi-shadow-md: 0 2px 10px -6px rgb(59 53 44 / 0.16);
+  --hi-shadow-lg: 0 24px 50px -22px rgb(59 53 44 / 0.30);
 
   /* --- Motion -----------------------------------------------------------
-     Short and few. Honoured by the reduced-motion block at the bottom. */
-  --hi-ease: cubic-bezier(0.2, 0, 0.2, 1);
+     Three durations and three curves, chosen by WHAT IS MOVING rather than by
+     how long it should take, so a component never has to pick a number.
 
-  /* --- Checkered pattern ------------------------------------------------
-     The brand's decorative signature. Size and colour are variables so one
-     implementation serves a 6px section rule and a 20px background wash. */
-  --hi-checker-size: 10px;
-  --hi-checker-color: var(--hi-accent);
+       fast / ease   a control repainting under the cursor. Colour only. Short
+                     enough that it reads as responsiveness, not as animation.
+       base / spring a control acknowledging a press or a toggle committing.
+                     The curve overshoots slightly — that is what makes a tap
+                     feel answered rather than merely registered.
+       slow / out    a surface arriving: the nav sheet, the hero's opening
+                     line, an image settling under a hover. `ease-out` here is
+                     a long decelerating tail, which is what stops a 400ms
+                     move from feeling sluggish.
+
+     `--hi-ease` stays the default for everything, so a bare `transition-*`
+     utility is already correct — see --default-transition-* below. */
+  --hi-dur-fast: 120ms;
+  --hi-dur-base: 200ms;
+  --hi-dur-slow: 420ms;
+
+  --hi-ease: cubic-bezier(0.2, 0, 0.2, 1);
+  --hi-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --hi-ease-spring: cubic-bezier(0.34, 1.4, 0.5, 1);
+
+  /* --- Spacing rhythm ---------------------------------------------------
+     Four steps, and only the two largest breathe with the viewport.
+
+     The gutter BETWEEN sections is what sets a page's pace, and it should open
+     up on a wide screen — 64px between bands looks cramped at 1440px and
+     correct at 380px. The gutters INSIDE a section should not: the distance
+     from a label to its value is a typographic relationship, not a spatial
+     one, and scaling it with the window makes a card loose on a desktop and
+     tight on a phone for no reason.
+
+     So: section and band interpolate; heading barely does; block and tight are
+     fixed. Before this the same four jobs were being done by mt-3, mt-4, mt-5,
+     mt-6, mt-7 and mt-8 chosen per site, which is why no two sections on the
+     landing page opened at the same distance from their heading. */
+  --hi-space-tight: 0.5rem;      /* label -> its value, inside a card        */
+  --hi-space-snug: 0.75rem;      /* a heading -> its own subtitle            */
+  --hi-space-block: 1.5rem;      /* eyebrow -> heading; block -> block       */
+  --hi-space-heading: clamp(1.75rem, 1.433rem + 1.333vw, 2.5rem);  /* 28->40 */
+  --hi-space-band: clamp(3.5rem, 2.233rem + 5.333vw, 6.5rem);      /* 56->104 */
+  --hi-space-section: clamp(4rem, 2.522rem + 6.222vw, 7.5rem);     /* 64->120 */
+
+  /* --- Matte ------------------------------------------------------------
+     The comp's signature: no photo touches a card's edge. Every image sits
+     inside a cream frame, and this is that frame's gutter. */
+  --hi-matte: 0.625rem;
 }
 
 @theme inline {
@@ -137,10 +223,22 @@
   --color-surface: var(--hi-surface);
   --color-card: var(--hi-card);
 
+  --color-band: var(--hi-band);
+  --color-band-fg: var(--hi-band-fg);
+  --color-band-muted: var(--hi-band-muted);
+  --color-band-line: var(--hi-band-line);
+
   --color-inverse-bg: var(--hi-inverse-bg);
   --color-inverse-fg: var(--hi-inverse-fg);
   --color-inverse-muted: var(--hi-inverse-muted);
   --color-inverse-line: var(--hi-inverse-line);
+  --color-inverse-display: var(--hi-inverse-display);
+  --color-inverse-card: var(--hi-inverse-card);
+  --color-inverse-card-fg: var(--hi-inverse-card-fg);
+
+  --color-cta: var(--hi-cta);
+  --color-cta-hover: var(--hi-cta-hover);
+  --color-cta-fg: var(--hi-cta-fg);
 
   --color-accent: var(--hi-accent);
   --color-accent-hover: var(--hi-accent-hover);
@@ -164,15 +262,36 @@
   --color-warning-soft-bg: var(--hi-warning-soft-bg);
   --color-warning-soft-fg: var(--hi-warning-soft-fg);
 
-  /* Kept so pages not yet redesigned keep rendering unchanged */
+  /* Kept so anything still reaching for the Tailwind defaults renders in-brand */
   --color-background: var(--hi-surface);
   --color-foreground: var(--hi-ink);
 
   /* --- Type scale -------------------------------------------------------
-     Pinned to the brand hierarchy: H1 32px, H2 24px, H3 20px, body 16px.
-     Display sizes above that tighten as they grow so large headlines do not
-     read as airy. */
-  --text-2xs: 0.6875rem;      /* 11px — tracked overline labels             */
+     FLUID above the reading sizes, FIXED at and below them.
+
+     That split is the rule every reference comp follows and it is the whole
+     point of this block. Body copy has one correct size — 16px is 16px on a
+     phone and on a 27" monitor, and scaling it with the viewport only makes it
+     wrong in two places instead of one. A headline is the opposite: it is
+     sized relative to the space it commands, so it has to track the viewport
+     or it is set for exactly one screen width.
+
+     So `2xs`-`xl` are unchanged rem values, and `2xl`-`7xl` interpolate over
+     380px -> 1280px, holding flat outside that range.
+
+     The scale also EXPANDS as it grows: adjacent steps sit at ~1.17 on a
+     phone and ~1.30 on a desktop. A 1.30 ratio at 380px would put the hero
+     and a section heading within a few pixels of each other after both hit
+     their floor; compressing the small end keeps six distinguishable steps at
+     every width.
+
+     What this replaces: `text-5xl sm:text-6xl lg:text-7xl` chains, which held
+     one size flat across each breakpoint band and jumped 16px at the edges.
+     A display size is now one class.
+
+     Line-heights drop below 1 at the top — condensed caps have no descenders
+     to speak of, and 1.15 leading on a 96px headline reads as a gap. */
+  --text-2xs: 0.6875rem;      /* 11px — tracked eyebrow labels              */
   --text-2xs--line-height: 1.4;
   --text-xs: 0.75rem;         /* 12px                                       */
   --text-xs--line-height: 1.5;
@@ -184,40 +303,86 @@
   --text-lg--line-height: 1.6;
   --text-xl: 1.25rem;         /* 20px — H3                                  */
   --text-xl--line-height: 1.4;
-  --text-2xl: 1.5rem;         /* 24px — H2                                  */
-  --text-2xl--line-height: 1.3;
-  --text-3xl: 2rem;           /* 32px — H1                                  */
-  --text-3xl--line-height: 1.15;
-  --text-4xl: 2.5rem;         /* 40px                                       */
-  --text-4xl--line-height: 1.1;
-  --text-5xl: 3.25rem;        /* 52px — hero display only                   */
-  --text-5xl--line-height: 1;
 
+  /*                              380px -> 1280px                            */
+  --text-2xl: clamp(1.375rem, 1.269rem + 0.444vw, 1.625rem);  /* 22 -> 26   */
+  --text-2xl--line-height: 1.3;
+  --text-3xl: clamp(1.625rem, 1.414rem + 0.889vw, 2.125rem);  /* 26 -> 34   */
+  --text-3xl--line-height: 1.1;
+  --text-4xl: clamp(1.875rem, 1.506rem + 1.556vw, 2.75rem);   /* 30 -> 44   */
+  --text-4xl--line-height: 0.98;
+  --text-5xl: clamp(2.188rem, 1.581rem + 2.556vw, 3.625rem);  /* 35 -> 58   */
+  --text-5xl--line-height: 0.94;
+  --text-6xl: clamp(2.563rem, 1.692rem + 3.667vw, 4.625rem);  /* 41 -> 74   */
+  --text-6xl--line-height: 0.92;
+  --text-7xl: clamp(3rem, 1.733rem + 5.333vw, 6rem);          /* 48 -> 96   */
+  --text-7xl--line-height: 0.88;
+
+  /* --- Families ---------------------------------------------------------
+     Fallbacks matter more than usual here: a condensed display face swapped
+     for a default sans reflows a headline from one line to three. Arial
+     Narrow / Roboto Condensed are the closest widely-installed stand-ins. */
+  --font-display: var(--font-anton), "Arial Narrow", "Roboto Condensed", Impact, sans-serif;
+  --font-display-soft: var(--font-oswald), "Arial Narrow", "Roboto Condensed", sans-serif;
+  --font-ui: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, monospace;
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   /* --- Radii ------------------------------------------------------------
-     `md` is the brand's 8px corner; the others step around it. */
-  --radius-sm: 0.25rem;   /*  4px */
-  --radius-md: 0.5rem;    /*  8px — the default card/control corner */
-  --radius-lg: 0.75rem;   /* 12px */
-  --radius-xl: 1rem;      /* 16px */
+     The comp is round: roughly a three-step scale of ~10px controls, ~16-20px
+     cards and ~28px panels. `md` stays the default control corner, so every
+     existing rounded-md control widens without being touched. */
+  --radius-sm: 0.375rem;  /*  6px */
+  --radius-md: 0.625rem;  /* 10px — the default control corner */
+  --radius-lg: 1rem;      /* 16px — cards */
+  --radius-xl: 1.25rem;   /* 20px */
+  --radius-2xl: 1.75rem;  /* 28px — panels, matte frames */
+  --radius-3xl: 2.25rem;  /* 36px */
 
   --shadow-sm: var(--hi-shadow-sm);
   --shadow-md: var(--hi-shadow-md);
   --shadow-lg: var(--hi-shadow-lg);
 
+  /* --- Spacing rhythm -> utilities --------------------------------------
+     `gap-section`, `py-band`, `mt-heading`, `mt-block`, `mt-tight`. The
+     numeric spacing scale is untouched; these sit alongside it and are what a
+     SECTION should reach for, so the rhythm is named at the call site. */
+  --spacing-tight: var(--hi-space-tight);
+  --spacing-snug: var(--hi-space-snug);
+  --spacing-block: var(--hi-space-block);
+  --spacing-heading: var(--hi-space-heading);
+  --spacing-band: var(--hi-space-band);
+  --spacing-section: var(--hi-space-section);
+
+  /* --- Motion -> utilities ----------------------------------------------
+     Setting the DEFAULTS is the important half: a bare `transition-colors` now
+     resolves to 120ms on the house curve, so the `duration-150 ease-hi` that
+     used to be pasted onto every interactive element is redundant and has been
+     removed. A component only names a duration when it wants a non-default
+     one, which makes those sites meaningful. */
+  --default-transition-duration: var(--hi-dur-fast);
+  --default-transition-timing-function: var(--hi-ease);
+
   --ease-hi: var(--hi-ease);
+  --ease-hi-out: var(--hi-ease-out);
+  --ease-hi-spring: var(--hi-ease-spring);
 }
 
 /* ==========================================================================
    Base
    ========================================================================== */
 
+html {
+  /* Lets .full-bleed reach the viewport edge without a 100vw child creating a
+     horizontal scrollbar. `clip` rather than `hidden` because `hidden` on the
+     root silently breaks position: sticky in the header. */
+  overflow-x: clip;
+}
+
 body {
   background: var(--hi-surface);
   color: var(--hi-ink);
-  font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -242,63 +407,173 @@ body {
 }
 
 /* ==========================================================================
+   Type roles
+   --------------------------------------------------------------------------
+   Four classes carry the comp's voice. They are classes rather than Tailwind
+   chains because each is four or five properties that must travel together —
+   a display headline that loses its line-height is not a smaller headline, it
+   is a broken one.
+   ========================================================================== */
+
+/* Headlines. Anton has one weight by design; size and measure do the work.
+
+   OPTICAL TRACKING. Now that the display sizes are fluid, a single `em` value
+   cannot serve the whole range: the same relative tracking that looks correct
+   on a 30px heading has visible gaps between the caps at 96px, because the
+   spaces grow with the glyphs while the eye's tolerance for them does not.
+   Condensed caps have to TIGHTEN as they grow.
+
+   The calc is a straight line through two points measured on the reference —
+   about -0.005em at 30px and -0.028em at 96px — expressed as an em term plus a
+   px term, which is what makes it track the element's own font-size with no
+   per-size overrides and no JS:
+
+     30px -> -0.08px    58px -> -1.19px    96px -> -2.70px
+
+   It crosses zero at ~28px and goes slightly POSITIVE below that, which is the
+   correct behaviour in the other direction: a 20px condensed cap needs opening
+   up, not closing. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: calc(-0.0397em + 1.11px);
+  line-height: 0.92;
+}
+
+/* The light half of a two-weight headline — the comp's "BUY 10 DRINKS," above
+   a heavier "GET 1 FREE". Oswald at 300 is the same condensed skeleton at a
+   fraction of the weight, which is what makes the pair read as one voice. */
+.display-soft {
+  font-family: var(--font-display-soft);
+  font-weight: 300;
+  text-transform: uppercase;
+  /* Same curve as `.display`, shifted open by 0.01em: Oswald 300 has thinner
+     stems than Anton 400, so at the same size it needs marginally more air to
+     avoid the strokes fusing. The two must stay on the SAME curve or a
+     two-weight headline detunes as it scales — which is the one place this
+     face is ever used. */
+  letter-spacing: calc(-0.0397em + 1.11px + 0.01em);
+  line-height: 0.95;
+}
+
+/* The chrome voice: nav links, button labels, prices, metadata, eyebrows.
+   Tracking is what makes small mono caps read as deliberate rather than as
+   a terminal window. */
+.ui-caps {
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 500;
+}
+
+/* An eyebrow: the smallest, widest-tracked member of the same family. Used
+   above headlines and as a card's category label.
+
+   NOT named `.overline`, which is what it was first called: Tailwind ships an
+   `overline` UTILITY for text-decoration-line, and the two names collided —
+   every label in the app rendered with a rule drawn above it. */
+.eyebrow {
+  font-family: var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  font-size: var(--text-2xs);
+  line-height: 1.4;
+  font-weight: 500;
+}
+
+/* Prices and any figure that sits in a column. */
+.numeric {
+  font-family: var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
+/* The struck-through "was" price beside a discounted one. */
+.was-price {
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  color: var(--hi-muted);
+}
+
+/* ==========================================================================
    Utilities
    ========================================================================== */
 
-/* --- Checkered pattern ---------------------------------------------------
-   The brand's decorative signature, used as section rules, card edging and
-   background washes.
+/* --- The matte -----------------------------------------------------------
+   The comp never lets a photograph touch a card's edge: the image sits in a
+   cream frame with a visible gutter, and the frame's corner is rounder than
+   the image's. Two classes, so a matte can wrap one image or a whole row. */
+.matte {
+  background: var(--hi-card);
+  padding: var(--hi-matte);
+  border-radius: var(--radius-2xl);
+}
+.matte-inner {
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+}
 
-   Two 45deg linear-gradients offset by half a tile is the cheapest true
-   checkerboard in CSS — no image, no extra element — and it scales with the
-   --hi-checker-size variable so the same class serves a 6px rule and a 16px
-   wash. Always decorative: anything using it carries aria-hidden, because a
-   pattern conveys nothing to a screen reader. */
+/* On the pine panel the frame cannot be cream — a near-white border around a
+   photograph on green reads as a sticker. This is the same frame in the
+   panel's own light, and it is a MODIFIER CLASS rather than a `bg-` utility
+   because these rules are unlayered and would win over one.
+
+   (Unlayered is deliberate for the type roles above: `.display` has to keep
+   its sub-1 line-height when it is combined with a `text-lg` utility, and a
+   layered rule would lose that fight.) */
+.matte-dark {
+  background: rgb(255 255 255 / 0.1);
+}
+
+/* --- Full-bleed band -----------------------------------------------------
+   Breaks a section out of the centred container to the viewport edge, for the
+   tan loyalty band and the partner strip. Paired with `overflow-x: clip` on
+   <html> above, which is what stops the 100vw width from adding a scrollbar
+   when the page already has a vertical one. */
+.full-bleed {
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+
+/* --- Hand-drawn marks ----------------------------------------------------
+   The comp's line-art (cookies, cupcake, croissant) is decoration in the ink
+   colour at a single stroke weight. Held to a low opacity so it reads as
+   marginalia rather than as content. */
+.doodle {
+  color: var(--hi-ink);
+  opacity: 0.45;
+}
+.doodle-inverse {
+  color: var(--hi-inverse-line);
+  /* Quieter than it looks it should be: on the pine panel this drawing sits
+     behind the carousel's controls, and at full strength the two fight. */
+  opacity: 0.55;
+}
+
+/* --- Checkered pattern ---------------------------------------------------
+   Retained from the previous palette for anything still reaching for it, but
+   no longer part of the visual language — the Co-Fi comp separates sections
+   with space and surface changes, not with a rule. `CheckerBand` now renders
+   a hairline instead, so this is unused by default. */
 .checker {
   background-image:
     linear-gradient(
       45deg,
-      var(--hi-checker-color) 25%,
+      var(--hi-checker-color, var(--hi-accent)) 25%,
       transparent 25%,
       transparent 75%,
-      var(--hi-checker-color) 75%
+      var(--hi-checker-color, var(--hi-accent)) 75%
     ),
     linear-gradient(
       45deg,
-      var(--hi-checker-color) 25%,
+      var(--hi-checker-color, var(--hi-accent)) 25%,
       transparent 25%,
       transparent 75%,
-      var(--hi-checker-color) 75%
+      var(--hi-checker-color, var(--hi-accent)) 75%
     );
-  background-size: calc(var(--hi-checker-size) * 2) calc(var(--hi-checker-size) * 2);
-  background-position:
-    0 0,
-    var(--hi-checker-size) var(--hi-checker-size);
-}
-
-/* Low-contrast variant for large fills, where the full-strength accent would
-   turn a background into a foreground. */
-.checker-soft {
-  --hi-checker-color: var(--hi-accent-soft);
-}
-
-/* Green counterpart, for use on cream where an orange rule would clash with a
-   nearby orange CTA. */
-.checker-green {
-  --hi-checker-color: var(--hi-secondary);
-}
-
-/* On an inverted (forest green) panel the accent is unreadable — 2.59:1 — so
-   the pattern switches to the panel's own line colour. */
-.checker-inverse {
-  --hi-checker-color: var(--hi-inverse-line);
-}
-
-.checker-sm {
-  --hi-checker-size: 6px;
-}
-.checker-lg {
-  --hi-checker-size: 16px;
+  background-size: 20px 20px;
+  background-position: 0 0, 10px 10px;
 }
 
 /* Skip link: off-screen until focused, then pinned top-left. Lets keyboard
@@ -316,8 +591,10 @@ body {
   background: var(--hi-ink);
   color: var(--hi-surface);
   border-radius: var(--radius-md);
-  font-size: var(--text-sm);
-  font-weight: 500;
+  font-family: var(--font-ui);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
 }
 
 /* Horizontal carousels: keep the swipe, drop the scrollbar chrome. */
@@ -327,6 +604,38 @@ body {
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* --- The opening line ----------------------------------------------------
+   ONE orchestrated entrance, on the landing hero, and nowhere else.
+
+   Scroll-triggered fade-ups on every section are the default move and they
+   cost more than they look: they withhold content the reader has already
+   scrolled to, they fight the browser's own scroll anchoring, and by the third
+   section the reader has stopped seeing them. A single sequence at the top of
+   the page does the whole job — it establishes that the page has a voice, and
+   then gets out of the way.
+
+   The beats are the hero's TYPE only: eyebrow, headline, then the meta row.
+   The photograph is deliberately excluded — it is the LCP element, and
+   starting it at opacity 0 would push the largest paint back by the length of
+   this animation for a purely decorative gain.
+
+   `backwards` fill rather than a base `opacity: 0` is what makes this safe: if
+   the animation never runs at all, the element renders at its natural opacity
+   instead of staying invisible forever. The delay is a beat INDEX, so the
+   order is readable at the call site (`rise [--rise:2]`) and re-ordering the
+   hero does not mean recalculating milliseconds. */
+@keyframes hi-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+}
+
+.rise {
+  animation: hi-rise var(--hi-dur-slow) var(--hi-ease-out) backwards;
+  animation-delay: calc(var(--rise, 0) * 90ms);
 }
 
 /* Skeleton shimmer for loading states. */
@@ -349,7 +658,14 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    /* Delay has to be zeroed too, not just duration. A staggered entrance uses
+       `animation-fill-mode: backwards`, which holds the element at its FROM
+       state — opacity 0 — for the whole delay; shortening the duration alone
+       would leave a reduced-motion reader looking at an invisible headline for
+       a quarter of a second. */
+    animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
     scroll-behavior: auto !important;
   }
 }
@@ -366,17 +682,18 @@ body {
                                   rather than a bare :root
 
    The values live once, in the --d-* ramp below; the two blocks after it only
-   MAP those onto the --hi-* roles. Plain CSS has no mixin, and light-dark()
-   needs a newer browser floor than the rest of this stack assumes, so the
-   mapping is repeated — but the palette itself, the part anyone would edit,
-   is not.
+   MAP those onto the --hi-* roles.
 
    This is not the light ramp inverted. Cream becomes the TEXT colour rather
    than the ground; the ground becomes a warm near-black (not #000, which
-   worsens halation around light text). Both brand hues have to move: forest
-   green at #2d5016 is unreadable on a dark ground, and burnt orange loses its
-   punch, so dark mode uses the lighter end of both hue families — sage and
-   caramel. The brand still reads as itself.
+   worsens halation around light text). Three roles have to move outright:
+
+     - the espresso CTA would vanish on a near-black page, so in dark mode the
+       loudest button is CREAM on dark — the same contrast, inverted;
+     - the tan band lifts to a warm brown, because a tan band on a dark page is
+       a lamp;
+     - pine and burnt orange move to the light end of their hue families
+       (sage, caramel) to stay legible.
    ========================================================================== */
 
 :root {
@@ -396,14 +713,34 @@ body {
   --d-surface: #14120e;
   --d-card: #1c1813;
 
+  /* The band as a LIFTED warm brown rather than tan. */
+  --d-band: #2a241b;
+  --d-band-fg: #f5ead8;      /* 13.60:1 on --d-band                          */
+  --d-band-muted: #b3a68e;   /*  6.41:1 on --d-band — AA body                */
+  --d-band-line: #877a63;    /*  3.65:1 on --d-band — AA non-text            */
+
   /* An inverted panel in a dark theme is a LIFTED plane, not a light one —
-     flipping it cream would blow a hole in the page. But it still has to read
-     as a distinct object, so this is a lifted GREEN pushed well clear of
-     --d-card, and its text tokens are lightened to stay AA on top of it. */
+     flipping it cream would blow a hole in the page. So this is a lifted
+     green pushed well clear of --d-card, with its text tokens lightened to
+     stay AA on top of it. */
   --d-inverse-bg: #3a4f28;
   --d-inverse-fg: #f5ead8;      /*  7.58:1 on --d-inverse-bg                 */
   --d-inverse-muted: #c3d4b2;   /*  5.75:1 on --d-inverse-bg — AA body       */
   --d-inverse-line: #8fa87a;    /*  3.46:1 — AA non-text (1.4.11)            */
+  /* Deeper than the light theme's espresso: on a near-black page the caption
+     card has to sit BELOW the pine panel in the surface ramp to still read as
+     a separate plane. Cream on it: 15.83:1. Sage on it: 9.65:1. */
+  --d-inverse-card: #16130f;
+  --d-inverse-card-fg: #f5ead8;
+
+  --d-inverse-display: #9cc4a8; /*  4.64:1 — comfortably AA even at body size
+                                   on this lighter panel, though it stays a
+                                   display token so the role does not drift.  */
+
+  /* The CTA inverts: cream fill, near-black label. */
+  --d-cta: #f0e6d2;
+  --d-cta-hover: #fffaf0;
+  --d-cta-fg: #14120e;      /* 14.71:1 on --d-cta                            */
 
   /* Caramel — the light end of the burnt-orange family. Unlike the light
      theme, this IS readable as text (7.37:1), so --d-accent-ink can simply be
@@ -414,7 +751,7 @@ body {
   --d-accent-ink: #e0904f;  /*  7.37:1 on surface — text-safe here           */
   --d-accent-soft: #3a2a1c; /* accent text on it: 5.41:1                     */
 
-  /* Sage — the light end of the forest-green family. */
+  /* Sage — the light end of the pine family. */
   --d-secondary: #8fbc6a;      /*  8.52:1 on surface                         */
   --d-secondary-hover: #a8cf88;/* 10.64:1 against --d-secondary-fg           */
   --d-secondary-fg: #14120e;   /*  8.52:1 on --d-secondary                   */
@@ -432,15 +769,14 @@ body {
   --d-focus: #f5ead8;
 
   /* Deeper than the light scrim: the sheet in front of it is already dark, so
-     a 35% wash would not separate the two planes. */
+     a 40% wash would not separate the two planes. */
   --d-scrim: rgb(0 0 0 / 0.6);
 
   /* Shadows do almost no work on a dark ground — a darker rectangle behind a
-     dark card is invisible. Depth comes from the surface ramp instead, so
-     these only deepen slightly and the borders carry the separation. */
-  --d-shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.4);
-  --d-shadow-md: 0 4px 12px -2px rgb(0 0 0 / 0.5), 0 2px 4px -2px rgb(0 0 0 / 0.4);
-  --d-shadow-lg: 0 18px 40px -12px rgb(0 0 0 / 0.6), 0 4px 10px -4px rgb(0 0 0 / 0.4);
+     dark card is invisible. Depth comes from the surface ramp instead. */
+  --d-shadow-sm: 0 1px 0 0 rgb(0 0 0 / 0.4);
+  --d-shadow-md: 0 2px 10px -6px rgb(0 0 0 / 0.5);
+  --d-shadow-lg: 0 24px 50px -22px rgb(0 0 0 / 0.65);
 }
 
 /* The mapping, written once as a comment for both blocks below:
@@ -459,10 +795,22 @@ body {
     --hi-surface: var(--d-surface);
     --hi-card: var(--d-card);
 
+    --hi-band: var(--d-band);
+    --hi-band-fg: var(--d-band-fg);
+    --hi-band-muted: var(--d-band-muted);
+    --hi-band-line: var(--d-band-line);
+
     --hi-inverse-bg: var(--d-inverse-bg);
     --hi-inverse-fg: var(--d-inverse-fg);
     --hi-inverse-muted: var(--d-inverse-muted);
     --hi-inverse-line: var(--d-inverse-line);
+    --hi-inverse-display: var(--d-inverse-display);
+    --hi-inverse-card: var(--d-inverse-card);
+    --hi-inverse-card-fg: var(--d-inverse-card-fg);
+
+    --hi-cta: var(--d-cta);
+    --hi-cta-hover: var(--d-cta-hover);
+    --hi-cta-fg: var(--d-cta-fg);
 
     --hi-accent: var(--d-accent);
     --hi-accent-hover: var(--d-accent-hover);
@@ -505,10 +853,22 @@ body {
   --hi-surface: var(--d-surface);
   --hi-card: var(--d-card);
 
+  --hi-band: var(--d-band);
+  --hi-band-fg: var(--d-band-fg);
+  --hi-band-muted: var(--d-band-muted);
+  --hi-band-line: var(--d-band-line);
+
   --hi-inverse-bg: var(--d-inverse-bg);
   --hi-inverse-fg: var(--d-inverse-fg);
   --hi-inverse-muted: var(--d-inverse-muted);
   --hi-inverse-line: var(--d-inverse-line);
+  --hi-inverse-display: var(--d-inverse-display);
+  --hi-inverse-card: var(--d-inverse-card);
+  --hi-inverse-card-fg: var(--d-inverse-card-fg);
+
+  --hi-cta: var(--d-cta);
+  --hi-cta-hover: var(--d-cta-hover);
+  --hi-cta-fg: var(--d-cta-fg);
 
   --hi-accent: var(--d-accent);
   --hi-accent-hover: var(--d-accent-hover);

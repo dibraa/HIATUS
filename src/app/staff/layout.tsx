@@ -3,7 +3,6 @@ import Link from "next/link";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin, isStaff } from "@/lib/roles";
 import { StaffNav } from "@/components/staff-nav";
-import { CheckerBand } from "@/components/ui/checker";
 
 export default async function StaffLayout({
   children,
@@ -24,7 +23,7 @@ export default async function StaffLayout({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <p className="text-2xs font-semibold uppercase tracking-[0.16em] text-accent-ink">
+        <p className="eyebrow text-accent-ink">
           Counter
         </p>
 
@@ -33,16 +32,14 @@ export default async function StaffLayout({
         {isAdmin(access) && (
           <Link
             href="/admin"
-            className="text-sm font-medium text-muted underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+            className="ui-caps text-2xs text-muted underline underline-offset-4 transition-colors hover:text-ink"
           >
             Admin dashboard
           </Link>
         )}
       </div>
 
-      <CheckerBand size="sm" className="mt-3 h-1.5" />
-
-      <div className="mt-4">
+      <div className="mt-5">
         <StaffNav />
       </div>
 

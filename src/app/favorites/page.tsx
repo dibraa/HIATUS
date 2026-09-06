@@ -77,7 +77,7 @@ export default async function FavoritesPage() {
             <section aria-labelledby="presets-heading">
               <h2
                 id="presets-heading"
-                className="mb-3 text-xl font-semibold tracking-tight text-ink"
+                className="mb-3 display text-xl text-ink"
               >
                 Your usual
               </h2>
@@ -90,7 +90,7 @@ export default async function FavoritesPage() {
           )}
 
           {favoriteItems.length > 0 && presetList.length > 0 && (
-            <CheckerBand size="sm" className="h-1.5 opacity-70" />
+            <CheckerBand />
           )}
 
           {/* ---------- Favourite drinks ---------- */}
@@ -98,7 +98,7 @@ export default async function FavoritesPage() {
             <section aria-labelledby="favorites-heading">
               <h2
                 id="favorites-heading"
-                className="mb-4 text-xl font-semibold tracking-tight text-ink"
+                className="mb-4 display text-xl text-ink"
               >
                 Favourite drinks
               </h2>

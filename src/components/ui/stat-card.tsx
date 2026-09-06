@@ -8,8 +8,9 @@ import type { ReactNode } from "react";
  * announcing a bare number and then explaining it. Visually the label is still
  * the small text on top, so the reading order and the visual order agree.
  *
- * `tabular-nums` on the value is what stops a row of stat cards jittering as
- * figures update — proportional digits change width per glyph.
+ * The figure is set in the mono UI face rather than the display face: Anton is
+ * not tabular, and a dashboard number that changes width per digit makes a row
+ * of cards jitter every time the page refreshes.
  */
 export function StatCard({
   label,
@@ -38,11 +39,9 @@ export function StatCard({
   }[tone];
 
   return (
-    <div className={`rounded-lg border p-4 ${toneClasses}`}>
+    <div className={`rounded-lg border p-5 ${toneClasses}`}>
       <div className="flex items-start justify-between gap-3">
-        <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted">
-          {label}
-        </p>
+        <p className="eyebrow text-muted">{label}</p>
         {icon && (
           <span aria-hidden="true" className="shrink-0 text-muted">
             {icon}
@@ -50,9 +49,9 @@ export function StatCard({
         )}
       </div>
 
-      <p className={`mt-2 text-2xl font-semibold tabular-nums ${valueTone}`}>{value}</p>
+      <p className={`numeric mt-3 text-2xl font-semibold ${valueTone}`}>{value}</p>
 
-      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
+      {hint && <p className="mt-1.5 text-xs text-muted">{hint}</p>}
     </div>
   );
 }

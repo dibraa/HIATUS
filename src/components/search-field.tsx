@@ -46,14 +46,14 @@ export function SearchField({
         defaultValue={query}
         placeholder="Search drinks or flavours"
         autoComplete="off"
-        className="h-11 w-full rounded-full border border-line-strong bg-card pl-10 pr-20 text-sm text-ink placeholder:text-muted transition-colors duration-150 ease-hi hover:border-ink focus:border-ink focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        className="h-12 w-full rounded-md border border-line-strong bg-card pl-10 pr-24 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink focus:border-ink focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       />
 
       {flavor && <input type="hidden" name="flavor" value={flavor} />}
 
       <button
         type="submit"
-        className="absolute right-1.5 top-1/2 h-8 -translate-y-1/2 rounded-full bg-accent px-3.5 text-xs font-medium text-accent-fg transition-colors duration-150 ease-hi hover:bg-accent-hover"
+        className="ui-caps absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-md bg-cta px-4 text-2xs text-cta-fg transition-colors hover:bg-cta-hover"
       >
         Search
       </button>

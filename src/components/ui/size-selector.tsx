@@ -29,7 +29,7 @@ export function SizeSelector({
   return (
     <fieldset disabled={disabled} className="min-w-0">
       <legend
-        className={`mb-2 text-2xs font-semibold uppercase tracking-[0.14em] ${
+        className={`mb-2 eyebrow ${
           isDark ? "text-inverse-muted" : "text-muted"
         }`}
       >
@@ -64,7 +64,7 @@ export function SizeSelector({
               <span
                 className={[
                   "flex h-full flex-col items-center justify-center rounded-md border px-2 py-2",
-                  "text-center transition-colors duration-150 ease-hi",
+                  "text-center transition-colors",
                   // Focus lives on the sr-only input, so mirror it onto the chip
                   "peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2",
                   isDark

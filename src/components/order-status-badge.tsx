@@ -33,7 +33,7 @@ const LABELS: Record<OrderStatus, string> = {
 export function OrderStatusBadge({ status }: { status: OrderStatus }) {
   return (
     <span
-      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium ${STYLES[status]}`}
+      className={`ui-caps inline-flex shrink-0 items-center gap-1.5 rounded-md border px-2.5 py-1 text-2xs ${STYLES[status]}`}
     >
       {/* currentColor ties the dot to the label, so the pair can never drift */}
       <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />

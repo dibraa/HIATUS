@@ -92,7 +92,7 @@ export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "row" }) 
       <button
         type="button"
         onClick={toggle}
-        className="flex min-h-11 w-full items-center justify-between rounded-md px-3 text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:bg-raised hover:text-ink"
+        className="ui-caps flex min-h-11 w-full items-center justify-between rounded-md px-3 text-2xs text-ink-soft transition-colors hover:bg-raised hover:text-ink"
       >
         <span>{theme === "dark" ? "Light theme" : "Dark theme"}</span>
         <span aria-hidden="true" className="text-muted">
@@ -109,7 +109,7 @@ export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "row" }) 
       onClick={toggle}
       aria-label={label}
       title={label}
-      className="flex h-10 w-10 items-center justify-center rounded-full text-ink-soft transition-colors duration-150 ease-hi hover:bg-raised hover:text-ink"
+      className="flex h-10 w-10 items-center justify-center rounded-md text-ink-soft transition-colors hover:bg-raised hover:text-ink"
     >
       {icon}
     </button>

@@ -48,7 +48,7 @@ export function ProductImage({
           priority={priority}
           // Everything below the fold defers; the LCP image must not.
           loading={priority ? "eager" : "lazy"}
-          className="object-cover transition-transform duration-300 ease-hi group-hover:scale-[1.03]"
+          className="object-cover transition-transform duration-(--hi-dur-slow) ease-hi-out group-hover:scale-[1.03]"
         />
       ) : (
         // Decorative placeholder: the product name is already adjacent in the

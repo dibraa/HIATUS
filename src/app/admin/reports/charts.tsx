@@ -133,7 +133,7 @@ export function SalesChart({
             Revenue per period, with order count and average order value.
           </caption>
           <thead>
-            <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
+            <tr className="border-b border-line eyebrow text-muted">
               <th scope="col" className="py-2 pr-4 font-medium">Period</th>
               <th scope="col" className="py-2 pr-4 text-right font-medium">Orders</th>
               <th scope="col" className="py-2 pr-4 text-right font-medium">Gross</th>
@@ -148,22 +148,22 @@ export function SalesChart({
                 <th scope="row" className="whitespace-nowrap py-2.5 pr-4 text-left font-medium text-ink">
                   {grain === "day" ? formatDate(row.period) : label(row.period)}
                 </th>
-                <td className="py-2.5 pr-4 text-right tabular-nums text-ink-soft">{row.order_count}</td>
-                <td className="py-2.5 pr-4 text-right tabular-nums text-ink-soft">{formatPrice(row.gross_amount)}</td>
-                <td className="py-2.5 pr-4 text-right tabular-nums text-muted">
+                <td className="py-2.5 pr-4 text-right numeric text-ink-soft">{row.order_count}</td>
+                <td className="py-2.5 pr-4 text-right numeric text-ink-soft">{formatPrice(row.gross_amount)}</td>
+                <td className="py-2.5 pr-4 text-right numeric text-muted">
                   {row.discount_amount > 0 ? `−${formatPrice(row.discount_amount)}` : "—"}
                 </td>
-                <td className="py-2.5 pr-4 text-right font-semibold tabular-nums text-ink">{formatPrice(row.net_amount)}</td>
-                <td className="py-2.5 text-right tabular-nums text-ink-soft">{formatPrice(row.average_order_value)}</td>
+                <td className="py-2.5 pr-4 text-right font-semibold numeric text-ink">{formatPrice(row.net_amount)}</td>
+                <td className="py-2.5 text-right numeric text-ink-soft">{formatPrice(row.average_order_value)}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr className="border-t-2 border-line-strong">
               <th scope="row" className="py-2.5 pr-4 text-left font-semibold text-ink">Total</th>
-              <td className="py-2.5 pr-4 text-right font-semibold tabular-nums text-ink">{orders}</td>
+              <td className="py-2.5 pr-4 text-right font-semibold numeric text-ink">{orders}</td>
               <td colSpan={2} />
-              <td className="py-2.5 pr-4 text-right font-semibold tabular-nums text-ink">{formatPrice(total)}</td>
+              <td className="py-2.5 pr-4 text-right font-semibold numeric text-ink">{formatPrice(total)}</td>
               <td />
             </tr>
           </tfoot>
@@ -250,7 +250,7 @@ export function PeakHoursChart({ data }: { data: PeakHourRow[] }) {
         <table className="w-full min-w-[24rem] text-left text-sm">
           <caption className="sr-only">Orders and revenue by hour of day.</caption>
           <thead>
-            <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
+            <tr className="border-b border-line eyebrow text-muted">
               <th scope="col" className="py-2 pr-4 font-medium">Hour</th>
               <th scope="col" className="py-2 pr-4 text-right font-medium">Orders</th>
               <th scope="col" className="py-2 text-right font-medium">Revenue</th>
@@ -262,8 +262,8 @@ export function PeakHoursChart({ data }: { data: PeakHourRow[] }) {
                 <th scope="row" className="py-2.5 pr-4 text-left font-medium text-ink">
                   {formatHour(row.hour_of_day)}
                 </th>
-                <td className="py-2.5 pr-4 text-right tabular-nums text-ink-soft">{row.order_count}</td>
-                <td className="py-2.5 text-right tabular-nums text-ink-soft">{formatPrice(row.revenue)}</td>
+                <td className="py-2.5 pr-4 text-right numeric text-ink-soft">{row.order_count}</td>
+                <td className="py-2.5 text-right numeric text-ink-soft">{formatPrice(row.revenue)}</td>
               </tr>
             ))}
           </tbody>

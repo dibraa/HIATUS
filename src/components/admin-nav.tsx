@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
  *
  * Client-side only because it needs the pathname to mark the current section —
  * without that, identical links give no indication of where you are. The
- * orange underline is the visual cue; `aria-current` is the announced one.
+ * espresso underline is the visual cue; `aria-current` is the announced one.
  *
  * Ordered by how often it is opened, not alphabetically: the dashboard and the
  * live order list are daily, the team and the settings are not.
@@ -46,8 +46,8 @@ export function AdminNav() {
                 aria-current={active ? "page" : undefined}
                 className={
                   active
-                    ? "inline-flex items-center whitespace-nowrap border-b-2 border-accent px-3 py-2.5 text-sm font-semibold text-ink"
-                    : "inline-flex items-center whitespace-nowrap border-b-2 border-transparent px-3 py-2.5 text-sm font-medium text-muted transition-colors duration-150 ease-hi hover:border-line-strong hover:text-ink"
+                    ? "ui-caps inline-flex items-center whitespace-nowrap border-b-2 border-cta px-3 py-3 text-2xs text-ink"
+                    : "ui-caps inline-flex items-center whitespace-nowrap border-b-2 border-transparent px-3 py-3 text-2xs text-muted transition-colors hover:border-line-strong hover:text-ink"
                 }
               >
                 {link.label}

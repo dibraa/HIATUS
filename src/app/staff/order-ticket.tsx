@@ -80,7 +80,7 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
 
   return (
     <article
-      className={`rounded-lg border bg-card p-4 transition-shadow duration-200 ease-hi ${
+      className={`rounded-lg border bg-card p-4 transition-shadow duration-(--hi-dur-base) ease-hi ${
         isUrgent ? "border-accent shadow-md" : "border-line"
       }`}
     >
@@ -129,7 +129,7 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
       <ul className="mt-4 flex flex-col gap-1.5 border-t border-line pt-3">
         {order.order_items.map((item) => (
           <li key={item.id} className="flex items-baseline gap-2 text-base text-ink">
-            <span className="font-semibold tabular-nums text-accent-ink">
+            <span className="font-semibold numeric text-accent-ink">
               {item.quantity}&times;
             </span>
             <span className="font-medium">{item.item_name}</span>
@@ -162,7 +162,7 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
               {order.profiles.phone}
             </a>
           )}
-          <p className="mt-1 text-sm font-semibold tabular-nums text-ink-soft">
+          <p className="mt-1 text-sm font-semibold numeric text-ink-soft">
             {formatPrice(order.total_amount)}
             {order.discount_amount > 0 && (
               <span className="ml-1.5 text-xs font-normal text-muted">
@@ -194,7 +194,7 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
           type="button"
           onClick={() => setShowMore((v) => !v)}
           aria-expanded={showMore}
-          className="text-xs font-medium text-muted underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+          className="text-xs font-medium text-muted underline underline-offset-4 transition-colors hover:text-ink"
         >
           {showMore ? "Hide options" : "More options"}
         </button>

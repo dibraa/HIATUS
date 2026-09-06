@@ -90,7 +90,7 @@ export function StarRating({
               className="peer sr-only"
             />
             <Star
-              className={`${starClass} transition-colors duration-150 ease-hi
+              className={`${starClass} transition-colors
                 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink
                 ${star <= value ? filledColor : `${emptyColor} hover:text-line-strong`}`}
             />

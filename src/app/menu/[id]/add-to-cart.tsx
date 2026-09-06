@@ -30,7 +30,7 @@ export function AddToCart({ item }: { item: MenuItem }) {
     <div className="rounded-lg border border-line bg-card p-5">
       {/* Live region: price changes in response to controls below it */}
       <div aria-live="polite">
-        <p className="text-3xl font-semibold tabular-nums text-ink">
+        <p className="text-3xl font-semibold numeric text-ink">
           {formatPrice(unitPrice)}
           <span className="sr-only"> per {sizeLabel}</span>
         </p>

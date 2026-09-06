@@ -5,7 +5,6 @@ import { createClient } from "@/lib/supabase/server";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { OrderProgress } from "@/components/order-progress";
 import { Badge } from "@/components/ui/badge";
-import { CheckerBand } from "@/components/ui/checker";
 import { formatPrice, formatDateTime, orderCode } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import { getSettings } from "@/lib/settings";
@@ -81,7 +80,7 @@ export default async function OrderDetailPage({
       {/* Back link, not a full breadcrumb: this page has exactly one parent. */}
       <Link
         href="/orders"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors duration-150 ease-hi hover:text-ink"
+        className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink"
       >
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M10 3L5 8l5 5" strokeLinecap="round" strokeLinejoin="round" />
@@ -91,7 +90,7 @@ export default async function OrderDetailPage({
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-ink">
+          <h1 className="display text-3xl text-ink">
             Order {orderCode(order.id)}
           </h1>
           <p className="mt-1.5 text-sm text-muted">
@@ -108,8 +107,6 @@ export default async function OrderDetailPage({
         aria-labelledby="status-heading"
         className="mt-6 overflow-hidden rounded-lg border border-line bg-card"
       >
-        <CheckerBand size="sm" className="h-1.5" />
-
         <div className="p-5">
           <h2 id="status-heading" className="sr-only">
             Order status
@@ -149,7 +146,7 @@ export default async function OrderDetailPage({
       {/* ---------- Receipt ---------- */}
       <section aria-labelledby="receipt-heading" className="mt-6">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-          <h2 id="receipt-heading" className="text-xl font-semibold tracking-tight text-ink">
+          <h2 id="receipt-heading" className="display text-xl text-ink">
             Receipt
           </h2>
 
@@ -173,7 +170,7 @@ export default async function OrderDetailPage({
                 className="flex items-baseline justify-between gap-4 px-4 py-3"
               >
                 <span className="min-w-0 text-sm text-ink">
-                  <span className="tabular-nums text-muted">{item.quantity}&times;</span>{" "}
+                  <span className="numeric text-muted">{item.quantity}&times;</span>{" "}
                   {item.item_name}
                   {/* Size is optional on the type — rows predating the pricing
                       patch have none, and "Medium" would be a guess there. */}
@@ -184,7 +181,7 @@ export default async function OrderDetailPage({
                     </span>
                   )}
                 </span>
-                <span className="shrink-0 text-sm tabular-nums text-ink-soft">
+                <span className="shrink-0 text-sm numeric text-ink-soft">
                   {formatPrice(item.subtotal)}
                 </span>
               </li>
@@ -194,7 +191,7 @@ export default async function OrderDetailPage({
           <dl className="flex flex-col gap-1.5 border-t border-line px-4 py-3.5 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-muted">Subtotal</dt>
-              <dd className="tabular-nums text-ink-soft">
+              <dd className="numeric text-ink-soft">
                 {formatPrice(order.subtotal_amount || order.total_amount)}
               </dd>
             </div>
@@ -204,15 +201,15 @@ export default async function OrderDetailPage({
                 <dt className="text-muted">
                   Discount{order.promo_code ? ` (${order.promo_code})` : ""}
                 </dt>
-                <dd className="tabular-nums text-success">
+                <dd className="numeric text-success">
                   −{formatPrice(order.discount_amount)}
                 </dd>
               </div>
             )}
 
             <div className="mt-1 flex items-baseline justify-between gap-4 border-t border-line pt-3">
-              <dt className="text-base font-semibold text-ink">Total</dt>
-              <dd className="text-base font-semibold tabular-nums text-ink">
+              <dt className="display text-lg text-ink">Total</dt>
+              <dd className="text-base font-semibold numeric text-ink">
                 {formatPrice(order.total_amount)}
               </dd>
             </div>
@@ -243,7 +240,7 @@ export default async function OrderDetailPage({
       {/* ---------- Ratings ---------- */}
       {order.status === "completed" && (
         <section aria-labelledby="rate-heading" className="mt-10">
-          <h2 id="rate-heading" className="text-xl font-semibold tracking-tight text-ink">
+          <h2 id="rate-heading" className="display text-xl text-ink">
             Rate your order
           </h2>
           <p className="mt-1.5 text-sm text-muted">

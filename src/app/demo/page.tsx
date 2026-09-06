@@ -90,11 +90,11 @@ export default function DemoPage() {
 
         <div className="relative grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-12">
           <div>
-            <p className="text-2xs font-semibold uppercase tracking-[0.18em] text-muted">
+            <p className="eyebrow text-muted">
               Pickup only &middot; Cash on pickup
             </p>
 
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h1 className="mt-3 display text-4xl text-ink">
               Your coffee, ready
               <br className="hidden sm:block" /> when you are.
             </h1>
@@ -134,7 +134,7 @@ export default function DemoPage() {
       <section id="menu" aria-labelledby="menu-heading" className="scroll-mt-20">
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-            <h2 id="menu-heading" className="text-2xl font-semibold tracking-tight text-ink">
+            <h2 id="menu-heading" className="display text-2xl text-ink">
               The menu
             </h2>
             <p className="text-sm text-muted">{ITEMS.length} drinks</p>
@@ -153,7 +153,7 @@ export default function DemoPage() {
             />
             <Link
               href="/demo#menu"
-              className="text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+              className="text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors hover:text-ink"
             >
               Clear filters
             </Link>

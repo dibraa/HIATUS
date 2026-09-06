@@ -7,7 +7,6 @@ import { useCart, lineKey } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import { Button, ButtonLink } from "@/components/ui/button";
-import { CheckerBand } from "@/components/ui/checker";
 import { placeOrder } from "@/app/actions/orders";
 import { checkPromoCode } from "@/app/actions/promotions";
 import {
@@ -83,7 +82,7 @@ export function CheckoutForm({
       <div className="flex flex-col gap-4">
         <div className="skeleton h-40 rounded-lg" />
         <div className="skeleton h-32 rounded-lg" />
-        <div className="skeleton h-12 rounded-full" />
+        <div className="skeleton h-12 rounded-md" />
       </div>
     );
   }
@@ -91,7 +90,7 @@ export function CheckoutForm({
   if (lines.length === 0) {
     return (
       <div className="py-12 text-center">
-        <h2 className="text-xl font-semibold tracking-tight text-ink">
+        <h2 className="display text-xl text-ink">
           Nothing to check out
         </h2>
         <p className="mt-2 text-sm text-muted">Your cart is empty.</p>
@@ -107,7 +106,7 @@ export function CheckoutForm({
   if (!ordering.accepting_orders) {
     return (
       <div className="rounded-lg border border-warning-soft-fg/25 bg-warning-soft-bg px-6 py-10 text-center">
-        <h2 className="text-xl font-semibold text-warning-soft-fg">
+        <h2 className="display text-xl text-warning-soft-fg">
           We have paused new orders
         </h2>
         <p className="mx-auto mt-2 max-w-[44ch] text-sm text-warning-soft-fg">
@@ -175,7 +174,7 @@ export function CheckoutForm({
             {availableTypes.map((type) => (
               <label
                 key={type}
-                className={`flex flex-1 cursor-pointer flex-col gap-1 rounded-md border p-3.5 transition-colors duration-150 ease-hi ${
+                className={`flex flex-1 cursor-pointer flex-col gap-1 rounded-md border p-3.5 transition-colors ${
                   orderType === type
                     ? "border-accent bg-accent-soft"
                     : "border-line-strong bg-card hover:border-ink-soft"
@@ -213,7 +212,7 @@ export function CheckoutForm({
                 maxLength={40}
                 placeholder="e.g. 4, or by the window"
                 aria-describedby="table_label-hint"
-                className="rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors duration-150 ease-hi hover:border-ink-soft focus:border-ink"
+                className="rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
               />
               <p id="table_label-hint" className="text-xs text-muted">
                 Tell us where you are sitting and we will bring it over. Leave it
@@ -233,7 +232,7 @@ export function CheckoutForm({
           {availableMethods.map((m) => (
             <label
               key={m}
-              className={`flex cursor-pointer items-start gap-2.5 rounded-md border p-3.5 transition-colors duration-150 ease-hi ${
+              className={`flex cursor-pointer items-start gap-2.5 rounded-md border p-3.5 transition-colors ${
                 method === m
                   ? "border-accent bg-accent-soft"
                   : "border-line-strong bg-card hover:border-ink-soft"
@@ -283,7 +282,7 @@ export function CheckoutForm({
             }}
             placeholder="WELCOME10"
             aria-describedby="promo-feedback"
-            className="min-w-0 flex-1 rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted transition-colors duration-150 ease-hi hover:border-ink-soft focus:border-ink"
+            className="min-w-0 flex-1 rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
           />
           <Button
             variant="secondary"
@@ -323,7 +322,7 @@ export function CheckoutForm({
           rows={3}
           maxLength={280}
           placeholder="e.g. less ice, oat milk, or a pickup time"
-          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors duration-150 ease-hi hover:border-ink-soft focus:border-ink"
+          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
         />
         <p className="mt-1.5 text-xs text-muted">
           Allergies and dietary needs go here — the person making your drink
@@ -336,12 +335,10 @@ export function CheckoutForm({
         aria-labelledby="summary-heading"
         className="overflow-hidden rounded-lg border border-line bg-card"
       >
-        <CheckerBand size="sm" className="h-1.5" />
-
         <div className="p-5">
           <h2
             id="summary-heading"
-            className="text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+            className="eyebrow text-muted"
           >
             Your order
           </h2>
@@ -358,7 +355,7 @@ export function CheckoutForm({
                     ({getSizeOption(line.size).label})
                   </span>
                 </span>
-                <span className="shrink-0 tabular-nums text-ink">
+                <span className="shrink-0 numeric text-ink">
                   {formatPrice(line.price * line.quantity)}
                 </span>
               </li>
@@ -368,19 +365,19 @@ export function CheckoutForm({
           <dl className="mt-4 flex flex-col gap-1.5 border-t border-line pt-4 text-sm">
             <div className="flex justify-between gap-4">
               <dt className="text-muted">Subtotal</dt>
-              <dd className="tabular-nums text-ink-soft">{formatPrice(totalPrice)}</dd>
+              <dd className="numeric text-ink-soft">{formatPrice(totalPrice)}</dd>
             </div>
 
             {discount > 0 && (
               <div className="flex justify-between gap-4">
                 <dt className="text-muted">Discount ({verdict?.code})</dt>
-                <dd className="tabular-nums text-success">−{formatPrice(discount)}</dd>
+                <dd className="numeric text-success">−{formatPrice(discount)}</dd>
               </div>
             )}
 
             <div className="mt-1.5 flex items-center justify-between gap-4 border-t border-line pt-3">
               <dt className="text-base font-medium text-ink-soft">Total</dt>
-              <dd className="text-xl font-semibold tabular-nums text-ink">
+              <dd className="text-xl font-semibold numeric text-ink">
                 {formatPrice(dueNow)}
               </dd>
             </div>
@@ -434,7 +431,7 @@ function Card({
 }) {
   return (
     <section className="rounded-lg border border-line bg-card p-5">
-      <h2 className="text-base font-semibold text-ink">{title}</h2>
+      <h2 className="display text-lg text-ink">{title}</h2>
       {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
       <div className="mt-4">{children}</div>
     </section>

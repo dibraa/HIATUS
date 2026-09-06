@@ -46,7 +46,7 @@ export default async function OrdersPage() {
 
       {orderList.length === 0 ? (
         <div className="rounded-lg border border-dashed border-line-strong bg-card px-6 py-14 text-center">
-          <h2 className="text-lg font-semibold text-ink">No orders yet</h2>
+          <h2 className="display text-xl text-ink">No orders yet</h2>
           <p className="mx-auto mt-2 max-w-[44ch] text-sm text-muted">
             Once you order ahead, it shows up here with its live pickup status.
           </p>
@@ -73,7 +73,7 @@ function OrderGroup({ title, orders }: { title: string; orders: Order[] }) {
 
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId} className="mb-3 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+      <h2 id={headingId} className="mb-3 eyebrow text-muted">
         {title}
       </h2>
 
@@ -84,7 +84,7 @@ function OrderGroup({ title, orders }: { title: string; orders: Order[] }) {
                 rather than a "view" affordance the size of a word. */}
             <Link
               href={`/orders/${order.id}`}
-              className="flex items-center justify-between gap-4 rounded-lg border border-line bg-card px-4 py-3.5 transition-colors duration-150 ease-hi hover:border-line-strong hover:bg-raised"
+              className="flex items-center justify-between gap-4 rounded-lg border border-line bg-card px-4 py-3.5 transition-colors hover:border-line-strong hover:bg-raised"
             >
               <span className="min-w-0">
                 <span className="block text-sm font-medium text-ink">
@@ -92,7 +92,7 @@ function OrderGroup({ title, orders }: { title: string; orders: Order[] }) {
                     {DATE_FORMAT.format(new Date(order.created_at))}
                   </time>
                 </span>
-                <span className="mt-0.5 block text-sm tabular-nums text-muted">
+                <span className="mt-0.5 block text-sm numeric text-muted">
                   {formatPrice(order.total_amount)}
                 </span>
               </span>

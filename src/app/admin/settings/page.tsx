@@ -57,7 +57,7 @@ export default async function SettingsPage() {
         >
           <h2
             id="access-heading"
-            className="text-xl font-semibold tracking-tight text-ink"
+            className="display text-xl text-ink"
           >
             Roles and access
           </h2>

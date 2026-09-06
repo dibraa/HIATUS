@@ -118,7 +118,7 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
           accept="image/*"
           onChange={handleFileChange}
           aria-describedby={uploadError ? "image-error" : "image-hint"}
-          className="w-full text-sm text-ink-soft file:mr-3 file:rounded-full file:border file:border-line-strong file:bg-card file:px-4 file:py-2 file:text-sm file:font-medium file:text-ink hover:file:bg-raised"
+          className="w-full text-sm text-ink-soft file:mr-3 file:rounded-md file:border file:border-line-strong file:bg-card file:px-4 file:py-2 file:text-xs file:uppercase file:tracking-widest file:text-ink hover:file:bg-raised"
         />
       </Field>
 

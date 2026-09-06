@@ -82,7 +82,7 @@ export default async function PromosPage() {
       </StatGrid>
 
       <div className="mt-8 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xs font-semibold uppercase tracking-[0.16em] text-muted">
+        <h2 className="eyebrow text-muted">
           All codes
         </h2>
         <ExportButton data={{ kind: "promos", rows: promos }} label="Export performance" />
@@ -149,7 +149,7 @@ export default async function PromosPage() {
                     </div>
 
                     <div className="shrink-0 text-right">
-                      <p className="text-sm font-semibold tabular-nums text-ink">
+                      <p className="text-sm font-semibold numeric text-ink">
                         {promo.redemptions}
                         {promo.usage_limit ? (
                           <span className="font-normal text-muted">
@@ -168,13 +168,13 @@ export default async function PromosPage() {
                     <dl className="flex flex-wrap gap-x-6 gap-y-1 text-xs">
                       <div>
                         <dt className="inline text-muted">Discount given: </dt>
-                        <dd className="inline font-medium tabular-nums text-ink-soft">
+                        <dd className="inline font-medium numeric text-ink-soft">
                           {formatPrice(promo.discount_given)}
                         </dd>
                       </div>
                       <div>
                         <dt className="inline text-muted">Revenue influenced: </dt>
-                        <dd className="inline font-medium tabular-nums text-ink-soft">
+                        <dd className="inline font-medium numeric text-ink-soft">
                           {formatPrice(promo.revenue_influenced)}
                         </dd>
                       </div>

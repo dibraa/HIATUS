@@ -8,13 +8,16 @@ import Link from "next/link";
  * works with JavaScript disabled.
  *
  * `aria-current="page"` is what actually communicates the selection — the
- * filled background is the visual echo of it, not the source of truth.
+ * espresso fill is the visual echo of it, not the source of truth.
  */
 export type FilterTab = {
   label: string;
   href: string;
   active: boolean;
 };
+
+const CHIP =
+  "ui-caps inline-flex h-9 items-center whitespace-nowrap rounded-md border px-3.5 text-2xs transition-colors";
 
 export function FilterTabs({
   tabs,
@@ -39,8 +42,8 @@ export function FilterTabs({
               aria-current={tab.active ? "page" : undefined}
               className={
                 tab.active
-                  ? "inline-flex items-center whitespace-nowrap rounded-full border border-accent bg-accent px-3.5 py-1.5 text-xs font-medium text-accent-fg transition-colors duration-150 ease-hi"
-                  : "inline-flex items-center whitespace-nowrap rounded-full border border-line-strong bg-card px-3.5 py-1.5 text-xs font-medium text-ink-soft transition-colors duration-150 ease-hi hover:border-ink-soft hover:text-ink"
+                  ? `${CHIP} border-cta bg-cta text-cta-fg`
+                  : `${CHIP} border-line-strong bg-card text-ink-soft hover:border-ink hover:text-ink`
               }
             >
               {tab.label}

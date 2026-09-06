@@ -55,12 +55,12 @@ export function AvailabilityToggle({
           the sr-only input cannot show on itself. */}
       <span
         aria-hidden="true"
-        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors duration-150 ease-hi peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink ${
+        className={`relative h-6 w-11 shrink-0 rounded-full transition-colors peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink ${
           available ? "bg-secondary" : "bg-line-strong"
         } ${pending ? "opacity-60" : ""}`}
       >
         <span
-          className={`absolute top-0.5 h-5 w-5 rounded-full bg-card shadow-sm transition-[left] duration-150 ease-hi ${
+          className={`absolute top-0.5 h-5 w-5 rounded-full bg-card shadow-sm transition-[left] duration-(--hi-dur-base) ease-hi-spring ease-hi ${
             available ? "left-[1.375rem]" : "left-0.5"
           }`}
         />

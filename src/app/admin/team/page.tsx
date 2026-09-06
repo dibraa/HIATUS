@@ -69,7 +69,7 @@ export default async function TeamPage() {
         <section aria-labelledby="roster-heading">
           <h2
             id="roster-heading"
-            className="mb-3 text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+            className="mb-3 eyebrow text-muted"
           >
             Roster
           </h2>
@@ -142,7 +142,7 @@ export default async function TeamPage() {
           )}
 
           <dl className="mt-6 rounded-lg border border-line bg-raised p-4 text-sm">
-            <p className="mb-2 text-2xs font-semibold uppercase tracking-[0.16em] text-muted">
+            <p className="mb-2 eyebrow text-muted">
               What each role can do
             </p>
             {(["staff", "admin"] as Role[]).map((role) => (
@@ -161,7 +161,7 @@ export default async function TeamPage() {
           <section aria-labelledby="audit-heading">
             <h2
               id="audit-heading"
-              className="mb-3 text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+              className="mb-3 eyebrow text-muted"
             >
               Activity log
             </h2>
@@ -188,7 +188,7 @@ export default async function TeamPage() {
                       </p>
                       <time
                         dateTime={entry.created_at}
-                        className="shrink-0 text-xs tabular-nums text-muted"
+                        className="shrink-0 text-xs numeric text-muted"
                       >
                         {formatElapsed(entry.created_at)}
                       </time>

@@ -12,15 +12,18 @@ import { Button } from "@/components/ui/button";
 import { FavoriteButton } from "@/components/favorite-button";
 
 /**
- * Grid product card.
+ * Grid product card — the comp's "Best products" card.
  *
- * Two shapes, one component: a horizontal row on phones (thumbnail left, facts
- * right — several products stay visible per screen) and the familiar vertical
- * card from `sm` up, where there is width for a large photo.
+ * From `sm` up it is the reference's arrangement, centred: a tracked category
+ * label, the name in condensed caps, the product on the card's own ground, and
+ * a price sitting over a full-width action. The whole card warms to `raised` on
+ * hover while the button fills to espresso — in the comp those two happen
+ * together, which is what makes a card feel picked up rather than merely
+ * pointed at.
  *
- * Content order follows the shopper's scan: image → flavour → name → rating →
- * price → action, with price and action sharing a baseline at the bottom so
- * they land in the same place on every card.
+ * Below `sm` it stays a horizontal row (thumbnail left, facts right) so several
+ * products remain visible per screen. A centred column that tall would show two
+ * drinks on a phone.
  *
  * The whole card is clickable via a "stretched link" — the title link paints an
  * absolutely-positioned pseudo-element across the card. That leaves exactly one
@@ -47,68 +50,38 @@ export function MenuItemCard({
   const defaultSizeLabel = getSizeOption(DEFAULT_SIZE).label;
 
   return (
-    <article className="group relative flex w-full gap-3 overflow-hidden rounded-lg border border-line bg-card p-3 transition-shadow duration-200 ease-hi hover:shadow-md focus-within:shadow-md sm:flex-col sm:gap-0">
-      <div className="relative w-28 shrink-0 sm:w-full">
-        <ProductImage
-          src={item.image_url}
-          alt={item.name}
-          // 112px thumb on phones; roughly half, a third, then a quarter of the
-          // 1152px container as the grid gains columns
-          sizes="(min-width: 1280px) 264px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 112px"
-          rounded="rounded-md"
-        />
+    <article className="group relative flex w-full gap-3 rounded-lg border border-line bg-card p-3 transition-colors duration-(--hi-dur-base) hover:bg-raised focus-within:bg-raised sm:flex-col sm:gap-0 sm:p-5">
+      {/* Order is reversed from the DOM on sm+: the label and name sit ABOVE
+          the image in the comp, and reordering visually rather than in markup
+          would put the product name after its picture for a screen reader. */}
+      <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:order-2 sm:items-center sm:gap-2 sm:pt-4 sm:text-center">
+        <p className="eyebrow text-muted">{item.flavor}</p>
 
-        {!item.is_available && (
-          <span className="absolute left-2 top-2 rounded-full bg-ink px-2 py-0.5 text-2xs font-semibold uppercase tracking-wider text-surface">
-            Sold out
-          </span>
-        )}
-
-        {/* Sits on the image, opposite corner to the sold-out flag so the two
-            never collide. */}
-        <div className="absolute right-2 top-2">
-          <FavoriteButton
-            menuItemId={item.id}
-            itemName={item.name}
-            isFavorite={isFavorite}
-            isLoggedIn={isLoggedIn}
-            size="sm"
-          />
-        </div>
-      </div>
-
-      <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:pt-3">
-        <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-muted">
-          {item.flavor}
-        </p>
-
-        <h3 className="text-sm font-semibold leading-snug text-ink">
+        <h3 className="display text-lg text-ink sm:text-xl">
           {/* after:absolute … stretches this link across the whole card */}
           <Link
             href={`/menu/${item.id}`}
-            className="decoration-line-strong underline-offset-2 after:absolute after:inset-0 after:content-[''] hover:underline"
+            className="decoration-line-strong underline-offset-4 after:absolute after:inset-0 after:content-[''] hover:underline"
           >
             {item.name}
           </Link>
         </h3>
 
-        <RatingSummary average={averageRating} count={ratingCount} />
+        <div className="sm:flex sm:justify-center">
+          <RatingSummary average={averageRating} count={ratingCount} />
+        </div>
 
-        <div className="mt-auto flex flex-wrap items-end justify-between gap-2 pt-3">
-          <div className="min-w-0">
-            <p className="text-base font-semibold tabular-nums text-ink">
-              {formatPrice(defaultPrice)}
-            </p>
-            <p className="text-2xs text-muted">
-              {defaultSizeLabel} &middot; from {formatPrice(priceForSize(item.price, "S"))}
-            </p>
-          </div>
-
+        {/* The comp sets the action and the price on one line. At four columns
+            a card is ~200px wide, where a tracked "ADD TO CART" plus a peso
+            price wraps into two ragged rows — so from sm the pair stacks and
+            centres, and the button takes the full width as a larger tap
+            target. On the phone row layout there is width for one line. */}
+        <div className="mt-auto flex w-full flex-wrap items-end justify-between gap-2 pt-3 sm:flex-col sm:items-stretch sm:gap-3 sm:pt-5">
           {/* z-10 lifts the button above the stretched link's overlay */}
           <Button
             size="sm"
-            variant={item.is_available ? "primary" : "outline"}
-            className="relative z-10 shrink-0"
+            variant="outline"
+            className="relative z-10 order-2 shrink-0"
             disabled={!item.is_available}
             aria-label={
               item.is_available
@@ -127,8 +100,48 @@ export function MenuItemCard({
               toast.success(`${item.name} (${defaultSizeLabel}) added to cart`);
             }}
           >
-            {item.is_available ? "Add" : "Sold out"}
+            {item.is_available ? "Add to cart" : "Sold out"}
           </Button>
+
+          <div className="order-1 min-w-0 text-left sm:text-center">
+            <p className="numeric text-base font-semibold text-ink">
+              {formatPrice(defaultPrice)}
+            </p>
+            <p className="eyebrow mt-0.5 text-muted">
+              {defaultSizeLabel} &middot; from {formatPrice(priceForSize(item.price, "S"))}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* order-first restores the phone layout (thumbnail leading the row);
+          from sm it takes its place above the name again. */}
+      <div className="relative order-first w-28 shrink-0 sm:order-1 sm:w-full">
+        <ProductImage
+          src={item.image_url}
+          alt={item.name}
+          // 112px thumb on phones; roughly half, a third, then a quarter of the
+          // 1152px container as the grid gains columns
+          sizes="(min-width: 1280px) 264px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 112px"
+          rounded="rounded-md sm:rounded-lg"
+        />
+
+        {!item.is_available && (
+          <span className="ui-caps absolute left-2 top-2 rounded-md bg-cta px-2 py-1 text-2xs text-cta-fg">
+            Sold out
+          </span>
+        )}
+
+        {/* Sits on the image, opposite corner to the sold-out flag so the two
+            never collide. */}
+        <div className="absolute right-2 top-2">
+          <FavoriteButton
+            menuItemId={item.id}
+            itemName={item.name}
+            isFavorite={isFavorite}
+            isLoggedIn={isLoggedIn}
+            size="sm"
+          />
         </div>
       </div>
     </article>

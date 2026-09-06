@@ -15,7 +15,7 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
       disabled={pending}
       // Muted until hovered, then danger-coloured: destructive actions should
       // be reachable without being the most eye-catching thing in the row.
-      className="text-sm font-medium text-muted transition-colors duration-150 ease-hi hover:text-danger disabled:opacity-50"
+      className="text-sm font-medium text-muted transition-colors hover:text-danger disabled:opacity-50"
       onClick={() => {
         if (!window.confirm('Delete "' + name + '"? This cannot be undone.')) return;
         startTransition(async () => {

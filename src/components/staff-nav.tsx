@@ -8,7 +8,7 @@ import { usePathname } from "next/navigation";
  *
  * Client-side because it needs the pathname to mark the current section —
  * without that, four identical links give no indication of where you are. The
- * orange underline is the visual cue; `aria-current` is the announced one, and
+ * espresso underline is the visual cue; `aria-current` is the announced one, and
  * neither is load-bearing alone.
  *
  * Scrolls horizontally rather than wrapping: the counter runs this on a phone
@@ -43,8 +43,8 @@ export function StaffNav() {
                 aria-current={active ? "page" : undefined}
                 className={
                   active
-                    ? "inline-flex items-center whitespace-nowrap border-b-2 border-accent px-3 py-2.5 text-sm font-semibold text-ink"
-                    : "inline-flex items-center whitespace-nowrap border-b-2 border-transparent px-3 py-2.5 text-sm font-medium text-muted transition-colors duration-150 ease-hi hover:border-line-strong hover:text-ink"
+                    ? "ui-caps inline-flex items-center whitespace-nowrap border-b-2 border-cta px-3 py-3 text-2xs text-ink"
+                    : "ui-caps inline-flex items-center whitespace-nowrap border-b-2 border-transparent px-3 py-3 text-2xs text-muted transition-colors hover:border-line-strong hover:text-ink"
                 }
               >
                 {link.label}

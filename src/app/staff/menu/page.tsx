@@ -73,7 +73,7 @@ export default async function StaffMenuPage() {
                 <section key={category} aria-labelledby={headingId}>
                   <h2
                     id={headingId}
-                    className="mb-3 text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+                    className="mb-3 eyebrow text-muted"
                   >
                     {category}
                   </h2>
@@ -102,7 +102,7 @@ export default async function StaffMenuPage() {
                           <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted">
                             <span>{item.flavor}</span>
                             <span aria-hidden="true">&middot;</span>
-                            <span className="tabular-nums">{formatPrice(item.price)}</span>
+                            <span className="numeric">{formatPrice(item.price)}</span>
                           </p>
                         </div>
 

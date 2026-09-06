@@ -54,7 +54,7 @@ function SettingsCard({
 }) {
   return (
     <form action={action} className="rounded-lg border border-line bg-card p-5">
-      <h2 className="text-xl font-semibold tracking-tight text-ink">{title}</h2>
+      <h2 className="display text-xl text-ink">{title}</h2>
       <p className="mt-1.5 max-w-[60ch] text-sm text-muted">{description}</p>
 
       <div className="mt-5 flex flex-col gap-4">{children}</div>
@@ -108,7 +108,7 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
                 type="time"
                 name={`open-${day.day}`}
                 defaultValue={day.open}
-                className="rounded-md border border-line-strong bg-card px-2 py-1.5 text-sm tabular-nums text-ink"
+                className="rounded-md border border-line-strong bg-card px-2 py-1.5 text-sm numeric text-ink"
               />
             </label>
 
@@ -122,7 +122,7 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
                 type="time"
                 name={`close-${day.day}`}
                 defaultValue={day.close}
-                className="rounded-md border border-line-strong bg-card px-2 py-1.5 text-sm tabular-nums text-ink"
+                className="rounded-md border border-line-strong bg-card px-2 py-1.5 text-sm numeric text-ink"
               />
             </label>
 

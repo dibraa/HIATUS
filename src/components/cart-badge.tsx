@@ -6,12 +6,17 @@ import { useCart } from "@/lib/cart-context";
 /**
  * Cart entry point with a live item count.
  *
+ * Set as `CART (2)` — the comp's own treatment, where the count is part of the
+ * label rather than a superscript dot. That also removes the usual overlap
+ * problem of a floating badge on a small target.
+ *
  * The count only renders once the cart has hydrated from localStorage — the
  * server has no way to know it, so painting a "0" first would flash the wrong
- * number on every page load for anyone with a full cart.
+ * number on every page load for anyone with a full cart. Below `sm` the label
+ * collapses to the trolley glyph, where the header has no room for words.
  *
- * The accessible name carries the count too, so it is never conveyed by the
- * badge's position alone.
+ * The accessible name carries the count either way, so it is never conveyed by
+ * the parenthetical alone.
  */
 export function CartBadge({ className = "" }: { className?: string }) {
   const { totalItems, hydrated } = useCart();
@@ -25,10 +30,16 @@ export function CartBadge({ className = "" }: { className?: string }) {
           ? `Cart, ${totalItems} ${totalItems === 1 ? "item" : "items"}`
           : "Cart, empty"
       }
-      className={`relative inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm font-medium
-                  text-ink transition-colors duration-150 ease-hi hover:bg-raised ${className}`}
+      className={`ui-caps relative inline-flex h-10 items-center gap-1.5 rounded-md px-2 text-2xs text-ink transition-colors hover:bg-raised ${className}`}
     >
-      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        className="h-5 w-5 sm:hidden"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        aria-hidden="true"
+      >
         <path d="M3 4h2.2l2.1 10.4a2 2 0 0 0 2 1.6h7.5a2 2 0 0 0 2-1.55L20.5 7H6" strokeLinecap="round" strokeLinejoin="round" />
         <circle cx="10" cy="20" r="1.4" />
         <circle cx="17.5" cy="20" r="1.4" />
@@ -39,11 +50,8 @@ export function CartBadge({ className = "" }: { className?: string }) {
       </span>
 
       {showCount && (
-        <span
-          aria-hidden="true"
-          className="absolute -right-0.5 -top-0.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 text-2xs font-semibold tabular-nums text-accent-fg sm:static sm:ml-0.5"
-        >
-          {totalItems}
+        <span aria-hidden="true" className="numeric text-2xs">
+          ({totalItems})
         </span>
       )}
     </Link>

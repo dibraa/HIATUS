@@ -112,9 +112,9 @@ export default async function MenuItemPage({ params }: Params) {
       {/* Breadcrumb: gives the product page a way back that is not the browser
           button, and states where in the menu this drink sits */}
       <nav aria-label="Breadcrumb" className="-mb-4">
-        <ol className="flex flex-wrap items-center gap-1.5 text-xs text-muted">
+        <ol className="ui-caps flex flex-wrap items-center gap-1.5 text-2xs text-muted">
           <li>
-            <Link href="/" className="transition-colors duration-150 ease-hi hover:text-ink hover:underline underline-offset-4">
+            <Link href="/" className="transition-colors hover:text-ink hover:underline underline-offset-4">
               Menu
             </Link>
           </li>
@@ -122,36 +122,41 @@ export default async function MenuItemPage({ params }: Params) {
           <li>
             <Link
               href={`/?flavor=${encodeURIComponent(item.flavor)}#menu`}
-              className="transition-colors duration-150 ease-hi hover:text-ink hover:underline underline-offset-4"
+              className="transition-colors hover:text-ink hover:underline underline-offset-4"
             >
               {item.flavor}
             </Link>
           </li>
           <li aria-hidden="true">/</li>
-          <li aria-current="page" className="font-medium text-ink-soft">
+          <li aria-current="page" className="text-ink-soft">
             {item.name}
           </li>
         </ol>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
-        <div className="lg:sticky lg:top-24 lg:self-start">
-          <ProductImage
-            src={item.image_url}
-            alt={item.name}
-            sizes="(min-width: 1024px) 552px, 100vw"
-            priority
-            rounded="rounded-xl"
-          />
+        {/* Matted, like every other photograph in the system: a cream frame
+            with a visible gutter, corners rounder on the frame than on the
+            image inside it. */}
+        <div className="matte lg:sticky lg:top-24 lg:self-start">
+          <div className="matte-inner">
+            <ProductImage
+              src={item.image_url}
+              alt={item.name}
+              sizes="(min-width: 1024px) 552px, 100vw"
+              priority
+              rounded="rounded-none"
+            />
+          </div>
         </div>
 
         <div className="flex flex-col">
-          <p className="text-2xs font-semibold uppercase tracking-[0.16em] text-muted">
+          <p className="eyebrow text-muted">
             {item.flavor}
           </p>
 
           <div className="mt-2 flex items-start justify-between gap-4">
-            <h1 className="text-3xl font-semibold tracking-tight text-ink sm:text-4xl">
+            <h1 className="display text-4xl text-ink">
               {item.name}
             </h1>
 
@@ -168,7 +173,7 @@ export default async function MenuItemPage({ params }: Params) {
             {ratingList.length > 0 && (
               <a
                 href="#reviews"
-                className="text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+                className="ui-caps text-2xs text-ink-soft underline underline-offset-4 transition-colors hover:text-ink"
               >
                 Read reviews
               </a>
@@ -183,7 +188,7 @@ export default async function MenuItemPage({ params }: Params) {
             <AddToCart item={item} />
           </div>
 
-          <p className="mt-4 text-xs text-muted">
+          <p className="numeric mt-4 text-2xs text-muted">
             Sizes: small {formatPrice(priceForSize(item.price, "S"))} &middot; medium{" "}
             {formatPrice(priceForSize(item.price, "M"))} &middot; large{" "}
             {formatPrice(priceForSize(item.price, "L"))}
@@ -194,7 +199,7 @@ export default async function MenuItemPage({ params }: Params) {
       {/* ================= Reviews ================= */}
       <section id="reviews" aria-labelledby="reviews-heading" className="scroll-mt-24">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 id="reviews-heading" className="text-2xl font-semibold tracking-tight text-ink">
+          <h2 id="reviews-heading" className="display text-2xl text-ink">
             Reviews
           </h2>
           {averageRating !== null && (
@@ -223,7 +228,7 @@ export default async function MenuItemPage({ params }: Params) {
 
                 {/* Factual: RLS only accepts a rating from someone with a
                     completed order containing this item */}
-                <p className="mt-2 text-2xs uppercase tracking-wider text-muted">
+                <p className="mt-2 eyebrow text-muted">
                   Verified purchase
                 </p>
               </li>
@@ -235,7 +240,7 @@ export default async function MenuItemPage({ params }: Params) {
       {/* ================= Cross-sell ================= */}
       {related.length > 0 && (
         <section aria-labelledby="related-heading">
-          <h2 id="related-heading" className="text-2xl font-semibold tracking-tight text-ink">
+          <h2 id="related-heading" className="display text-2xl text-ink">
             More {item.flavor}
           </h2>
 

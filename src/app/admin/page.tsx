@@ -129,13 +129,13 @@ export default async function AdminDashboardPage() {
           <div className="mb-3 flex items-baseline justify-between gap-4">
             <h2
               id="top-items-heading"
-              className="text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+              className="eyebrow text-muted"
             >
               Top sellers · 30 days
             </h2>
             <Link
               href="/admin/reports"
-              className="text-xs font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+              className="text-xs font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
             >
               Full report
             </Link>
@@ -158,7 +158,7 @@ export default async function AdminDashboardPage() {
                       an <ol> announces position on its own. */}
                   <span
                     aria-hidden="true"
-                    className="w-5 shrink-0 text-sm font-semibold tabular-nums text-muted"
+                    className="w-5 shrink-0 text-sm font-semibold numeric text-muted"
                   >
                     {i + 1}
                   </span>
@@ -171,10 +171,10 @@ export default async function AdminDashboardPage() {
                   </div>
 
                   <div className="shrink-0 text-right">
-                    <p className="text-sm font-semibold tabular-nums text-ink">
+                    <p className="text-sm font-semibold numeric text-ink">
                       {item.total_quantity}
                     </p>
-                    <p className="text-xs tabular-nums text-muted">
+                    <p className="text-xs numeric text-muted">
                       {formatPrice(item.total_revenue)}
                     </p>
                   </div>
@@ -189,13 +189,13 @@ export default async function AdminDashboardPage() {
           <div className="mb-3 flex items-baseline justify-between gap-4">
             <h2
               id="recent-heading"
-              className="text-2xs font-semibold uppercase tracking-[0.16em] text-muted"
+              className="eyebrow text-muted"
             >
               Latest orders
             </h2>
             <Link
               href="/admin/orders"
-              className="text-xs font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+              className="text-xs font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
             >
               All orders
             </Link>
@@ -228,7 +228,7 @@ export default async function AdminDashboardPage() {
                         <span aria-hidden="true">&middot;</span>
                         <span>{ORDER_TYPE_LABELS[order.order_type]}</span>
                         <span aria-hidden="true">&middot;</span>
-                        <span className="tabular-nums">
+                        <span className="numeric">
                           {formatPrice(order.total_amount)}
                         </span>
                       </p>

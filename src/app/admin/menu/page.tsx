@@ -61,13 +61,13 @@ export default async function AdminMenuPage() {
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="font-medium text-ink">{item.name}</span>
                   {!item.is_available && (
-                    <span className="rounded-full border border-line-strong px-2 py-0.5 text-2xs font-medium uppercase tracking-wide text-muted">
+                    <span className="rounded-md border border-line-strong px-2 py-0.5 eyebrow text-muted">
                       Sold out
                     </span>
                   )}
                 </p>
-                <p className="mt-0.5 text-xs uppercase tracking-wide text-accent-ink">{item.flavor}</p>
-                <p className="mt-0.5 text-sm tabular-nums text-muted">
+                <p className="mt-0.5 eyebrow text-accent-ink">{item.flavor}</p>
+                <p className="mt-0.5 text-sm numeric text-muted">
                   {formatPrice(item.price)}{" "}
                   <span className="text-xs">(medium)</span>
                 </p>
@@ -76,7 +76,7 @@ export default async function AdminMenuPage() {
               <div className="flex shrink-0 items-center gap-4">
                 <Link
                   href={"/admin/menu/" + item.id}
-                  className="text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+                  className="text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
                 >
                   Edit<span className="sr-only"> {item.name}</span>
                 </Link>

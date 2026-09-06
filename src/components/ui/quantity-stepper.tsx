@@ -36,10 +36,10 @@ export function QuantityStepper({
     : "hover:bg-raised disabled:hover:bg-transparent";
 
   return (
-    <div className={`inline-flex items-center rounded-full border ${shell}`}>
+    <div className={`inline-flex items-center rounded-md border ${shell}`}>
       <button
         type="button"
-        className={`${pad} flex items-center justify-center rounded-full text-lg leading-none transition-colors duration-150 ease-hi disabled:opacity-40 ${hover}`}
+        className={`${pad} flex items-center justify-center rounded-full text-lg leading-none transition-colors disabled:opacity-40 ${hover}`}
         onClick={() => onChange(Math.max(min, value - 1))}
         disabled={value <= min}
         aria-label={`Decrease quantity of ${itemLabel}`}
@@ -48,7 +48,7 @@ export function QuantityStepper({
       </button>
 
       <span
-        className={`w-8 text-center text-sm font-medium tabular-nums ${
+        className={`w-8 text-center text-sm font-medium numeric ${
           size === "sm" ? "w-7" : "w-8"
         }`}
         aria-live="polite"
@@ -60,7 +60,7 @@ export function QuantityStepper({
 
       <button
         type="button"
-        className={`${pad} flex items-center justify-center rounded-full text-lg leading-none transition-colors duration-150 ease-hi disabled:opacity-40 ${hover}`}
+        className={`${pad} flex items-center justify-center rounded-full text-lg leading-none transition-colors disabled:opacity-40 ${hover}`}
         onClick={() => onChange(Math.min(max, value + 1))}
         disabled={value >= max}
         aria-label={`Increase quantity of ${itemLabel}`}

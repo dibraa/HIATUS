@@ -21,7 +21,7 @@ import type { ComponentProps, ReactNode } from "react";
 /** Shared control skin. Single-line by deliberate choice: a multi-line string
  *  literal in a className carries the CR from a CRLF file into the server HTML
  *  but not the client, which produces a hydration mismatch. */
-const CONTROL = "w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink transition-colors duration-150 ease-hi placeholder:text-muted hover:border-ink-soft focus:border-ink disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted";
+const CONTROL = "w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink transition-colors placeholder:text-muted hover:border-ink-soft focus:border-ink disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted";
 
 const CONTROL_INVALID = "border-danger hover:border-danger focus:border-danger";
 
@@ -44,9 +44,11 @@ type FieldShellProps = {
 export function Field({ id, label, hint, error, hideLabel, children }: FieldShellProps) {
   return (
     <div className="flex flex-col gap-1.5">
+      {/* Tracked mono caps, like every other label in the system. A field label
+          is chrome, not prose — it names the control rather than being read. */}
       <label
         htmlFor={id}
-        className={hideLabel ? "sr-only" : "text-sm font-medium text-ink-soft"}
+        className={hideLabel ? "sr-only" : "ui-caps text-2xs text-ink-soft"}
       >
         {label}
       </label>

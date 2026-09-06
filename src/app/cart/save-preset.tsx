@@ -34,7 +34,7 @@ export function SavePreset({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+        className="text-xs font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
       >
         Save this as your usual
       </button>

@@ -1,20 +1,47 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Anton, Oswald, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/site-footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+/**
+ * Three type roles, four families — see the "Type roles" block in globals.css
+ * for which is allowed where.
+ *
+ * `display: "swap"` on all of them keeps text visible in a fallback face while
+ * the webfont loads, instead of flashing invisible. That matters more for the
+ * condensed faces than usual: their fallbacks are declared as Arial Narrow /
+ * Roboto Condensed in globals.css, so a swapped headline reflows by a little
+ * rather than tripling in width.
+ */
+
+/** Headlines. One weight, by design. */
+const anton = Anton({
+  variable: "--font-anton",
   subsets: ["latin"],
-  // Text stays visible in a fallback face while the webfont loads, instead of
-  // flashing invisible — the usual cause of a slow-feeling first paint.
+  weight: "400",
   display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+/** The light half of a two-weight headline. */
+const oswald = Oswald({
+  variable: "--font-oswald",
+  subsets: ["latin"],
+  weight: ["300", "400", "500"],
+  display: "swap",
+});
+
+/** The chrome: nav, labels, buttons, prices, metadata. */
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains-mono",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+/** Prose. Anything longer than six words that someone has to actually read. */
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
   display: "swap",
 });
@@ -35,7 +62,7 @@ export const metadata: Metadata = {
  */
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f5ead8" },
+    { media: "(prefers-color-scheme: light)", color: "#efe9de" },
     { media: "(prefers-color-scheme: dark)", color: "#14120e" },
   ],
 };
@@ -54,13 +81,20 @@ export const viewport: Viewport = {
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("hiatus-theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}})()`;
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const fontVars = [
+    anton.variable,
+    oswald.variable,
+    jetbrainsMono.variable,
+    geistSans.variable,
+  ].join(" ");
+
   return (
     // suppressHydrationWarning: the script above legitimately mutates <html>
     // before React hydrates, so the attribute set will not match the server's.
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fontVars} h-full antialiased`}
     >
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
@@ -74,7 +108,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
           <Navbar />
 
-          <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+          {/* The container every page centres in. Sections that need to reach
+              the viewport edge (the tan loyalty band, the partner strip) break
+              out with `.full-bleed` rather than this being unconstrained. */}
+          <main id="main" className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10">
             {children}
           </main>
 

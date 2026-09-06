@@ -161,7 +161,7 @@ export default async function ReportsPage({
                 Menu items by units sold, with order count and revenue.
               </caption>
               <thead>
-                <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
+                <tr className="border-b border-line eyebrow text-muted">
                   <th scope="col" className="py-2 pr-4 font-medium">Item</th>
                   <th scope="col" className="py-2 pr-4 font-medium">Flavor</th>
                   <th scope="col" className="py-2 pr-4 text-right font-medium">Units</th>
@@ -182,13 +182,13 @@ export default async function ReportsPage({
                       {row.item_name}
                     </th>
                     <td className="py-2.5 pr-4 text-ink-soft">{row.flavor}</td>
-                    <td className="py-2.5 pr-4 text-right font-semibold tabular-nums text-ink">
+                    <td className="py-2.5 pr-4 text-right font-semibold numeric text-ink">
                       {row.total_quantity}
                     </td>
-                    <td className="py-2.5 pr-4 text-right tabular-nums text-ink-soft">
+                    <td className="py-2.5 pr-4 text-right numeric text-ink-soft">
                       {row.order_count}
                     </td>
-                    <td className="py-2.5 text-right tabular-nums text-ink-soft">
+                    <td className="py-2.5 text-right numeric text-ink-soft">
                       {formatPrice(row.total_revenue)}
                     </td>
                   </tr>
@@ -243,7 +243,7 @@ export default async function ReportsPage({
                 Customers ranked by total spend in this period.
               </caption>
               <thead>
-                <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
+                <tr className="border-b border-line eyebrow text-muted">
                   <th scope="col" className="py-2 pr-4 font-medium">Customer</th>
                   <th scope="col" className="py-2 pr-4 text-right font-medium">Orders</th>
                   <th scope="col" className="py-2 pr-4 text-right font-medium">Spend</th>
@@ -261,13 +261,13 @@ export default async function ReportsPage({
                         </span>
                       )}
                     </th>
-                    <td className="py-2.5 pr-4 text-right tabular-nums text-ink-soft">
+                    <td className="py-2.5 pr-4 text-right numeric text-ink-soft">
                       {row.order_count}
                     </td>
-                    <td className="py-2.5 pr-4 text-right font-semibold tabular-nums text-ink">
+                    <td className="py-2.5 pr-4 text-right font-semibold numeric text-ink">
                       {formatPrice(row.total_spend)}
                     </td>
-                    <td className="py-2.5 text-right tabular-nums text-muted">
+                    <td className="py-2.5 text-right numeric text-muted">
                       {formatDate(row.last_order_at)}
                     </td>
                   </tr>
@@ -307,11 +307,11 @@ function ReportSection({
 }) {
   return (
     <section aria-labelledby={`${id}-heading`} className="mt-10">
-      <CheckerBand size="sm" className="mb-5 h-1.5 opacity-70" />
+      <CheckerBand className="mb-6" />
 
       <div className="mb-5 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div>
-          <h2 id={`${id}-heading`} className="text-xl font-semibold tracking-tight text-ink">
+          <h2 id={`${id}-heading`} className="display text-xl text-ink">
             {title}
           </h2>
           <p className="mt-1 max-w-[62ch] text-sm text-muted">{description}</p>

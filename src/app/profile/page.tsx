@@ -61,7 +61,7 @@ export default async function ProfilePage() {
           You are signed in with a team account.
           <Link
             href={user.role === "admin" ? "/admin" : "/staff"}
-            className="font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+            className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
           >
             Go to your dashboard
           </Link>
@@ -72,7 +72,7 @@ export default async function ProfilePage() {
         <section aria-labelledby="details-heading">
           <h2
             id="details-heading"
-            className="mb-4 text-xl font-semibold tracking-tight text-ink"
+            className="mb-4 display text-xl text-ink"
           >
             Your details
           </h2>
@@ -81,12 +81,12 @@ export default async function ProfilePage() {
           )}
         </section>
 
-        <CheckerBand size="sm" className="h-1.5 opacity-70" />
+        <CheckerBand />
 
         <section aria-labelledby="notifications-heading">
           <h2
             id="notifications-heading"
-            className="mb-4 text-xl font-semibold tracking-tight text-ink"
+            className="mb-4 display text-xl text-ink"
           >
             Notifications
           </h2>
@@ -95,12 +95,12 @@ export default async function ProfilePage() {
 
         {myReviews.length > 0 && (
           <>
-            <CheckerBand size="sm" className="h-1.5 opacity-70" />
+            <CheckerBand />
 
             <section aria-labelledby="reviews-heading">
               <h2
                 id="reviews-heading"
-                className="mb-1 text-xl font-semibold tracking-tight text-ink"
+                className="mb-1 display text-xl text-ink"
               >
                 Your reviews
               </h2>

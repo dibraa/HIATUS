@@ -28,7 +28,7 @@ export function ForgotPasswordForm() {
           </svg>
         </div>
 
-        <h2 className="mt-4 text-xl font-semibold text-ink">Check your email</h2>
+        <h2 className="display mt-4 text-xl text-ink">Check your email</h2>
         <p className="mx-auto mt-2 max-w-[42ch] text-sm text-muted">
           If that address has an account with us, a link to set a new password
           is on its way. It expires in an hour.
@@ -36,7 +36,7 @@ export function ForgotPasswordForm() {
 
         <Link
           href="/login"
-          className="mt-6 inline-block text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+          className="mt-6 inline-block text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
         >
           Back to log in
         </Link>
@@ -67,7 +67,7 @@ export function ForgotPasswordForm() {
         Remembered it?{" "}
         <Link
           href="/login"
-          className="font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+          className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
         >
           Log in
         </Link>

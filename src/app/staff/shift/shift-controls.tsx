@@ -35,7 +35,7 @@ export function ClockInForm() {
         });
       }}
     >
-      <h2 className="text-lg font-semibold text-ink">Start your shift</h2>
+      <h2 className="display text-xl text-ink">Start your shift</h2>
       <p className="mt-1.5 text-sm text-muted">
         Count the float in the drawer before you begin, so the end-of-shift
         total has something to reconcile against.
@@ -54,7 +54,7 @@ export function ClockInForm() {
           value={opening}
           onChange={(e) => setOpening(e.target.value)}
           placeholder="0.00"
-          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm tabular-nums text-ink placeholder:text-muted transition-colors duration-150 ease-hi hover:border-ink-soft focus:border-ink"
+          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm numeric text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
         />
       </div>
 
@@ -88,7 +88,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
         });
       }}
     >
-      <h2 className="text-lg font-semibold text-ink">End your shift</h2>
+      <h2 className="display text-xl text-ink">End your shift</h2>
       <p className="mt-1.5 text-sm text-muted">
         Count the drawer and enter the total. Anything that does not match is
         worth a note while you still remember it.
@@ -108,7 +108,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
           onChange={(e) => setClosing(e.target.value)}
           placeholder={expectedCash.toFixed(2)}
           aria-describedby="variance-hint"
-          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm tabular-nums text-ink placeholder:text-muted transition-colors duration-150 ease-hi hover:border-ink-soft focus:border-ink"
+          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm numeric text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
         />
 
         <p id="variance-hint" aria-live="polite" className="text-xs">
@@ -141,7 +141,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="e.g. ₱50 short — gave change twice on one order"
-          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors duration-150 ease-hi hover:border-ink-soft focus:border-ink"
+          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
         />
       </div>
 

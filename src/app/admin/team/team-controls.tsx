@@ -30,7 +30,7 @@ export function GrantRoleForm() {
 
   return (
     <form action={formAction} className="rounded-lg border border-line bg-card p-5">
-      <h2 className="text-lg font-semibold text-ink">Add someone to the team</h2>
+      <h2 className="display text-xl text-ink">Add someone to the team</h2>
       <p className="mt-1.5 text-sm text-muted">
         They need to have signed up through the app first. Enter the email they
         used and choose what they can do.

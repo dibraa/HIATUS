@@ -1,47 +1,50 @@
 /**
- * The brand's checkered rule.
+ * A section rule.
  *
- * A decorative band used to close a section, edge a card, or separate the hero
- * from the menu — the PineBrew signature. The pattern itself is the `.checker`
- * utility in globals.css; this component exists so the two things that are
- * easy to get wrong are got right every time:
+ * This used to paint the old palette's checkerboard, which the Co-Fi direction
+ * has no place for — that comp separates sections with space, a surface change
+ * or a full-bleed band, never with a decorative pattern. Rather than delete a
+ * component eight pages import, it now draws what the direction does allow: a
+ * hairline in the line colour of whatever surface it sits on.
  *
- *   1. `aria-hidden` and `role="presentation"`. A checkerboard conveys nothing
- *      to a screen reader, and an unlabelled decorative div is noise in the
+ * The two things that are easy to get wrong are still got right here:
+ *
+ *   1. `aria-hidden` and `role="presentation"`. A rule conveys nothing to a
+ *      screen reader, and an unlabelled decorative div is noise in the
  *      accessibility tree.
- *   2. The right pattern colour for the surface underneath. Burnt orange on
- *      forest green is 2.59:1 — barely visible — so a band on an inverted
- *      panel has to switch to the panel's own line colour. `tone` picks it.
+ *   2. The right colour for the surface underneath — a line in the page's line
+ *      colour disappears on the pine panel, so `tone` picks it.
  *
- * Height is a Tailwind class rather than a prop with magic numbers, so a band
- * can sit on the same spacing scale as everything around it.
+ * `size` is kept in the signature so existing call sites still typecheck; a
+ * hairline has one weight, so it no longer changes what is drawn.
  */
 export function CheckerBand({
   tone = "accent",
-  size = "md",
-  className = "h-2.5",
+  className = "",
 }: {
-  /** The surface it sits on, which decides the pattern colour. */
+  /** The surface it sits on, which decides the line colour. */
   tone?: "accent" | "green" | "soft" | "inverse";
   size?: "sm" | "md" | "lg";
   className?: string;
 }) {
   const toneClass = {
-    accent: "",
-    green: "checker-green",
-    soft: "checker-soft",
-    inverse: "checker-inverse",
+    accent: "bg-line",
+    green: "bg-line",
+    soft: "bg-line",
+    inverse: "bg-inverse-line/50",
   }[tone];
 
-  const sizeClass = { sm: "checker-sm", md: "", lg: "checker-lg" }[size];
-
   return (
+    // The height is an inline style, not a class: several call sites still
+    // pass their old `h-2` / `h-1.5` for the band this used to be, and which of
+    // two competing height utilities wins is decided by stylesheet order, not
+    // by the order they appear in the attribute. An inline style is the only
+    // way to guarantee a hairline stays a hairline.
     <div
       aria-hidden="true"
       role="presentation"
-      className={["checker w-full", toneClass, sizeClass, className]
-        .filter(Boolean)
-        .join(" ")}
+      style={{ height: "1px" }}
+      className={["w-full", toneClass, className].filter(Boolean).join(" ")}
     />
   );
 }

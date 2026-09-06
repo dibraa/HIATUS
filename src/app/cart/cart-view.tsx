@@ -31,7 +31,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
-        <h1 className="text-2xl font-semibold tracking-tight text-ink">Your cart is empty</h1>
+        <h1 className="display text-2xl text-ink">Your cart is empty</h1>
         <p className="mt-2 text-sm text-muted">
           Add a drink from the menu and it will show up here.
         </p>
@@ -46,7 +46,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <h1 className="text-2xl font-semibold tracking-tight text-ink">Your cart</h1>
+      <h1 className="display text-2xl text-ink">Your cart</h1>
       <p className="mt-1 text-sm text-muted">
         {totalItems} {totalItems === 1 ? "item" : "items"}
       </p>
@@ -80,10 +80,10 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
                 >
                   {line.name}
                 </Link>
-                <p className="text-2xs uppercase tracking-[0.14em] text-muted">
+                <p className="eyebrow text-muted">
                   {line.flavor} &middot; {sizeLabel}
                 </p>
-                <p className="text-sm tabular-nums text-ink-soft">
+                <p className="text-sm numeric text-ink-soft">
                   {formatPrice(line.price)} each
                 </p>
 
@@ -96,7 +96,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
                   />
                   <button
                     type="button"
-                    className="text-xs font-medium text-muted underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-danger"
+                    className="text-xs font-medium text-muted underline underline-offset-4 transition-colors hover:text-danger"
                     onClick={() => removeItem(key)}
                   >
                     Remove<span className="sr-only"> {fullLabel} from cart</span>
@@ -104,7 +104,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
                 </div>
               </div>
 
-              <p className="shrink-0 text-sm font-semibold tabular-nums text-ink">
+              <p className="shrink-0 text-sm font-semibold numeric text-ink">
                 {formatPrice(line.price * line.quantity)}
               </p>
             </li>
@@ -115,7 +115,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
       <div className="mt-6 rounded-lg border border-line bg-card p-5">
         <div className="flex items-center justify-between text-base">
           <span className="text-ink-soft">Subtotal</span>
-          <span className="font-semibold tabular-nums text-ink">{formatPrice(totalPrice)}</span>
+          <span className="font-semibold numeric text-ink">{formatPrice(totalPrice)}</span>
         </div>
         <p className="mt-1 text-xs text-muted">
           Pickup only — no delivery fee. Pay cash when you collect.
@@ -127,7 +127,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
 
         <Link
           href="/"
-          className="mt-3 block text-center text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+          className="mt-3 block text-center text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors hover:text-ink"
         >
           Continue shopping
         </Link>

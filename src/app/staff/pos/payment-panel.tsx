@@ -130,13 +130,13 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
         {order.order_items.map((item) => (
           <li key={item.id} className="flex justify-between gap-4">
             <span className="min-w-0 text-ink-soft">
-              <span className="tabular-nums text-muted">{item.quantity}&times;</span>{" "}
+              <span className="numeric text-muted">{item.quantity}&times;</span>{" "}
               {item.item_name}
               {item.size && (
                 <span className="text-muted"> &middot; {getSizeOption(item.size).label}</span>
               )}
             </span>
-            <span className="shrink-0 tabular-nums text-ink">
+            <span className="shrink-0 numeric text-ink">
               {formatPrice(item.subtotal)}
             </span>
           </li>
@@ -146,7 +146,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
       <dl className="mt-3 flex flex-col gap-1 border-t border-line pt-3 text-sm">
         <div className="flex justify-between gap-4">
           <dt className="text-muted">Subtotal</dt>
-          <dd className="tabular-nums text-ink-soft">
+          <dd className="numeric text-ink-soft">
             {formatPrice(order.subtotal_amount)}
           </dd>
         </div>
@@ -156,15 +156,15 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
             <dt className="text-muted">
               Discount{order.promo_code ? ` (${order.promo_code})` : ""}
             </dt>
-            <dd className="tabular-nums text-success">
+            <dd className="numeric text-success">
               −{formatPrice(order.discount_amount)}
             </dd>
           </div>
         )}
 
         <div className="mt-1 flex justify-between gap-4 border-t border-line pt-2">
-          <dt className="text-base font-semibold text-ink">Total</dt>
-          <dd className="text-base font-semibold tabular-nums text-ink">
+          <dt className="display text-lg text-ink">Total</dt>
+          <dd className="text-base font-semibold numeric text-ink">
             {formatPrice(order.total_amount)}
           </dd>
         </div>
@@ -174,7 +174,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
       {isUnpaid ? (
         <div className="mt-4 border-t border-line pt-4">
           <fieldset>
-            <legend className="text-2xs font-semibold uppercase tracking-[0.16em] text-muted">
+            <legend className="eyebrow text-muted">
               Tender
             </legend>
 
@@ -184,7 +184,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
               {METHODS.map((m) => (
                 <label
                   key={m}
-                  className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium transition-colors duration-150 ease-hi ${
+                  className={`ui-caps inline-flex cursor-pointer items-center gap-2 rounded-md border px-3.5 py-2 text-2xs transition-colors ${
                     method === m
                       ? "border-accent bg-accent text-accent-fg"
                       : "border-line-strong bg-card text-ink-soft hover:border-ink-soft hover:text-ink"
@@ -223,7 +223,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
                   value={tendered}
                   onChange={(e) => setTendered(e.target.value)}
                   placeholder={String(order.total_amount)}
-                  className="w-full rounded-md border border-line-strong bg-card px-3 py-2 text-sm tabular-nums text-ink placeholder:text-muted"
+                  className="w-full rounded-md border border-line-strong bg-card px-3 py-2 text-sm numeric text-ink placeholder:text-muted"
                 />
               </div>
 
@@ -231,7 +231,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
                   and it appears away from the field being typed into. */}
               <p
                 aria-live="polite"
-                className="min-w-[8rem] pb-2 text-sm tabular-nums"
+                className="min-w-[8rem] pb-2 text-sm numeric"
               >
                 {change === null ? (
                   <span className="text-muted">Change —</span>
@@ -284,7 +284,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
           type="button"
           onClick={() => setShowAdjust((v) => !v)}
           aria-expanded={showAdjust}
-          className="text-xs font-medium text-muted underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+          className="text-xs font-medium text-muted underline underline-offset-4 transition-colors hover:text-ink"
         >
           {showAdjust ? "Hide adjustments" : "Discount, refund or void"}
         </button>
@@ -317,7 +317,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
                     onChange={(e) => setDiscount(e.target.value)}
                     placeholder="Amount"
                     aria-label="Discount amount"
-                    className="w-28 rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs tabular-nums text-ink placeholder:text-muted"
+                    className="w-28 rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs numeric text-ink placeholder:text-muted"
                   />
                   {/* Required, and the RPC rejects a blank one too: "who
                       discounted this and why" is the first question asked when

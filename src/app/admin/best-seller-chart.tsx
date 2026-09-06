@@ -104,7 +104,7 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
             Flavours by units sold, with order count and revenue.
           </caption>
           <thead>
-            <tr className="border-b border-line text-xs uppercase tracking-wide text-muted">
+            <tr className="border-b border-line eyebrow text-muted">
               <th scope="col" className="py-2 pr-4 font-medium">Flavor</th>
               <th scope="col" className="py-2 pr-4 font-medium">Units sold</th>
               <th scope="col" className="py-2 pr-4 font-medium">Orders</th>
@@ -118,14 +118,14 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
                 <th scope="row" className="whitespace-nowrap py-2.5 pr-4 text-left font-medium text-ink">
                   {row.flavor}
                   {i === 0 && (
-                    <span className="ml-2 rounded-full bg-accent-soft px-2 py-0.5 text-2xs font-semibold uppercase tracking-wide text-accent-ink">
+                    <span className="ml-2 rounded-md bg-accent-soft px-2 py-0.5 eyebrow text-accent-ink">
                       Top
                     </span>
                   )}
                 </th>
-                <td className="whitespace-nowrap py-2.5 pr-4 tabular-nums text-ink-soft">{row.total_quantity}</td>
-                <td className="whitespace-nowrap py-2.5 pr-4 tabular-nums text-ink-soft">{row.order_count}</td>
-                <td className="whitespace-nowrap py-2.5 tabular-nums text-ink-soft">{formatPrice(row.total_revenue)}</td>
+                <td className="whitespace-nowrap py-2.5 pr-4 numeric text-ink-soft">{row.total_quantity}</td>
+                <td className="whitespace-nowrap py-2.5 pr-4 numeric text-ink-soft">{row.order_count}</td>
+                <td className="whitespace-nowrap py-2.5 numeric text-ink-soft">{formatPrice(row.total_revenue)}</td>
               </tr>
             ))}
           </tbody>

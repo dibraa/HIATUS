@@ -11,6 +11,7 @@ import { RatingSummary } from "@/components/star-rating";
 import { ProductImage } from "@/components/ui/product-image";
 import { SizeSelector } from "@/components/ui/size-selector";
 import { Button } from "@/components/ui/button";
+import { CookiesDoodle } from "@/components/ui/doodles";
 
 export type FeaturedItem = {
   item: MenuItem;
@@ -19,9 +20,17 @@ export type FeaturedItem = {
 };
 
 /**
- * The storefront's hero product: a dark, high-contrast card that lets someone
- * configure and add a drink without leaving the landing page — the shortest
- * path from arrival to cart.
+ * The pine feature panel — the comp's "Sips worth sharing".
+ *
+ * Its layering is the point, and it is built the way the reference draws it:
+ * a sage display heading, a photograph laid over that heading so the second
+ * line is partly covered, and an espresso caption card straddling the photo's
+ * bottom edge. Depth from overlap, not from shadow.
+ *
+ * The overlaps are CONTAINER queries, not viewport ones. This panel is used
+ * full-width on the home page and inside a half-width hero column on /demo,
+ * and a viewport-keyed overlap put the caption straight over the heading in the
+ * narrow case. Below the threshold the same three pieces run in sequence.
  *
  * Deliberately NOT autoplaying. An auto-advancing carousel moves a control out
  * from under the pointer and fails WCAG 2.2.2 unless it ships pause controls;
@@ -39,26 +48,42 @@ export function FeaturedCarousel({ featured }: { featured: FeaturedItem[] }) {
 
   return (
     <section
-      aria-label="Featured drinks"
-      className="relative flex flex-col overflow-hidden rounded-xl bg-inverse-bg p-5 text-inverse-fg shadow-lg sm:p-6"
+      aria-labelledby="featured-heading"
+      className="@container relative overflow-hidden rounded-2xl bg-inverse-bg px-5 py-8 text-inverse-fg sm:px-8 sm:py-10"
     >
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="text-2xs font-semibold uppercase tracking-[0.18em] text-inverse-muted">
-          Featured
-        </p>
+      {/* Marginalia, in the panel's own line colour so it reads as a drawing
+          on the surface rather than as content on top of it. */}
+      <CookiesDoodle className="doodle-inverse pointer-events-none absolute -right-8 -top-8 h-32 w-32 @2xl:h-52 @2xl:w-52" />
+
+      <div className="relative flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="eyebrow text-inverse-muted">Featured</p>
+
+          {/* Sage on pine is 3.11:1 — AA for large text and nothing smaller,
+              which is why this token is named `inverse-display`. */}
+          <h2
+            id="featured-heading"
+            className="display mt-3 max-w-[9ch] text-4xl text-inverse-display @2xl:text-5xl"
+          >
+            Sips worth sharing
+          </h2>
+        </div>
 
         {count > 1 && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             {/* Position is announced politely so the change is perceivable
                 without sight; the visible text carries the same information. */}
-            <span className="mr-1 text-xs tabular-nums text-inverse-muted" aria-live="polite">
+            <span
+              className="numeric mr-1 text-2xs text-inverse-muted"
+              aria-live="polite"
+            >
               {index + 1} / {count}
             </span>
             <button
               type="button"
               onClick={() => go(-1)}
               aria-label="Show previous featured drink"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-inverse-line transition-colors duration-150 ease-hi hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-inverse-line transition-colors hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
             >
               <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
                 <path d="M12.5 4L7 10l5.5 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -68,7 +93,7 @@ export function FeaturedCarousel({ featured }: { featured: FeaturedItem[] }) {
               type="button"
               onClick={() => go(1)}
               aria-label="Show next featured drink"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-inverse-line transition-colors duration-150 ease-hi hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
+              className="flex h-10 w-10 items-center justify-center rounded-md border border-inverse-line transition-colors hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
             >
               <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
                 <path d="M7.5 4L13 10l-5.5 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -98,39 +123,45 @@ function FeaturedCard({
   const sizeLabel = getSizeOption(size).label;
 
   return (
-    <div className="grid flex-1 gap-5 sm:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] sm:items-center sm:gap-6">
-      <ProductImage
-        src={item.image_url}
-        alt={item.name}
-        sizes="(min-width: 1024px) 240px, (min-width: 640px) 30vw, 80vw"
-        priority={isLcp}
-        rounded="rounded-lg"
-        tone="dark"
-        className="mx-auto max-w-[240px] sm:max-w-none"
-      />
+    <div className="relative mt-6 grid gap-5 @3xl:mt-[-2.5rem] @3xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] @3xl:items-end @3xl:gap-0">
+      {/* The photograph, matted in the panel's own cream so the image never
+          touches the pine directly — the comp's rule, inverted. */}
+      <div className="matte matte-dark @3xl:ml-8">
+        <div className="matte-inner">
+          <ProductImage
+            src={item.image_url}
+            alt={item.name}
+            sizes="(min-width: 1024px) 380px, (min-width: 640px) 60vw, 90vw"
+            priority={isLcp}
+            rounded="rounded-none"
+            tone="dark"
+          />
+        </div>
+      </div>
 
-      <div className="flex min-w-0 flex-col">
-        <p className="text-2xs font-semibold uppercase tracking-[0.14em] text-inverse-muted">
-          {item.flavor}
-        </p>
+      {/* The caption card, straddling the photo's edge once the panel is
+          wide enough to carry the overlap. */}
+      <div className="relative z-10 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg sm:p-6 @3xl:-ml-16 @3xl:mb-8">
+        <p className="eyebrow text-inverse-display">{item.flavor}</p>
 
-        {/* h2: the page's h1 is the hero headline, and this must not skip a level */}
-        <h2 className="mt-1 text-2xl font-semibold leading-tight text-inverse-fg">
+        {/* h3: the panel's h2 is the section heading, and this must not skip
+            a level */}
+        <h3 className="display mt-2 text-3xl">
           <Link
             href={`/menu/${item.id}`}
-            className="hover:underline decoration-inverse-muted underline-offset-4 focus-visible:outline-inverse-fg"
+            className="underline-offset-4 hover:underline focus-visible:outline-inverse-card-fg"
           >
             {item.name}
           </Link>
-        </h2>
+        </h3>
 
-        <div className="mt-2">
+        <div className="mt-3">
           <RatingSummary average={averageRating} count={ratingCount} tone="dark" />
         </div>
 
         {item.description && (
-          // max-w keeps the measure near 60 characters at every width
-          <p className="mt-3 max-w-[46ch] text-sm text-inverse-muted line-clamp-2">
+          // max-w keeps the measure near 55 characters at every width
+          <p className="mt-3 line-clamp-2 max-w-[46ch] text-sm text-inverse-muted">
             {item.description}
           </p>
         )}
@@ -145,10 +176,10 @@ function FeaturedCard({
           />
         </div>
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
           {/* Live region: the price is the thing that changes when a size is
               picked, and that change happens away from the control. */}
-          <p className="text-2xl font-semibold tabular-nums" aria-live="polite">
+          <p className="numeric text-2xl font-semibold" aria-live="polite">
             {formatPrice(unitPrice)}
             <span className="sr-only"> for {sizeLabel}</span>
           </p>
@@ -157,7 +188,7 @@ function FeaturedCard({
             variant="inverse"
             size="md"
             disabled={!item.is_available}
-            className="min-w-[10rem] flex-1 sm:flex-none"
+            className="flex-1 sm:flex-none"
             onClick={() => {
               addItem({
                 menuItemId: item.id,

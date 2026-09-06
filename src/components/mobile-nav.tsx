@@ -60,8 +60,8 @@ export function MobileNav({
   }, [open]);
 
   const linkClass =
-    "flex min-h-11 items-center rounded-md px-3 text-sm font-medium text-ink-soft " +
-    "transition-colors duration-150 ease-hi hover:bg-raised hover:text-ink";
+    "ui-caps flex min-h-11 items-center rounded-md px-3 text-2xs text-ink-soft " +
+    "transition-colors hover:bg-raised hover:text-ink";
 
   return (
     <>
@@ -71,7 +71,7 @@ export function MobileNav({
         aria-label={open ? "Close menu" : "Open menu"}
         aria-expanded={open}
         aria-controls="mobile-nav-panel"
-        className="flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors duration-150 ease-hi hover:bg-raised lg:hidden"
+        className="flex h-10 w-10 items-center justify-center rounded-md text-ink transition-colors hover:bg-raised lg:hidden"
         onClick={() => setOpen((v) => !v)}
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
@@ -149,7 +149,7 @@ export function MobileNav({
                 </Link>
                 <Link
                   href="/signup"
-                  className="mt-1 flex min-h-11 items-center justify-center rounded-full bg-accent px-4 text-sm font-medium text-accent-fg transition-colors duration-150 ease-hi hover:bg-accent-hover"
+                  className="ui-caps mt-1 flex min-h-11 items-center justify-center rounded-md bg-cta px-4 text-2xs text-cta-fg transition-colors hover:bg-cta-hover"
                 >
                   Create account
                 </Link>

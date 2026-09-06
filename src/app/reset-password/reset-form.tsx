@@ -15,7 +15,7 @@ export function ResetPasswordForm() {
   if (state.success) {
     return (
       <div className="rounded-lg border border-line bg-card p-6 text-center">
-        <h2 className="text-xl font-semibold text-ink">Password changed</h2>
+        <h2 className="display text-xl text-ink">Password changed</h2>
         <p className="mx-auto mt-2 max-w-[42ch] text-sm text-muted">
           You are signed in with your new password. Anywhere else you were
           logged in will need it next time.
@@ -23,7 +23,7 @@ export function ResetPasswordForm() {
 
         <Link
           href="/"
-          className="mt-6 inline-flex h-12 items-center rounded-full bg-accent px-6 text-base font-medium text-accent-fg transition-colors duration-150 ease-hi hover:bg-accent-hover"
+          className="ui-caps mt-6 inline-flex h-12 items-center rounded-md bg-cta px-6 text-sm text-cta-fg transition-colors hover:bg-cta-hover"
         >
           Back to the menu
         </Link>
