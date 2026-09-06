@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin, isStaff } from "@/lib/roles";
 import { CartBadge } from "@/components/cart-badge";
@@ -33,20 +34,21 @@ export async function Navbar() {
     "text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:text-ink";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-surface/85 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:gap-4">
+    <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur-xl">
+      <div className="mx-auto flex h-[4.5rem] max-w-6xl items-center gap-3 px-4 sm:gap-5">
         {/* Identity */}
         <Link
           href="/"
           className="flex shrink-0 items-center gap-2.5"
           aria-label="Hiatus Coffee, go to menu"
         >
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-inverse-bg text-sm font-semibold text-inverse-fg"
-          >
-            H
-          </span>
+          <Image
+            src="/logo.png"
+            alt=""
+            width={40}
+            height={40}
+            className="h-9 w-9 rounded-xl bg-white object-contain ring-1 ring-line"
+          />
           <span className="text-sm font-semibold uppercase tracking-[0.22em] text-ink">
             Hiatus
           </span>

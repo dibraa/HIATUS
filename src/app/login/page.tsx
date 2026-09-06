@@ -8,27 +8,29 @@ export const metadata: Metadata = { title: "Log in" };
 
 export default function LoginPage() {
   return (
-    <div className="mx-auto max-w-sm py-6 sm:py-10">
-      <PageHeader
-        title="Log in to Hiatus"
-        description="Your orders, order history and saved details live behind this."
-      />
+    <div className="mx-auto w-full max-w-lg py-6 sm:py-12">
+      <div className="rounded-2xl border border-line bg-card p-5 shadow-lg sm:p-8">
+        <PageHeader
+          title="Log in to Hiatus"
+          description="Your orders, order history and saved details live behind this."
+        />
 
-      {/* Suspense: LoginForm reads the `next` search param, which opts the
-          subtree into client-side rendering. */}
-      <Suspense fallback={<FormSkeleton />}>
-        <LoginForm />
-      </Suspense>
+        {/* Suspense: LoginForm reads the `next` search param, which opts the
+            subtree into client-side rendering. */}
+        <Suspense fallback={<FormSkeleton />}>
+          <LoginForm />
+        </Suspense>
 
-      <p className="mt-6 text-sm text-muted">
-        No account yet?{" "}
-        <Link
-          href="/signup"
-          className="font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
-        >
-          Create one
-        </Link>
-      </p>
+        <p className="mt-6 border-t border-line pt-5 text-sm text-muted">
+          No account yet?{" "}
+          <Link
+            href="/signup"
+            className="font-medium text-accent-ink underline underline-offset-4 transition-colors duration-150 ease-hi hover:text-ink"
+          >
+            Create one
+          </Link>
+        </p>
+      </div>
     </div>
   );
 }

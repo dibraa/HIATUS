@@ -23,7 +23,7 @@ import { useState, type ComponentProps, type ReactNode } from "react";
 /** Shared control skin. Single-line by deliberate choice: a multi-line string
  *  literal in a className carries the CR from a CRLF file into the server HTML
  *  but not the client, which produces a hydration mismatch. */
-const CONTROL = "w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink transition-colors duration-150 ease-hi placeholder:text-muted hover:border-ink-soft focus:border-ink disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted";
+const CONTROL = "w-full rounded-xl border border-line-strong bg-card px-3.5 py-3 text-sm text-ink shadow-sm transition-colors duration-150 ease-hi placeholder:text-muted hover:border-ink-soft focus:border-accent disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted";
 
 const CONTROL_INVALID = "border-danger hover:border-danger focus:border-danger";
 

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 /**
  * Site footer.
@@ -12,17 +13,12 @@ export function SiteFooter() {
     "text-sm text-ink-soft transition-colors duration-150 ease-hi hover:text-ink hover:underline underline-offset-4";
 
   return (
-    <footer className="mt-16 border-t border-line bg-card">
-      <div className="mx-auto max-w-6xl px-4 py-12">
+    <footer className="mt-20 border-t border-line bg-card">
+      <div className="mx-auto max-w-6xl px-4 py-14">
         <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
           <div>
             <div className="flex items-center gap-2.5">
-              <span
-                aria-hidden="true"
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-ink text-sm font-semibold text-accent-fg"
-              >
-                H
-              </span>
+              <Image src="/logo.png" alt="" width={40} height={40} className="h-9 w-9 rounded-xl bg-white object-contain ring-1 ring-line" />
               <span className="text-sm font-semibold uppercase tracking-[0.22em] text-ink">
                 Hiatus
               </span>

@@ -6,7 +6,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import { FormError } from "@/components/ui/field";
 import { formatDate, formatElapsed } from "@/lib/format";
-import { ROLE_DESCRIPTIONS, ROLE_LABELS } from "@/lib/roles";
+import { ROLE_LABELS } from "@/lib/roles";
 import type { Role, StaffActivity, TeamMember } from "@/types/database";
 import { GrantRoleForm, MemberControls } from "./team-controls";
 
@@ -61,7 +61,6 @@ export default async function TeamPage() {
     <div>
       <PageHeader
         title="Team"
-        description="Who can work the counter, who can see the books, and what everyone has been doing."
       />
 
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.78fr)]">
@@ -141,17 +140,6 @@ export default async function TeamPage() {
             </ul>
           )}
 
-          <dl className="mt-6 rounded-lg border border-line bg-raised p-4 text-sm">
-            <p className="mb-2 text-2xs font-semibold uppercase tracking-[0.16em] text-muted">
-              What each role can do
-            </p>
-            {(["staff", "admin"] as Role[]).map((role) => (
-              <div key={role} className="mt-2 first:mt-0">
-                <dt className="inline font-semibold text-ink">{ROLE_LABELS[role]}: </dt>
-                <dd className="inline text-ink-soft">{ROLE_DESCRIPTIONS[role]}</dd>
-              </div>
-            ))}
-          </dl>
         </section>
 
         {/* ---------- Grant + audit ---------- */}
@@ -170,7 +158,7 @@ export default async function TeamPage() {
               <EmptyState
                 as="h3"
                 title="Nothing logged yet"
-                body="Status changes, payments, refunds and settings edits are recorded here as they happen."
+                body=""
               />
             ) : (
               <ul className="max-h-[36rem] divide-y divide-line overflow-y-auto rounded-lg border border-line bg-card">

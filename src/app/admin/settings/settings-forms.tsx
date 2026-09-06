@@ -37,7 +37,6 @@ const INITIAL: SettingsState = { error: null, success: null };
  */
 function SettingsCard({
   title,
-  description,
   state,
   pending,
   action,
@@ -45,7 +44,6 @@ function SettingsCard({
   submitLabel = "Save",
 }: {
   title: string;
-  description: string;
   state: SettingsState;
   pending: boolean;
   action: (formData: FormData) => void;
@@ -55,9 +53,8 @@ function SettingsCard({
   return (
     <form action={action} className="rounded-lg border border-line bg-card p-5">
       <h2 className="text-xl font-semibold tracking-tight text-ink">{title}</h2>
-      <p className="mt-1.5 max-w-[60ch] text-sm text-muted">{description}</p>
 
-      <div className="mt-5 flex flex-col gap-4">{children}</div>
+      <div className="mt-4 flex flex-col gap-4">{children}</div>
 
       {state.error && (
         <div className="mt-4">
@@ -87,7 +84,6 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
   return (
     <SettingsCard
       title="Opening hours"
-      description="Shown on the storefront. A closing time earlier than the opening time is read as running past midnight."
       state={state}
       pending={pending}
       action={formAction}
@@ -152,7 +148,6 @@ export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings
   return (
     <SettingsCard
       title="Payment methods"
-      description="Which tenders customers can choose at checkout. Payment is still taken at the counter — this app does not process cards itself."
       state={state}
       pending={pending}
       action={formAction}
@@ -162,21 +157,18 @@ export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings
         name="cash"
         label="Cash"
         defaultChecked={methods.cash}
-        hint="Paid at the counter on collection."
       />
       <CheckboxField
         id="card"
         name="card"
         label="Card"
         defaultChecked={methods.card}
-        hint="Tapped or inserted on your own terminal."
       />
       <CheckboxField
         id="ewallet"
         name="ewallet"
         label="E-wallet"
         defaultChecked={methods.ewallet}
-        hint="GCash, Maya or a QR wallet at the counter."
       />
     </SettingsCard>
   );
@@ -192,7 +184,6 @@ export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
   return (
     <SettingsCard
       title="Ordering"
-      description="Controls what the storefront offers. Switching orders off leaves the menu browsable but stops new checkouts."
       state={state}
       pending={pending}
       action={formAction}
@@ -202,7 +193,6 @@ export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
         name="accepting_orders"
         label="Accepting orders"
         defaultChecked={ordering.accepting_orders}
-        hint="Turn off during a rush or after closing."
       />
       <CheckboxField
         id="dine_in_enabled"
@@ -226,7 +216,6 @@ export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
         max="120"
         step="1"
         defaultValue={ordering.default_prep_minutes}
-        hint="Only used until there is enough order history to measure the real wait."
       />
     </SettingsCard>
   );
@@ -242,7 +231,6 @@ export function ShopInfoForm({ info }: { info: ShopInfo }) {
   return (
     <SettingsCard
       title="Shop details"
-      description="Appears in the footer and on receipts."
       state={state}
       pending={pending}
       action={formAction}
@@ -295,7 +283,6 @@ export function TemplatesForm({ templates }: { templates: NotificationTemplates 
   return (
     <SettingsCard
       title="Order messages"
-      description="What a customer reads on their order page at each stage. Keep it warm and plain — no jargon."
       state={state}
       pending={pending}
       action={formAction}

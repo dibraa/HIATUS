@@ -17,16 +17,21 @@ export function PageHeader({
   description,
   action,
   as: Tag = "h1",
+  className = "",
 }: {
   title: string;
   description?: string;
   action?: ReactNode;
   as?: "h1" | "h2";
+  className?: string;
 }) {
+  const headerClass = className ||
+    "mb-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-4 border-b border-line pb-5";
+
   return (
-    <div className="mb-6 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
+    <div className={headerClass}>
       <div>
-        <Tag className="text-2xl font-semibold tracking-tight text-ink">{title}</Tag>
+        <Tag className="text-3xl font-semibold tracking-[-0.02em] text-ink">{title}</Tag>
         {description && (
           <p className="mt-1.5 max-w-[60ch] text-sm text-muted">{description}</p>
         )}

@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
  * Staff section nav.
  *
  * Client-side because it needs the pathname to mark the current section —
- * without that, four identical links give no indication of where you are. The
+ * without that, identical links give no indication of where you are. The
  * orange underline is the visual cue; `aria-current` is the announced one, and
  * neither is load-bearing alone.
  *
@@ -19,7 +19,6 @@ const LINKS = [
   { href: "/staff", label: "Queue" },
   { href: "/staff/pos", label: "Payments" },
   { href: "/staff/menu", label: "Availability" },
-  { href: "/staff/shift", label: "My shift" },
 ];
 
 export function StaffNav() {

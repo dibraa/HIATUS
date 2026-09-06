@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth";
 import { homePathFor } from "@/lib/roles";
 
-export type AuthState = { error: string | null };
+export type AuthState = { error: string | null; success?: string | null };
 export type ResetState = { error: string | null; sent: boolean };
 export type PasswordState = { error: string | null; success: boolean };
 
@@ -56,7 +56,7 @@ export async function signUp(_prevState: AuthState, formData: FormData): Promise
     return { error: error.message };
   }
 
-  redirect("/");
+  return { error: null, success: "Your account was created successfully." };
 }
 
 /**

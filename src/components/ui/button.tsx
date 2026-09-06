@@ -20,7 +20,7 @@ export type ButtonVariant =
 export type ButtonSize = "sm" | "md" | "lg";
 
 const BASE =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium " +
+  "inline-flex items-center justify-center gap-2 rounded-xl font-medium " +
   "transition-colors duration-150 ease-hi " +
   "disabled:cursor-not-allowed disabled:opacity-45 " +
   // Pointer-events off on the icon keeps click targets on the control itself

@@ -12,7 +12,7 @@ export function SignOutButton() {
     <button
       type="button"
       disabled={pending}
-      className="text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:text-ink disabled:opacity-50"
+      className="flex min-h-11 w-full items-center rounded-xl px-3 text-left text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:bg-card hover:text-ink disabled:opacity-50"
       onClick={async () => {
         // Guards the double-click: signOut then push then refresh is slow
         // enough on a poor connection to be pressed twice.
