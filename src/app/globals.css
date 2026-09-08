@@ -380,10 +380,18 @@ html {
 }
 
 body {
-  background: var(--hi-surface);
+   background-color: var(--hi-surface);
+   background-image:
+      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
+   background-size: 32px 32px;
   color: var(--hi-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+}
+
+main {
+   position: relative;
 }
 
 /* The admin workspace is also reachable through client-side navigation, where
@@ -404,6 +412,10 @@ body:has(.admin-workspace) #main {
   outline: 2px solid var(--hi-focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
+}
+
+::placeholder {
+   opacity: 0.78;
 }
 
 /* Roomier hit areas on touch pointers — 44px is the WCAG 2.5.5 target size. */

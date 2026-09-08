@@ -21,7 +21,7 @@ export default async function StaffLayout({
   if (!isStaff(access)) redirect("/");
 
   return (
-    <div>
+    <div className="rounded-2xl border border-line bg-card p-4 shadow-sm sm:p-6">
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="eyebrow text-accent-ink">
           Counter
@@ -43,7 +43,7 @@ export default async function StaffLayout({
         <StaffNav />
       </div>
 
-      <div className="mt-6">{children}</div>
+      <div className="mt-7">{children}</div>
     </div>
   );
 }

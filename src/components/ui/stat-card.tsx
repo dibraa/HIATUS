@@ -39,7 +39,7 @@ export function StatCard({
   }[tone];
 
   return (
-    <div className={`rounded-2xl border p-5 shadow-[0_8px_24px_-20px_rgba(81,48,36,0.55)] ${toneClasses}`}>
+    <div className={`rounded-2xl border p-5 shadow-sm transition-transform duration-150 ease-hi hover:-translate-y-0.5 ${toneClasses}`}>
       <div className="flex items-start justify-between gap-3">
         <p className="eyebrow text-muted">{label}</p>
         {icon && (
