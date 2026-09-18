@@ -116,16 +116,21 @@ export default async function HomePage({
           Eyebrow, one enormous line, then the matted photograph with things
           laid over it — the comp's opening, beat for beat. */}
       <section>
-        <p className="eyebrow rise text-center text-muted">
-          Redefining rituals, one sip at a time
-        </p>
+        {/* No label above the headline. A kicker only tells the reader that a
+            heading is coming, which they can already see; the line below is
+            strong enough to open the page unaccompanied. The old eyebrow copy
+            now sits under it, where it reads as a promise rather than a tag. */}
 
         {/* One class, not `text-5xl sm:text-6xl lg:text-7xl`: the size is fluid
             now, so it reads 48px on a phone and 96px at 1280 with nothing
             flat in between. */}
-        <h1 className="display rise mt-block text-center text-7xl text-ink [--rise:1]">
+        <h1 className="display rise text-center text-7xl text-ink [--rise:1]">
           Elevate your everyday brew
         </h1>
+
+        <p className="rise mx-auto mt-block max-w-[38ch] text-center text-lg text-ink-soft [--rise:2]">
+          Redefining rituals, one sip at a time.
+        </p>
 
         {/* The photograph is the LCP element and is deliberately NOT part of
             the entrance — see the `.rise` note in globals.css. */}
@@ -190,7 +195,7 @@ export default async function HomePage({
 
         {/* The two facts a shopper needs before they start: whether the shop is
             open, and where the menu is. */}
-        <div className="rise mt-block flex flex-wrap items-center justify-between gap-x-6 gap-y-4 [--rise:2]">
+        <div className="rise mt-block flex flex-wrap items-center justify-between gap-x-6 gap-y-4 [--rise:3]">
           <div className="flex flex-wrap items-center gap-3">
             <Badge tone={open ? "success" : "neutral"}>
               {open ? "Open now" : "Closed"}
@@ -409,13 +414,19 @@ export default async function HomePage({
       {/* ================================================== Promises ======
           The three claims the facts strip makes in two words each, with the
           reasoning behind them. Kept as prose in the body face: this is the one
-          part of the page someone reads rather than scans. */}
+          part of the page someone reads rather than scans.
+
+          Set as a ruled definition list rather than three cards. Three cards of
+          icon-heading-paragraph give every claim the same weight and the same
+          silhouette, which is how a page ends up looking assembled; hairlines
+          and a wide display term let the claim lead and the prose answer it,
+          and cost three containers the page did not need. */}
       <section aria-labelledby="why-heading">
         <h2 id="why-heading" className="display text-5xl text-ink">
           Why order with us
         </h2>
 
-        <ul className="mt-heading grid gap-4 sm:grid-cols-3">
+        <dl className="mt-heading border-t border-line">
           {[
             {
               icon: <ClockIcon />,
@@ -433,94 +444,103 @@ export default async function HomePage({
               body: "Every rating on this menu comes from someone who actually bought and collected that drink. There is no other way to leave one.",
             },
           ].map((feature) => (
-            <li key={feature.title} className="rounded-lg border border-line bg-card p-6">
-              <span
-                aria-hidden="true"
-                className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent-soft text-accent-ink"
-              >
-                {feature.icon}
-              </span>
-              <h3 className="display mt-block text-xl text-ink">{feature.title}</h3>
-              <p className="mt-tight text-sm text-ink-soft">{feature.body}</p>
-            </li>
+            <div
+              key={feature.title}
+              className="grid gap-x-12 gap-y-3 border-b border-line py-7 lg:grid-cols-[minmax(0,20rem)_minmax(0,1fr)] lg:py-9"
+            >
+              <dt className="display flex items-center gap-3 text-2xl text-ink lg:text-3xl">
+                <span aria-hidden="true" className="shrink-0 text-accent-ink">
+                  {feature.icon}
+                </span>
+                {feature.title}
+              </dt>
+              <dd className="max-w-[62ch] text-base text-ink-soft">
+                {feature.body}
+              </dd>
+            </div>
           ))}
-        </ul>
+        </dl>
       </section>
 
-      {/* ====================================================== Story ====== */}
-      <section aria-labelledby="story-heading">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] lg:items-center lg:gap-16">
-          <div>
-            <p className="eyebrow text-muted">Our story</p>
+      {/* ====================================================== Story ======
+          The page's second peak, and the only place the pine panel appears
+          above the footer. `inverse` is defined as a SUBJECT rather than a
+          ground, and this is the section that earns it: it is the one moment
+          that is about the shop rather than about ordering from it, so it
+          changes ground to say so.
 
-            <h2
-              id="story-heading"
-              className="display mt-block max-w-[14ch] text-5xl text-ink"
-            >
-              A pause worth taking
-            </h2>
+          Sage (--hi-inverse-display) is display-only at 3.11:1 — AA large.
+          The prose beside it uses --hi-inverse-fg at 5.10:1, which is why the
+          two are separate tokens. */}
+      <section
+        aria-labelledby="story-heading"
+        className="full-bleed bg-inverse-bg py-band text-inverse-fg"
+      >
+        <div className="mx-auto grid max-w-6xl gap-y-heading gap-x-16 px-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
+          <h2
+            id="story-heading"
+            className="display max-w-[12ch] text-6xl text-inverse-display"
+          >
+            A pause worth taking
+          </h2>
 
-            <div className="mt-heading flex flex-col gap-block text-base text-ink-soft">
-              <p className="max-w-[54ch]">
-                Hiatus started with a small complaint: the best part of a coffee
-                is the few minutes you spend with it, and the worst part is the
-                ten you spend queueing first.
-              </p>
-              <p className="max-w-[54ch]">
-                So we built the shop around the pause rather than the line.
-                Order ahead, arrive when it is ready, and spend the time you
-                would have spent waiting doing something better — even if that
-                something is nothing at all.
-              </p>
-            </div>
+          <div className="flex flex-col gap-block text-lg leading-relaxed">
+            <p className="max-w-[54ch]">
+              Hiatus started with a small complaint: the best part of a coffee
+              is the few minutes you spend with it, and the worst part is the
+              ten you spend queueing first.
+            </p>
+            <p className="max-w-[54ch] text-inverse-muted">
+              So we built the shop around the pause rather than the line.
+              Order ahead, arrive when it is ready, and spend the time you
+              would have spent waiting doing something better — even if that
+              something is nothing at all.
+            </p>
           </div>
-
-          <dl className="grid grid-cols-2 gap-3 sm:gap-4">
-            {[
-              { label: "On the menu", value: String(items.length) },
-              { label: "Ratings left", value: String((allRatings ?? []).length) },
-              { label: "Sizes", value: "3" },
-              { label: "Queueing", value: "None" },
-            ].map((stat) => (
-              <div key={stat.label} className="rounded-lg border border-line bg-card p-5">
-                <dt className="eyebrow text-muted">{stat.label}</dt>
-                <dd className="numeric mt-tight text-2xl font-semibold text-ink">
-                  {stat.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
         </div>
       </section>
 
-      {/* ====================================================== Hours ====== */}
+      {/* ====================================================== Hours ======
+          A ruled timetable, not seven bordered tiles. Seven cards of two words
+          each is the card habit doing a table's job: the rows are the same kind
+          of fact repeated, which is exactly what hairlines are for. Today is
+          marked in accent ink and carries a dot, so the highlight survives
+          without colour (WCAG 1.4.1). */}
       <section aria-labelledby="hours-heading">
         <h2 id="hours-heading" className="display text-5xl text-ink">
           When we are open
         </h2>
 
-        <ul className="mt-heading grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+        <ul className="mt-heading grid border-t border-line sm:grid-cols-2 sm:gap-x-12">
           {settings.businessHours.map((day) => {
             const isToday = today?.day === day.day;
 
             return (
               <li
                 key={day.day}
-                className={`flex items-center justify-between gap-3 rounded-lg border px-4 py-3.5 ${
-                  isToday ? "border-accent bg-accent-soft" : "border-line bg-card"
-                }`}
+                className="flex items-baseline justify-between gap-4 border-b border-line py-4"
               >
                 <span
-                  className={`ui-caps text-2xs ${
-                    isToday ? "text-ink" : "text-ink-soft"
+                  className={`ui-caps flex items-center gap-2 text-2xs ${
+                    isToday ? "text-accent-ink" : "text-ink-soft"
                   }`}
                 >
+                  {isToday && (
+                    <span
+                      aria-hidden="true"
+                      className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent"
+                    />
+                  )}
                   {day.label}
                   {isToday && <span className="sr-only"> (today)</span>}
                 </span>
                 <span
                   className={`numeric shrink-0 text-2xs ${
-                    day.closed ? "text-muted" : "text-ink-soft"
+                    day.closed
+                      ? "text-muted"
+                      : isToday
+                        ? "text-accent-ink"
+                        : "text-ink-soft"
                   }`}
                 >
                   {day.closed ? "Closed" : `${day.open}–${day.close}`}

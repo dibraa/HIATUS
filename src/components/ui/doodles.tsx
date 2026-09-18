@@ -56,27 +56,44 @@ export function CookiesDoodle({ className }: MarkProps) {
   );
 }
 
-/** A cupcake in its pleated wrapper. Flanks the loyalty offer. */
+/** A cupcake in its pleated wrapper. Flanks the loyalty offer.
+ *
+ * The wrapper tapers (a case is narrower at its base than its rim) and the
+ * pleats follow that taper rather than running straight down, which is the
+ * difference between a drawn case and a labelled trapezoid. The frosting is
+ * one continuous swirl of three turns, not a lumpy outline. */
 export function CupcakeDoodle({ className }: MarkProps) {
   return (
     <Svg className={className}>
-      <path d="M30 52h40l-5 29a7 7 0 0 1-7 6H42a7 7 0 0 1-7-6z" />
-      <path d="M41 57l3 24M50 57v24M59 57l-3 24" />
-      <path d="M31 52c-3-9 2-16 9-16 0-9 7-14 14-11 6-4 14 0 14 8 7 1 10 9 6 19z" />
-      <circle cx="52" cy="17" r="4" />
-      <path d="M52 21v4" />
+      {/* Case: rim at y=52, tapering in to a narrower base at y=86. */}
+      <path d="M30 52h40l-6 31a5 5 0 0 1-5 4H41a5 5 0 0 1-5-4z" />
+      {/* Pleats, splayed with the taper. */}
+      <path d="M42 53l2 34M50 53v34M58 53l-2 34" />
+      {/* The rim itself reads as a band. */}
+      <path d="M33 60h34" />
+      {/* Frosting: three swirl turns rising to a point. */}
+      <path d="M30 52c-6-5-4-13 4-14-4-8 3-15 11-12 2-7 12-8 15-1 8-2 13 5 10 12 8 2 8 12 0 15" />
+      <path d="M36 38c5 3 12 4 19 2M44 26c4 4 10 5 16 3" />
+      {/* Cherry. */}
+      <circle cx="53" cy="17" r="4" />
+      <path d="M53 21c-1 2-2 3-4 4" />
     </Svg>
   );
 }
 
-/** A croissant. Flanks the loyalty offer on the other side. */
+/** A croissant, seen from above. Flanks the loyalty offer on the other side.
+ *
+ * Drawn as a BODY rather than a band. The previous version was a thin crescent
+ * arc with three ticks across it, and a thin closed crescent at this size
+ * reads as a smile or an umbrella no matter how the seams are drawn — there is
+ * not enough enclosed area for the eye to call it food. So this is the fat,
+ * rolled form: a baked body with the two horn tips tucked at its shoulders and
+ * three rolled seams splaying from the centre. */
 export function CroissantDoodle({ className }: MarkProps) {
   return (
     <Svg className={className}>
-      {/* A crescent band: one wide arc out, a tighter one back, closed. The
-          three short strokes across it are the rolled seams. */}
-      <path d="M18 72A38 38 0 0 1 82 72A32 32 0 0 0 18 72Z" />
-      <path d="M25 47L33 55M50 34L50 46M75 47L67 55" />
+      <path d="M16 56c-1-7 3-12 9-11 3-9 12-14 25-14s22 5 25 14c6-1 10 4 9 11 0 10-8 18-18 21-10 3-22 3-32 0-10-3-18-11-18-21z" />
+      <path d="M32 46c0 10 2 20 6 28M50 41v34M68 46c0 10-2 20-6 28" />
     </Svg>
   );
 }
