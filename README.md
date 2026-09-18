@@ -29,9 +29,16 @@ reports.
    | [`supabase/patches/005_customer_prefs.sql`](supabase/patches/005_customer_prefs.sql) | Favourites, saved presets, notification preferences |
    | [`supabase/patches/006_settings.sql`](supabase/patches/006_settings.sql) | `app_settings` (hours, tenders, shop info, message wording) |
    | [`supabase/patches/007_analytics.sql`](supabase/patches/007_analytics.sql) | Sales, peak hours, popularity, customer and wait-time reporting |
+   | [`supabase/patches/008_team_directory.sql`](supabase/patches/008_team_directory.sql) | `shifts` and a re-published `list_team()` for databases where 002 landed before the function existed |
+   | [`supabase/patches/009_order_queue_columns.sql`](supabase/patches/009_order_queue_columns.sql) | Repairs the `orders` columns the staff queue needs — `order_type`, `table_label`, `priority`, `payment_method`, `payment_status` |
 
    Order matters — 004 replaces a function 001 created, and several patches call
    `log_staff_activity` from 002. Each file is additive and safe to re-run.
+
+   008 and 009 are **repairs**, written after 002 and 003 were applied to a
+   database that ended up missing pieces of them. On a fresh project they are
+   no-ops; run them anyway, because a staff queue without `order_type` fails at
+   the first ticket rather than at deploy.
 
    > ⚠ **004 drops `create_order(jsonb, text)`** and replaces it with a wider
    > signature. That is deliberate: keeping both would make a two-argument call

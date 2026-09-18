@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Agent tooling checked out alongside the app. These are CommonJS helper
+    // scripts, not application code — linting them with the app's TS rules only
+    // reports that `.cjs` files use `require()`, which is what they are for.
+    ".claude/**",
+    ".impeccable/**",
+    ".playwright-mcp/**",
   ]),
 ]);
 

@@ -1,9 +1,10 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 export function AdminBackButton() {
   const pathname = usePathname();
+  const router = useRouter();
 
   if (pathname !== "/admin/menu/new") return null;
 
@@ -11,7 +12,9 @@ export function AdminBackButton() {
     if (window.history.length > 1) {
       window.history.back();
     } else {
-      window.location.assign("/admin");
+      // Soft navigation: a full document load here would throw away the RSC
+      // cache and every bit of client state for the sake of one fallback.
+      router.push("/admin");
     }
   }
 
