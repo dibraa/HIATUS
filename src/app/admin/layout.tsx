@@ -37,7 +37,7 @@ export default async function AdminLayout({
             </span>
           </div>
           <AdminNav />
-          <div className="mt-8 border-t border-line pt-5">
+          <div className="mt-8 border-t border-line px-3 pt-5">
             <SignOutButton />
           </div>
         </aside>

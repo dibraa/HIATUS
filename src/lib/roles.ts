@@ -28,6 +28,11 @@ export function isAdmin(access: Access | null | undefined): boolean {
   return access.role === "admin";
 }
 
+export function isStaffOnly(access: Access | null | undefined): boolean {
+  if (!access?.isActive) return false;
+  return access.role === "staff";
+}
+
 export const ROLE_LABELS: Record<Role, string> = {
   customer: "Customer",
   staff: "Staff",
@@ -61,4 +66,13 @@ export const AUTH_REQUIRED_PREFIXES = [
   "/orders",
   "/profile",
   "/favorites",
+];
+
+export const CUSTOMER_ONLY_PREFIXES = [
+  "/cart",
+  "/checkout",
+  "/orders",
+  "/profile",
+  "/favorites",
+  "/menu",
 ];

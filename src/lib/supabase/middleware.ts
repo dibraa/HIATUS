@@ -5,7 +5,9 @@ import {
   AUTH_REQUIRED_PREFIXES,
   STAFF_PREFIX,
   isAdmin,
+  isStaffOnly,
   isStaff,
+  CUSTOMER_ONLY_PREFIXES,
 } from "@/lib/roles";
 import type { Role } from "@/types/database";
 
@@ -54,6 +56,8 @@ export async function updateSession(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const wantsAdmin = path.startsWith(ADMIN_PREFIX);
   const wantsStaff = path.startsWith(STAFF_PREFIX);
+  const wantsCustomerArea =
+    path === "/" || CUSTOMER_ONLY_PREFIXES.some((prefix) => path.startsWith(prefix));
   const requiresAuth =
     wantsAdmin ||
     wantsStaff ||
@@ -71,7 +75,7 @@ export async function updateSession(request: NextRequest) {
   // The profile read only happens for the two gated areas — every other authed
   // route (cart, orders, profile) needs a session, not a role, and a query per
   // request for a fact those pages never use is a cost with no return.
-  if ((wantsAdmin || wantsStaff) && user) {
+  if ((wantsAdmin || wantsStaff || wantsCustomerArea) && user) {
     const { data: profile } = await supabase
       .from("profiles")
       .select("role, is_active")
@@ -84,7 +88,14 @@ export async function updateSession(request: NextRequest) {
 
     const allowed = wantsAdmin ? isAdmin(access) : isStaff(access);
 
-    if (!allowed) {
+    if (wantsCustomerArea && isStaffOnly(access)) {
+      const url = request.nextUrl.clone();
+      url.pathname = STAFF_PREFIX;
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+
+    if ((wantsAdmin || wantsStaff) && !allowed) {
       const url = request.nextUrl.clone();
       // Staff who wandered into /admin land on the queue they can use, rather
       // than on a storefront that tells them nothing about why they bounced.

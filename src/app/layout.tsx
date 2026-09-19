@@ -89,10 +89,12 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     geistSans.variable,
   ].join(" ");
 
-  // The admin workspace paints its own full-bleed shell, so it opts out of the
-  // centred container and the site navbar/footer below.
+  // The admin and staff workspaces paint their own shells, so they opt out of
+  // the site footer below. Admin also owns its full-bleed layout and therefore
+  // opts out of the site navbar and centred container.
   const pathname = (await headers()).get("x-pathname") ?? "";
   const isAdminRoute = pathname.startsWith("/admin");
+  const isStaffRoute = pathname.startsWith("/staff");
 
   return (
     // suppressHydrationWarning: the script above legitimately mutates <html>
@@ -129,7 +131,9 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
 
-          <div className="site-chrome">{!isAdminRoute && <SiteFooter />}</div>
+          <div className="site-chrome">
+            {!isAdminRoute && !isStaffRoute && <SiteFooter />}
+          </div>
         </Providers>
       </body>
     </html>

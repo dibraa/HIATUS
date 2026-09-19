@@ -11,9 +11,11 @@ import {
   ORDER_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
+  STATUS_LABELS,
 } from "@/lib/order-meta";
 import {
   applyManualDiscount,
+  advanceOrderStatus,
   refundOrder,
   takePayment,
   voidOrder,
@@ -115,6 +117,34 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
             {PAYMENT_STATUS_LABELS[order.payment_status]}
           </Badge>
         </div>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
+        <label
+          htmlFor={`pos-status-${order.id}`}
+          className="text-xs font-medium text-ink-soft"
+        >
+          Order status
+        </label>
+        <select
+          id={`pos-status-${order.id}`}
+          value={order.status}
+          disabled={pending}
+          onChange={(event) => {
+            const nextStatus = event.target.value as OrderStatus;
+            run(
+              () => advanceOrderStatus(order.id, nextStatus),
+              `${orderCode(order.id)} updated to ${STATUS_LABELS[nextStatus]}`
+            );
+          }}
+          className="rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs text-ink"
+        >
+          {(Object.keys(STATUS_LABELS) as OrderStatus[]).map((status) => (
+            <option key={status} value={status}>
+              {STATUS_LABELS[status]}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">

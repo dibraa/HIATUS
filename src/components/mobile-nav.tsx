@@ -19,11 +19,13 @@ export function MobileNav({
   isLoggedIn,
   isStaff,
   isAdmin,
+  staffOnly,
 }: {
   isLoggedIn: boolean;
   /** True for admins too — an owner working the counter is the normal case. */
   isStaff: boolean;
   isAdmin: boolean;
+  staffOnly: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -99,9 +101,11 @@ export function MobileNav({
             aria-label="Main"
             className="absolute inset-x-0 top-full z-40 flex flex-col gap-0.5 border-b border-line bg-card p-3 shadow-md lg:hidden"
           >
-            <Link href="/" className={linkClass}>
-              Menu
-            </Link>
+            {!staffOnly && (
+              <Link href="/" className={linkClass}>
+                Menu
+              </Link>
+            )}
 
             {/* Below sm the header has no room for the toggle, so it lives
                 here. Above sm both are rendered but only one is visible. */}
@@ -111,15 +115,19 @@ export function MobileNav({
 
             {isLoggedIn ? (
               <>
-                <Link href="/orders" className={linkClass}>
-                  My orders
-                </Link>
-                <Link href="/favorites" className={linkClass}>
-                  Saved
-                </Link>
-                <Link href="/profile" className={linkClass}>
-                  Profile
-                </Link>
+                {!staffOnly && (
+                  <>
+                    <Link href="/orders" className={linkClass}>
+                      My orders
+                    </Link>
+                    <Link href="/favorites" className={linkClass}>
+                      Saved
+                    </Link>
+                    <Link href="/profile" className={linkClass}>
+                      Profile
+                    </Link>
+                  </>
+                )}
 
                 {/* Work links are separated by a rule: they go somewhere a
                     customer never does, and running them into the account
