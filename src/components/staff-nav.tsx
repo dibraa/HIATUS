@@ -17,7 +17,7 @@ import { usePathname } from "next/navigation";
  */
 const LINKS = [
   { href: "/staff", label: "Queue" },
-  { href: "/staff/pos", label: "Payments" },
+  { href: "/staff/pos", label: "POS" },
   { href: "/staff/menu", label: "Availability" },
   { href: "/staff/shift", label: "My shift" },
 ];

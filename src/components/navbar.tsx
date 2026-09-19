@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCurrentUser, accessOf } from "@/lib/auth";
-import { isAdmin, isStaff } from "@/lib/roles";
+import { isAdmin, isStaff, isStaffOnly } from "@/lib/roles";
 import { CartBadge } from "@/components/cart-badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { MobileNav } from "@/components/mobile-nav";
@@ -28,6 +28,7 @@ export async function Navbar() {
 
   const staff = isStaff(access);
   const admin = isAdmin(access);
+  const staffOnly = isStaffOnly(access);
 
   const navLink =
     "ui-caps text-2xs text-ink-soft transition-colors hover:text-ink";
@@ -37,8 +38,8 @@ export async function Navbar() {
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         {/* Identity */}
         <Link
-          href="/"
-          aria-label="Hiatus Coffee, go to menu"
+          href={staffOnly ? "/staff" : "/"}
+          aria-label={staffOnly ? "Hiatus Coffee, go to counter" : "Hiatus Coffee, go to menu"}
           className="flex shrink-0 items-center gap-2.5 text-ink"
         >
           <Image
@@ -53,10 +54,12 @@ export async function Navbar() {
 
         {/* Primary nav — collapses into MobileNav below lg */}
         <nav aria-label="Main" className="hidden shrink-0 items-center gap-6 lg:flex">
-          <Link href="/" className={navLink}>
-            Menu
-          </Link>
-          {user && (
+          {!staffOnly && (
+            <Link href="/" className={navLink}>
+              Menu
+            </Link>
+          )}
+          {user && !staffOnly && (
             <>
               <Link href="/orders" className={navLink}>
                 Orders
@@ -82,9 +85,11 @@ export async function Navbar() {
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
           {user ? (
             <>
-              <Link href="/profile" className={`hidden lg:inline ${navLink}`}>
-                Account
-              </Link>
+              {!staffOnly && (
+                <Link href="/profile" className={`hidden lg:inline ${navLink}`}>
+                  Account
+                </Link>
+              )}
               <span className="hidden lg:inline">
                 <SignOutButton />
               </span>
@@ -110,8 +115,8 @@ export async function Navbar() {
             <ThemeToggle />
           </span>
 
-          <CartBadge />
-          <MobileNav isLoggedIn={!!user} isStaff={staff} isAdmin={admin} />
+          {!staffOnly && <CartBadge />}
+          <MobileNav isLoggedIn={!!user} isStaff={staff} isAdmin={admin} staffOnly={staffOnly} />
         </div>
       </div>
     </header>

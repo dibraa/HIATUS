@@ -10,7 +10,7 @@ import type { TodaySummary } from "@/types/database";
 import { PaymentPanel, type PosOrder } from "./payment-panel";
 import { AutoRefresh } from "@/components/auto-refresh";
 
-export const metadata: Metadata = { title: "Payments" };
+export const metadata: Metadata = { title: "POS" };
 
 export const dynamic = "force-dynamic";
 
@@ -67,8 +67,8 @@ export default async function PosPage({
       <AutoRefresh seconds={20} />
 
       <PageHeader
-        title="Payments"
-        description="Take payment, give change, and reverse a transaction when something goes wrong."
+        title="Point of sale"
+        description="Manage orders, update their status, take payment, and correct transactions at the counter."
       />
 
       {summary && (
