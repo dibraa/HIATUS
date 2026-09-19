@@ -22,15 +22,24 @@ export type FeaturedItem = {
 /**
  * The pine feature panel — the comp's "Sips worth sharing".
  *
- * Its layering is the point, and it is built the way the reference draws it:
- * a sage display heading, a photograph laid over that heading so the second
- * line is partly covered, and an espresso caption card straddling the photo's
- * bottom edge. Depth from overlap, not from shadow.
+ * The comp drew this panel with two overlaps — the photograph riding up over
+ * the heading's second line, and an espresso caption card straddling the
+ * photo's edge — for depth from overlap rather than from shadow. Both have
+ * since been taken out, deliberately: on real content each one covered
+ * something that had to stay readable. The heading wraps to two lines at
+ * `max-w-[9ch]`, so the photograph landed on "sharing" rather than grazing it,
+ * and the caption card's 4rem straddle buried the right of the drink's own
+ * photograph at wide sizes.
  *
- * The overlaps are CONTAINER queries, not viewport ones. This panel is used
- * full-width on the home page and inside a half-width hero column on /demo,
- * and a viewport-keyed overlap put the caption straight over the heading in the
- * narrow case. Below the threshold the same three pieces run in sequence.
+ * What survives is the 2.5rem rise of the whole media row toward the heading,
+ * which the heading now reserves space for (see the paired padding above). The
+ * depth that is left comes from the matte, the colour break and that rise —
+ * none of which cost a word or an image.
+ *
+ * The remaining offset is a CONTAINER query, not a viewport one. This panel was
+ * also used inside a half-width hero column, and a viewport-keyed overlap put
+ * the caption straight over the heading in the narrow case. Below the threshold
+ * the same three pieces run in sequence.
  *
  * Deliberately NOT autoplaying. An auto-advancing carousel moves a control out
  * from under the pointer and fails WCAG 2.2.2 unless it ships pause controls;
@@ -56,7 +65,20 @@ export function FeaturedCarousel({ featured }: { featured: FeaturedItem[] }) {
       <CookiesDoodle className="doodle-inverse pointer-events-none absolute -right-8 -top-8 h-32 w-32 @2xl:h-52 @2xl:w-52" />
 
       <div className="relative flex flex-wrap items-start justify-between gap-4">
-        <div>
+        {/* THE PADDING BELOW PAIRS WITH THE CARD'S NEGATIVE MARGIN — see the
+            note on FeaturedCard's wrapper. The card rises by 2.5rem, so the
+            heading reserves 2.5rem beneath itself for it to rise into. Reserved
+            space rather than a guessed clearance is the whole point: the
+            heading wraps to two lines at `max-w-[9ch]`, and a card pulled into
+            unreserved space landed on the second line. Change one value and you
+            must change the other, and the padding must stay the LARGER of the
+            two: this face sets a line box tighter than its own glyphs, so the
+            `p` and `g` of "Sips worth sharing" hang below the heading's
+            measured bottom. Matching 2.5rem exactly put the photograph on those
+            descenders; 4rem clears them with room to spare. Measured: the
+            descenders hang 16px below the heading's box, so the reserve is the
+            2.5rem rise plus that overshoot plus a little air. */}
+        <div className="@3xl:pb-16">
           <p className="eyebrow text-inverse-muted">Featured</p>
 
           {/* Sage on pine is 3.11:1 — AA for large text and nothing smaller,
@@ -122,8 +144,13 @@ function FeaturedCard({
   const unitPrice = priceForSize(item.price, size);
   const sizeLabel = getSizeOption(size).label;
 
+  /* The card rises 2.5rem into the space the heading block reserves for it with
+   * a matching `@3xl:pb-10` — the two values are a pair, and changing this one
+   * alone puts the photograph back on top of the headline. The heading keeps
+   * its own height, whatever the copy does to it, so the overlap can never eat
+   * a line of text. */
   return (
-    <div className="relative mt-6 grid gap-5 @3xl:mt-[-2.5rem] @3xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] @3xl:items-end @3xl:gap-0">
+    <div className="relative mt-6 grid gap-5 @3xl:mt-[-2.5rem] @3xl:grid-cols-[minmax(0,0.85fr)_minmax(0,1fr)] @3xl:items-end">
       {/* The photograph, matted in the panel's own cream so the image never
           touches the pine directly — the comp's rule, inverted. */}
       <div className="matte matte-dark @3xl:ml-8">
@@ -139,9 +166,12 @@ function FeaturedCard({
         </div>
       </div>
 
-      {/* The caption card, straddling the photo's edge once the panel is
-          wide enough to carry the overlap. */}
-      <div className="relative z-10 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg sm:p-6 @3xl:-ml-16 @3xl:mb-8">
+      {/* The caption card sits BESIDE the photograph, never over it. It used to
+          straddle the photo's edge by 4rem, which at wide sizes buried the
+          right of the image — and the drink's own picture is the one thing on
+          this panel that should never be covered. Depth here comes from the
+          matte and the colour break, which cost the photograph nothing. */}
+      <div className="relative z-10 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg sm:p-6">
         <p className="eyebrow text-inverse-display">{item.flavor}</p>
 
         {/* h3: the panel's h2 is the section heading, and this must not skip

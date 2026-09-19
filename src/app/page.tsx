@@ -31,6 +31,34 @@ const FEATURED_COUNT = 5;
 /** The glyphs the hero's category tiles cycle through, in order. */
 const CATEGORY_GLYPHS = [CupGlyph, BeansGlyph, FilterGlyph, PotGlyph];
 
+/**
+ * The menu grid's class list, keyed by how many drinks are actually showing.
+ *
+ * A four-column grid builds four columns whether or not there are four cards,
+ * so a short menu leaves its cards in column one with the rest of the row
+ * empty — under a centred heading that reads as broken rather than as a small
+ * menu. Below four, the grid is capped to the width that many cards really
+ * occupy and centred with `mx-auto`, so the row stays centred and the cards
+ * keep their normal size.
+ *
+ * The widths are `n * 268px + (n - 1) * 16px` — the measured card width and
+ * the `gap-4` between them, so the cap lands exactly on the cards' own edges
+ * and never resizes them.
+ *
+ * Index 4 is the full responsive ladder and is what every menu of four or more
+ * renders, identical to before this cap existed. Each entry is a complete
+ * literal string because Tailwind compiles by scanning source text: a class
+ * assembled at runtime (`sm:grid-cols-${n}`) is never generated and silently
+ * does nothing.
+ */
+const MENU_GRID_COLUMNS = [
+  "grid-cols-1", // unused: zero items renders an EmptyState instead
+  "grid-cols-1 max-w-[268px]",
+  "grid-cols-1 sm:grid-cols-2 max-w-[552px]",
+  "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-[836px]",
+  "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4",
+] as const;
+
 export default async function HomePage({
   searchParams,
 }: {
@@ -306,7 +334,11 @@ export default async function HomePage({
               }
             />
           ) : (
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <ul
+              className={`mx-auto grid gap-4 ${
+                MENU_GRID_COLUMNS[Math.min(visibleItems.length, 4)]
+              }`}
+            >
               {visibleItems.map((item) => {
                 const stat = ratingStats.get(item.id);
                 return (
