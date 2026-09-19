@@ -96,8 +96,16 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
 
           <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
             {/* The elapsed time is the number that decides which ticket to
-                pick up next, so it sits with the code, not in a footer. */}
-            <span className="font-medium text-ink-soft">
+                pick up next, so it sits with the code, not in a footer.
+
+                suppressHydrationWarning: this is a clock. `formatElapsed`
+                defaults its `now` to the moment it is called, so the server
+                renders the age at request time and the browser re-renders it at
+                hydration time — a ticket that crosses a minute boundary in
+                between legitimately produces "4m" on one and "5m" on the other.
+                The client's value is the correct one and React keeps it; this
+                tells React the difference is expected rather than a bug. */}
+            <span className="font-medium text-ink-soft" suppressHydrationWarning>
               {formatElapsed(order.created_at)}
             </span>
             <span aria-hidden="true">&middot;</span>
