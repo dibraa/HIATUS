@@ -43,3 +43,8 @@ next-env.d.ts
 
 # supabase CLI version-check cache
 supabase/.temp/
+
+# agent tooling — local to each machine, never part of the app
+/.claude/
+/.impeccable/
+/.playwright-mcp/
