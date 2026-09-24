@@ -26,6 +26,20 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = safeNext(searchParams.get("next"));
 
+  // Supabase reports a refused link by redirecting here with its own error
+  // params and NO code — an expired or already-used token arrives as
+  // `?error=access_denied&error_code=otp_expired`. Read that before the `code`
+  // check: otherwise every stale link falls through to "incomplete", which
+  // sends the reader looking for a truncated URL instead of requesting a new
+  // one. The same error is repeated in the URL fragment for client-side SDKs,
+  // but a fragment never reaches the server, so the query string is the copy
+  // this route can act on.
+  if (searchParams.get("error_code") || searchParams.get("error")) {
+    return NextResponse.redirect(`${origin}/login?error=link-expired`);
+  }
+
+  // No code and no error means the link really did arrive malformed — usually
+  // truncated by a mail client that broke the URL across a line.
   if (!code) {
     return NextResponse.redirect(`${origin}/login?error=missing-code`);
   }

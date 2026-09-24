@@ -17,7 +17,17 @@ export function ForgotPasswordForm() {
   // and makes the person wonder whether the first one worked.
   if (state.sent) {
     return (
-      <div className="rounded-lg border border-line bg-card p-6 text-center">
+      // role="status": this panel REPLACES the form, so a sighted reader sees
+      // the whole page change and a screen reader would otherwise get silence —
+      // the submit button they just pressed is simply gone, with no spoken
+      // confirmation that anything happened. `polite` because it follows the
+      // person's own action rather than interrupting them, and the envelope
+      // above is aria-hidden so what gets announced is the words, not "image".
+      <div
+        role="status"
+        aria-live="polite"
+        className="rounded-lg border border-line bg-card p-6 text-center"
+      >
         <div
           aria-hidden="true"
           className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft-bg text-success-soft-fg"
