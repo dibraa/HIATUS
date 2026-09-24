@@ -86,11 +86,11 @@ export async function Navbar() {
           {user ? (
             <>
               {!staffOnly && (
-                <Link href="/profile" className={`hidden lg:inline ${navLink}`}>
+                <Link href="/profile" className={`hidden h-10 items-center lg:inline-flex ${navLink}`}>
                   Account
                 </Link>
               )}
-              <span className="hidden lg:inline">
+              <span className="hidden h-10 items-center lg:inline-flex">
                 <SignOutButton />
               </span>
             </>

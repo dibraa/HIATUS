@@ -44,10 +44,9 @@ export default async function ProfilePage() {
   const myReviews = reviews ?? [];
 
   return (
-    <div className="mx-auto max-w-lg py-2">
+    <div className="mx-auto max-w-6xl py-2">
       <PageHeader
         title="Your account"
-        description="How the shop identifies your order at the counter, and what we tell you about."
       />
 
       {/* Staff and admins see their role here — it is the only place in the
@@ -68,7 +67,7 @@ export default async function ProfilePage() {
         </p>
       )}
 
-      <div className="flex flex-col gap-10">
+      <div className="grid gap-10 lg:grid-cols-2 lg:items-start lg:gap-16">
         <section aria-labelledby="details-heading">
           <h2
             id="details-heading"
@@ -81,8 +80,6 @@ export default async function ProfilePage() {
           )}
         </section>
 
-        <CheckerBand />
-
         <section aria-labelledby="notifications-heading">
           <h2
             id="notifications-heading"
@@ -92,60 +89,55 @@ export default async function ProfilePage() {
           </h2>
           <NotificationForm prefs={prefs ?? null} />
         </section>
-
-        {myReviews.length > 0 && (
-          <>
-            <CheckerBand />
-
-            <section aria-labelledby="reviews-heading">
-              <h2
-                id="reviews-heading"
-                className="mb-1 display text-xl text-ink"
-              >
-                Your reviews
-              </h2>
-              <p className="mb-4 text-sm text-muted">
-                What you have rated. These appear on the drink&rsquo;s page for
-                other customers.
-              </p>
-
-              <ul className="flex flex-col gap-3">
-                {myReviews.map((review) => (
-                  <li
-                    key={review.id}
-                    className="rounded-lg border border-line bg-card p-4"
-                  >
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <Link
-                        href={`/menu/${review.menu_item_id}`}
-                        className="text-sm font-semibold text-ink underline-offset-4 hover:underline"
-                      >
-                        {review.menu_items?.name ?? "A drink"}
-                      </Link>
-                      <time
-                        dateTime={review.created_at}
-                        className="text-xs text-muted"
-                      >
-                        {formatDate(review.created_at)}
-                      </time>
-                    </div>
-
-                    <div className="mt-2">
-                      <StarRating value={review.rating} readOnly size="sm" />
-                    </div>
-
-                    {review.comment && (
-                      <p className="mt-2 max-w-[60ch] text-sm text-ink-soft">
-                        &ldquo;{review.comment}&rdquo;
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          </>
-        )}
       </div>
+
+      {myReviews.length > 0 && (
+        <>
+          <CheckerBand />
+
+          <section aria-labelledby="reviews-heading">
+            <h2
+              id="reviews-heading"
+              className="mb-1 display text-xl text-ink"
+            >
+              Your reviews
+            </h2>
+            <ul className="flex flex-col gap-3">
+              {myReviews.map((review) => (
+                <li
+                  key={review.id}
+                  className="rounded-lg border border-line bg-card p-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <Link
+                      href={`/menu/${review.menu_item_id}`}
+                      className="text-sm font-semibold text-ink underline-offset-4 hover:underline"
+                    >
+                      {review.menu_items?.name ?? "A drink"}
+                    </Link>
+                    <time
+                      dateTime={review.created_at}
+                      className="text-xs text-muted"
+                    >
+                      {formatDate(review.created_at)}
+                    </time>
+                  </div>
+
+                  <div className="mt-2">
+                    <StarRating value={review.rating} readOnly size="sm" />
+                  </div>
+
+                  {review.comment && (
+                    <p className="mt-2 max-w-[60ch] text-sm text-ink-soft">
+                      &ldquo;{review.comment}&rdquo;
+                    </p>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        </>
+      )}
     </div>
   );
 }

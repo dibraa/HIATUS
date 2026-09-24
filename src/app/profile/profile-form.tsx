@@ -16,7 +16,7 @@ export function ProfileForm({ profile, email }: { profile: Profile; email: strin
       {/* Read-only mirror of the account email. It previously carried a <label>
           with no htmlFor, which is markup that looks labelled and is not —
           screen readers announced an unlabelled disabled input. */}
-      <Field id="account-email" label="Email" hint="Changing this means changing your login — contact the shop.">
+      <Field id="account-email" label="Email">
         <input
           id="account-email"
           value={email}
@@ -32,7 +32,6 @@ export function ProfileForm({ profile, email }: { profile: Profile; email: strin
         label="Full name"
         defaultValue={profile.full_name ?? ""}
         autoComplete="name"
-        hint="Called out when your order is ready."
       />
 
       <TextField
@@ -43,7 +42,6 @@ export function ProfileForm({ profile, email }: { profile: Profile; email: strin
         inputMode="tel"
         defaultValue={profile.phone ?? ""}
         autoComplete="tel"
-        hint="Only used if the shop needs to reach you about an order."
       />
 
       <FormError>{state.error}</FormError>

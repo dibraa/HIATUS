@@ -50,21 +50,18 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
           name="order_updates"
           label="Order progress"
           defaultChecked={p.order_updates}
-          hint="When we start making your order and when it is on its way."
         />
         <CheckboxField
           id="ready_alerts"
           name="ready_alerts"
           label="Ready for pickup"
           defaultChecked={p.ready_alerts}
-          hint="The one that matters — your drink is on the counter."
         />
         <CheckboxField
           id="promotions"
           name="promotions"
           label="Offers and new drinks"
           defaultChecked={p.promotions}
-          hint="Occasional. Off unless you turn it on."
         />
       </fieldset>
 
@@ -82,16 +79,8 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
           name="sms_channel"
           label="SMS"
           defaultChecked={p.sms_channel}
-          hint="Needs a phone number on your profile."
         />
       </fieldset>
-
-      <p className="rounded-md border border-line bg-raised px-3 py-2.5 text-xs text-ink-soft">
-        Your order page updates live whatever you choose here, so you can always
-        just keep it open. Email and SMS delivery is not switched on in this
-        shop yet — these preferences are saved and will be honoured the moment
-        it is.
-      </p>
 
       {state.error && <FormError>{state.error}</FormError>}
       {state.success && <FormSuccess>Preferences saved.</FormSuccess>}
