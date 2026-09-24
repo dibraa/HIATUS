@@ -44,8 +44,28 @@ reports.
    > signature. That is deliberate: keeping both would make a two-argument call
    > ambiguous and fail at runtime rather than at deploy.
 
-3. **Set env vars**: copy `.env.local.example` to `.env.local` and fill in your
-   project URL and anon key (Project Settings → API).
+3. **Set env vars**: create `.env.local` in the repo root. Both values are on
+   Project Settings → API, and both are public — they ship in the client bundle,
+   and RLS, not secrecy, is what protects the data:
+
+   ```bash
+   NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable key>
+   ```
+
+   New projects issue a `sb_publishable_…` key rather than the older `eyJ…` JWT;
+   either works, but a project with legacy JWT keys disabled will reject the old
+   one with a 401 on every request while the URL still looks correct.
+
+   `NEXT_PUBLIC_SITE_URL` is optional. Password-reset links derive their origin
+   from the request, so set it only where that origin is wrong — behind a proxy
+   that does not set `x-forwarded-host`.
+
+   > `.env.local` is gitignored and is never committed. Joining an existing
+   > project means getting these two values from whoever owns it; nothing in a
+   > `git pull` will deliver them, and their absence surfaces as
+   > `supabaseUrl is required` or `TypeError: Invalid URL` rather than as a
+   > missing-config message.
 4. **Install and run**:
    ```bash
    npm install
@@ -127,22 +147,25 @@ Everything is built on CSS custom properties at the top of
 [`src/app/globals.css`](src/app/globals.css), exposed to Tailwind through
 `@theme inline`. No component hardcodes a palette class.
 
-**The brand is the PineBrew palette**: forest green `#2d5016`, burnt orange
-`#c87137`, cream `#f5ead8`, charcoal `#1a1a1a`.
+**The brand is the PineBrew palette**: pine green `#3e6b53`, burnt orange
+`#c87137`, cream `#efe9de`, charcoal `#14120f`. The deeper cream `#f5ead8`
+survives as `--hi-inverse-fg` — the text colour on pine, not a background.
 
 Two of those four cannot be used naively, and the tokens encode the fix rather
 than leaving it to each component:
 
 - **White on burnt orange is 3.58:1** — below the 4.5:1 WCAG 2.1 AA needs for
-  text. So `--hi-accent-fg` is **charcoal** (4.87:1). Primary buttons are orange
+  text. So `--hi-accent-fg` is **charcoal** (4.99:1). Primary buttons are orange
   with charcoal text.
-- **Burnt orange as text on cream is 3.00:1** — also below AA. Inline links and
-  active labels use `--hi-accent-ink` (`#964a1c`, 5.36:1), a deepened member of
-  the same hue family. **Never set text in `--hi-accent`.**
+- **Burnt orange as text on cream is 3.01:1** — also below AA. Inline links and
+  active labels use `--hi-accent-ink` (`#964a1c`, 5.28:1 on surface, 6.19:1 on
+  card), a deepened member of the same hue family. **Never set text in
+  `--hi-accent`.**
 - **Hover lightens rather than darkens.** Darkening the orange would drop
   charcoal-on-orange below AA *while being interacted with*.
-- **Orange on forest green is 2.59:1** and is never used. A CTA on an inverted
-  panel uses the `inverse` button variant, which is why that variant exists.
+- **Orange on pine green is 1.71:1** and is never used — the softer pine made
+  this pair worse, not better. A CTA on an inverted panel uses the `inverse`
+  button variant, which is why that variant exists.
 
 Every ratio in `globals.css` is computed, not estimated. Dark mode is not the
 light ramp inverted: cream becomes the *text* colour, and both brand hues move to
@@ -169,7 +192,7 @@ Reach for these before writing markup:
 | [`ui/checker.tsx`](src/components/ui/checker.tsx) | The checkered rule, with the correct colour per surface. |
 | [`ui/product-image.tsx`](src/components/ui/product-image.tsx) | Fixed aspect ratio with a real placeholder — no layout shift. |
 | [`lib/use-token-colors.ts`](src/lib/use-token-colors.ts) | Resolves `--hi-*` tokens to hex for Recharts, which writes `fill` as an SVG attribute and cannot hold `var()`. |
-| [`lib/roles.ts`](src/lib/roles.ts) | `isStaff()` / `isAdmin()` and the route prefixes. |
+| [`lib/roles.ts`](src/lib/roles.ts) | `isStaff()` / `isAdmin()` / `isStaffOnly()`, `homePathFor()` and the route prefixes. `isStaffOnly()` is the one *narrowing* test — it asks "is this person staff and not an admin", and exists so the nav can hide customer links from someone who is only working the counter. |
 | [`lib/order-meta.ts`](src/lib/order-meta.ts) | Every word the app uses for an order's facts. The DB stores `dine_in`; nobody sees that string. |
 | [`lib/csv.ts`](src/lib/csv.ts) | RFC 4180 export, including formula-injection guarding. |
 
