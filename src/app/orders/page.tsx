@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/api-client";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { ButtonLink } from "@/components/ui/button";
@@ -9,32 +10,15 @@ import type { Order } from "@/types/database";
 
 export const metadata: Metadata = { title: "My orders" };
 
-/** One formatter for the whole page rather than one per row. */
-const DATE_FORMAT = new Intl.DateTimeFormat("en-PH", {
-  dateStyle: "medium",
-  timeStyle: "short",
-});
+const DATE_FORMAT = new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", timeStyle: "short" });
 
 export default async function OrdersPage() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const token = await getServerToken();
+  const orders = await apiJson<(Order & { _id: string })[]>("/orders", { token: token ?? undefined }).catch(() => []);
 
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("user_id", user!.id)
-    .order("created_at", { ascending: false })
-    .returns<Order[]>();
-
-  const orderList = orders ?? [];
-
-  // Anything not yet handed over is what the customer opened this page for,
-  // so it gets its own group above the history rather than being sorted in.
-  const active = orderList.filter((o) =>
-    ["pending", "preparing", "ready"].includes(o.status)
-  );
+  // normalise _id → id
+  const orderList = orders.map((o) => ({ ...o, id: o._id ?? o.id }));
+  const active = orderList.filter((o) => ["pending", "preparing", "ready"].includes(o.status));
   const past = orderList.filter((o) => !active.includes(o));
 
   return (
@@ -56,47 +40,32 @@ export default async function OrdersPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-8">
-          {active.length > 0 && (
-            <OrderGroup title="In progress" orders={active} />
-          )}
-          {past.length > 0 && (
-            <OrderGroup title={active.length > 0 ? "Earlier" : "All orders"} orders={past} />
-          )}
+          {active.length > 0 && <OrderGroup title="In progress" orders={active} />}
+          {past.length > 0 && <OrderGroup title={active.length > 0 ? "Earlier" : "All orders"} orders={past} />}
         </div>
       )}
     </div>
   );
 }
 
-function OrderGroup({ title, orders }: { title: string; orders: Order[] }) {
+function OrderGroup({ title, orders }: { title: string; orders: (Order & { id: string })[] }) {
   const headingId = `orders-${title.toLowerCase().replace(/\s+/g, "-")}`;
-
   return (
     <section aria-labelledby={headingId}>
-      <h2 id={headingId} className="mb-3 eyebrow text-muted">
-        {title}
-      </h2>
-
+      <h2 id={headingId} className="mb-3 eyebrow text-muted">{title}</h2>
       <ul className="flex flex-col gap-3">
         {orders.map((order) => (
           <li key={order.id}>
-            {/* The whole row is the link, so the target is the full card
-                rather than a "view" affordance the size of a word. */}
             <Link
               href={`/orders/${order.id}`}
               className="flex items-center justify-between gap-4 rounded-lg border border-line bg-card px-4 py-3.5 transition-colors hover:border-line-strong hover:bg-raised"
             >
               <span className="min-w-0">
                 <span className="block text-sm font-medium text-ink">
-                  <time dateTime={order.created_at}>
-                    {DATE_FORMAT.format(new Date(order.created_at))}
-                  </time>
+                  <time dateTime={order.created_at}>{DATE_FORMAT.format(new Date(order.created_at))}</time>
                 </span>
-                <span className="mt-0.5 block text-sm numeric text-muted">
-                  {formatPrice(order.total_amount)}
-                </span>
+                <span className="mt-0.5 block text-sm numeric text-muted">{formatPrice(order.total_amount)}</span>
               </span>
-
               <OrderStatusBadge status={order.status} />
             </Link>
           </li>

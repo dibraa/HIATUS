@@ -81,7 +81,7 @@ export const viewport: Viewport = {
  */
 const THEME_SCRIPT = `(function(){try{var t=localStorage.getItem("hiatus-theme");if(t==="dark"||t==="light"){document.documentElement.setAttribute("data-theme",t)}}catch(e){}})()`;
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const fontVars = [
     anton.variable,
     oswald.variable,

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { createClient } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth";
 import { MenuItemCard } from "@/components/menu-item-card";
 import { FeaturedCarousel, type FeaturedItem } from "@/components/featured-carousel";
@@ -66,30 +67,29 @@ export default async function HomePage({
 }) {
   const { flavor, category, q } = await searchParams;
   const query = q?.trim() ?? "";
-  const supabase = await createClient();
+  const token = await getServerToken();
 
-  // Two queries, not two-per-card: the whole menu and the whole rating set,
-  // rolled up in memory. A shop menu is tens of rows, so filtering client-side
-  // below also lets the chips list every value even while a search narrows the
-  // grid.
-  const [{ data: allItems }, { data: allRatings }, user, settings] = await Promise.all([
-    supabase.from("menu_items").select("*").order("name").returns<MenuItem[]>(),
-    supabase.from("ratings").select("*").returns<Rating[]>(),
+  const [allItemsRaw, allRatingsRaw, user, settings] = await Promise.all([
+    apiJson<(MenuItem & { _id: string })[]>("/menu").catch(() => []),
+    apiJson<(Rating & { _id: string })[]>("/menu/ratings/all").catch(() => []),
     getCurrentUser(),
     getSettings(),
   ]);
 
-  // Only asked for once we know there is someone to ask about.
-  const { data: favoriteRows } = user
-    ? await supabase.from("favorites").select("menu_item_id").eq("user_id", user.id)
-    : { data: null };
+  const allItems = allItemsRaw.map((m) => ({ ...m, id: m._id ?? m.id }));
+  const allRatings = allRatingsRaw.map((r) => ({ ...r, id: r._id ?? r.id, menu_item_id: (r.menu_item_id as unknown as { _id?: string } | string) }));
 
-  const favoriteIds = new Set(
-    (favoriteRows ?? []).map((f) => f.menu_item_id as string)
-  );
+  const favoriteRows = user
+    ? await apiJson<{ menu_item_id: string }[]>("/account/favorites", { token: token ?? undefined }).catch(() => [])
+    : [];
 
-  const items = allItems ?? [];
-  const ratingStats = aggregateRatings(allRatings ?? []);
+  const favoriteIds = new Set(favoriteRows.map((f) => {
+    const mid = f.menu_item_id as unknown;
+    return typeof mid === "object" && mid !== null ? (mid as { _id: string })._id : mid as string;
+  }));
+
+  const items = allItems;
+  const ratingStats = aggregateRatings(allRatings as unknown as Rating[]);
   const { open, today } = isOpenNow(settings.businessHours);
 
   const categories = Array.from(
