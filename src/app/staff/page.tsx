@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/api-client";
 import { PageHeader } from "@/components/ui/page-header";
 import { FilterTabs } from "@/components/ui/filter-tabs";
 import { StatCard, StatGrid } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { FormError } from "@/components/ui/field";
 import { formatPrice } from "@/lib/format";
 import { ACTIVE_STATUSES } from "@/lib/order-meta";
 import type { OrderStatus, TodaySummary } from "@/types/database";
@@ -12,9 +12,6 @@ import { OrderTicket, type QueueOrder } from "./order-ticket";
 import { AutoRefresh } from "@/components/auto-refresh";
 
 export const metadata: Metadata = { title: "Order queue" };
-
-// The queue is the definition of live data — a cached render of it is a wrong
-// render. This opts the route out of Next's full route cache entirely.
 export const dynamic = "force-dynamic";
 
 const TABS: { label: string; value: string; statuses: OrderStatus[] }[] = [
@@ -24,67 +21,38 @@ const TABS: { label: string; value: string; statuses: OrderStatus[] }[] = [
   { label: "Ready", value: "ready", statuses: ["ready"] },
 ];
 
-export default async function StaffQueuePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ tab?: string }>;
-}) {
+export default async function StaffQueuePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const { tab = "active" } = await searchParams;
   const active = TABS.find((t) => t.value === tab) ?? TABS[0];
+  const token = await getServerToken();
 
-  const supabase = await createClient();
-
-  const [{ data: summaryRows }, { data: orders, error }] = await Promise.all([
-    supabase.rpc("today_summary", { tz: "Asia/Manila" }),
-    supabase
-      .from("orders")
-      .select(
-        "id, status, order_type, table_label, priority, payment_method, payment_status, " +
-          "total_amount, discount_amount, promo_code, pickup_note, created_at, " +
-          "profiles(full_name, phone), order_items(*)"
-      )
-      .in("status", active.statuses)
-      // Bumped tickets first, then plain first-come-first-served. An unbumped
-      // queue is exactly the order the drinks were ordered in.
-      .order("priority", { ascending: false })
-      .order("created_at", { ascending: true })
-      .returns<QueueOrder[]>(),
+  const [summary, allOrders] = await Promise.all([
+    apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }).catch(() => null),
+    apiJson<(QueueOrder & { _id: string })[]>("/orders", { token: token ?? undefined }).catch(() => []),
   ]);
 
-  // The RPC returns a single-row table, which PostgREST hands back as an array.
-  const summary = (summaryRows as TodaySummary[] | null)?.[0] ?? null;
-  const queue = orders ?? [];
+  const queue = allOrders
+    .filter((o) => active.statuses.includes(o.status))
+    .map((o) => ({
+      ...o,
+      id: o._id ?? o.id,
+      order_items: ((o as unknown as { items: unknown[] }).items ?? []) as import("@/types/database").OrderItem[],
+      profiles: (o as unknown as { user_id: unknown }).user_id as { full_name: string | null; phone: string | null } | null,
+    }))
+    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0) || new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
   return (
     <div>
       <AutoRefresh seconds={15} />
-
-      <PageHeader
-        title="Order queue"
-        description="Newest at the bottom, longest wait at the top. Tap the button on a ticket to move it along."
-      />
+      <PageHeader title="Order queue" description="Newest at the bottom, longest wait at the top." />
 
       {summary && (
         <div className="mb-6">
           <StatGrid>
-            <StatCard
-              label="New"
-              value={summary.pending_now}
-              tone={summary.pending_now > 0 ? "attention" : "default"}
-              hint="Not started yet"
-            />
+            <StatCard label="New" value={summary.pending_now} tone={summary.pending_now > 0 ? "attention" : "default"} hint="Not started yet" />
             <StatCard label="Making" value={summary.preparing_now} hint="In progress" />
-            <StatCard
-              label="Ready"
-              value={summary.ready_now}
-              tone={summary.ready_now > 0 ? "positive" : "default"}
-              hint="On the counter"
-            />
-            <StatCard
-              label="Today"
-              value={formatPrice(summary.revenue_today)}
-              hint={`${summary.orders_today} completed`}
-            />
+            <StatCard label="Ready" value={summary.ready_now} tone={summary.ready_now > 0 ? "positive" : "default"} hint="On the counter" />
+            <StatCard label="Today" value={formatPrice(summary.revenue_today)} hint={`${summary.orders_today} completed`} />
           </StatGrid>
         </div>
       )}
@@ -92,31 +60,17 @@ export default async function StaffQueuePage({
       <FilterTabs
         label="Filter the queue by status"
         className="mb-6"
-        tabs={TABS.map((t) => ({
-          label: t.label,
-          href: `/staff?tab=${t.value}`,
-          active: t.value === active.value,
-        }))}
+        tabs={TABS.map((t) => ({ label: t.label, href: `/staff?tab=${t.value}`, active: t.value === active.value }))}
       />
 
-      {error ? (
-        <FormError>{error.message}</FormError>
-      ) : queue.length === 0 ? (
+      {queue.length === 0 ? (
         <EmptyState
           title={active.value === "active" ? "Nothing in the queue" : "Nothing here"}
-          body={
-            active.value === "active"
-              ? "Every order has been handed over. New ones appear here on their own."
-              : "No orders are at this stage right now."
-          }
+          body={active.value === "active" ? "Every order has been handed over." : "No orders are at this stage right now."}
         />
       ) : (
         <ul className="flex flex-col gap-3">
-          {queue.map((order) => (
-            <li key={order.id}>
-              <OrderTicket order={order} />
-            </li>
-          ))}
+          {queue.map((order) => <li key={order.id}><OrderTicket order={order} /></li>)}
         </ul>
       )}
     </div>

@@ -1,10 +1,10 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { headers } from "next/headers";
-import { createClient } from "@/lib/supabase/server";
-import { getCurrentUser } from "@/lib/auth";
+import { cookies } from "next/headers";
+import { apiJson } from "@/lib/api-client";
 import { homePathFor } from "@/lib/roles";
+import type { Role } from "@/types/database";
 
 export type AuthState = { error: string | null; success?: string | null };
 export type ResetState = { error: string | null; sent: boolean };
@@ -15,21 +15,20 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "");
 
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  try {
+    const { token, role } = await apiJson<{ token: string; role: Role }>("/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    });
 
-  if (error) {
-    return { error: error.message };
+    const store = await cookies();
+    store.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax" });
+
+    if (next) redirect(next);
+    redirect(homePathFor(role));
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
   }
-
-  // A barista signing in should land on the queue and an owner on the
-  // dashboard — the storefront is not what either of them opened the app for.
-  // An explicit `next` (from the auth guard) still wins, because that is a
-  // journey the person was already partway through.
-  if (next) redirect(next);
-
-  const user = await getCurrentUser();
-  redirect(user ? homePathFor(user.role) : "/");
 }
 
 export async function signUp(_prevState: AuthState, formData: FormData): Promise<AuthState> {
@@ -38,100 +37,45 @@ export async function signUp(_prevState: AuthState, formData: FormData): Promise
   const fullName = String(formData.get("full_name") ?? "");
   const phone = String(formData.get("phone") ?? "").trim();
 
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters." };
+  if (password.length < 8) return { error: "Password must be at least 8 characters." };
+
+  try {
+    await apiJson("/auth/signup", {
+      method: "POST",
+      body: JSON.stringify({ email, password, full_name: fullName, phone }),
+    });
+    return { error: null, success: "Your account was created successfully." };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
   }
-
-  const supabase = await createClient();
-  const { error } = await supabase.auth.signUp({
-    email,
-    password,
-    // Passed as metadata because the profile row is created by an auth trigger
-    // (`handle_new_user`), which reads exactly this. Writing to `profiles`
-    // here instead would race the trigger.
-    options: { data: { full_name: fullName, phone } },
-  });
-
-  if (error) {
-    return { error: error.message };
-  }
-
-  return { error: null, success: "Your account was created successfully." };
 }
 
-/**
- * The origin the reset link should point back at.
- *
- * Read from the request rather than a hardcoded env var so the flow works
- * unchanged on localhost, on a preview deployment and in production. Falls
- * back to an explicit site URL if one is configured, because `x-forwarded-host`
- * is only trustworthy behind a proxy that sets it.
- */
-async function siteOrigin(): Promise<string> {
-  const configured = process.env.NEXT_PUBLIC_SITE_URL;
-  if (configured) return configured.replace(/\/$/, "");
-
-  const h = await headers();
-  const host = h.get("x-forwarded-host") ?? h.get("host") ?? "localhost:3000";
-  const protocol = h.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
-  return `${protocol}://${host}`;
+export async function signOut() {
+  const store = await cookies();
+  store.delete("token");
+  redirect("/login");
 }
 
-/**
- * Step one of a password reset: email a one-time link.
- *
- * Always reports success, even for an address with no account. Saying "no
- * account found" turns this form into a way to test whether a given email is a
- * customer here, which is not something a stranger should be able to learn.
- * The person who owns the address gets the mail; nobody else learns anything.
- */
+// Password reset is not implemented in the Express backend yet — kept as stubs
+// so the existing forgot/reset pages compile without changes.
 export async function requestPasswordReset(
   _prev: ResetState,
   formData: FormData
 ): Promise<ResetState> {
   const email = String(formData.get("email") ?? "").trim();
-
   if (!email) return { error: "Enter the email address you signed up with.", sent: false };
-
-  const supabase = await createClient();
-  const origin = await siteOrigin();
-
-  const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/confirm?next=/reset-password`,
-  });
-
-  // Rate limiting is the one failure worth surfacing — it is about the
-  // request, not about whether the account exists.
-  if (error && error.status === 429) {
-    return { error: "Too many attempts. Wait a minute and try again.", sent: false };
-  }
-
+  // TODO: implement reset email via Express + nodemailer
   return { error: null, sent: true };
 }
 
-/** Step two: the link has been followed and a session exists; set the password. */
 export async function updatePassword(
   _prev: PasswordState,
   formData: FormData
 ): Promise<PasswordState> {
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm_password") ?? "");
-
-  if (password.length < 8) {
-    return { error: "Password must be at least 8 characters.", success: false };
-  }
-  if (password !== confirm) {
-    return { error: "The two passwords do not match.", success: false };
-  }
-
-  const supabase = await createClient();
-
-  // The recovery link created a real session, so this is an ordinary update.
-  // If the link expired there is no session and Supabase refuses — which is
-  // the correct outcome, not something to work around.
-  const { error } = await supabase.auth.updateUser({ password });
-
-  if (error) return { error: error.message, success: false };
-
-  return { error: null, success: true };
+  if (password.length < 8) return { error: "Password must be at least 8 characters.", success: false };
+  if (password !== confirm) return { error: "The two passwords do not match.", success: false };
+  // TODO: implement via Express
+  return { error: "Password reset via email is not yet configured.", success: false };
 }

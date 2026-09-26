@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -13,55 +14,39 @@ import { ProfileForm } from "./profile-form";
 import { NotificationForm } from "./notification-form";
 
 export const metadata: Metadata = { title: "Profile" };
-
 export const dynamic = "force-dynamic";
 
-type ReviewRow = Rating & {
-  menu_items: { name: string } | null;
-};
-
 export default async function ProfilePage() {
-  const supabase = await createClient();
+  const token = await getServerToken();
   const user = await getCurrentUser();
 
-  const [{ data: prefs }, { data: reviews }] = await Promise.all([
-    supabase
-      .from("notification_preferences")
-      .select("*")
-      .eq("user_id", user!.id)
-      // maybeSingle, not single: a customer who has never opened this screen
-      // has no row, and that is not an error.
-      .maybeSingle<NotificationPreferences>(),
-    supabase
-      .from("ratings")
-      .select("*, menu_items(name)")
-      .eq("user_id", user!.id)
-      .order("created_at", { ascending: false })
-      .limit(10)
-      .returns<ReviewRow[]>(),
+  const [prefs, reviewsRaw] = await Promise.all([
+    apiJson<NotificationPreferences>("/account/notifications", { token: token ?? undefined }).catch(() => null),
+    apiJson<(Rating & { _id: string; menu_item_id: { _id: string; name: string } | string })[]>(
+      "/account/ratings", { token: token ?? undefined }
+    ).catch(() => []),
   ]);
 
-  const myReviews = reviews ?? [];
+  const myReviews = reviewsRaw.map((r) => ({
+    ...r,
+    id: r._id ?? r.id,
+    menu_items: typeof r.menu_item_id === "object" && r.menu_item_id !== null
+      ? { name: (r.menu_item_id as { name: string }).name }
+      : null,
+    menu_item_id: typeof r.menu_item_id === "object" && r.menu_item_id !== null
+      ? (r.menu_item_id as { _id: string })._id
+      : r.menu_item_id as string,
+  }));
 
   return (
     <div className="mx-auto max-w-6xl py-2">
-      <PageHeader
-        title="Your account"
-      />
+      <PageHeader title="Your account" />
 
-      {/* Staff and admins see their role here — it is the only place in the
-          customer-facing app that says what account they are signed in with,
-          which matters when someone has both a work and a personal login. */}
       {user && user.role !== "customer" && (
         <p className="mb-6 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-raised px-4 py-3 text-sm text-ink-soft">
-          <Badge tone={user.role === "admin" ? "accent" : "green"}>
-            {ROLE_LABELS[user.role]}
-          </Badge>
+          <Badge tone={user.role === "admin" ? "accent" : "green"}>{ROLE_LABELS[user.role]}</Badge>
           You are signed in with a team account.
-          <Link
-            href={user.role === "admin" ? "/admin" : "/staff"}
-            className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
-          >
+          <Link href={user.role === "admin" ? "/admin" : "/staff"} className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink">
             Go to your dashboard
           </Link>
         </p>
@@ -69,24 +54,12 @@ export default async function ProfilePage() {
 
       <div className="grid gap-10 lg:grid-cols-2 lg:items-start lg:gap-16">
         <section aria-labelledby="details-heading">
-          <h2
-            id="details-heading"
-            className="mb-4 display text-xl text-ink"
-          >
-            Your details
-          </h2>
-          {user?.profile && (
-            <ProfileForm profile={user.profile} email={user.email} />
-          )}
+          <h2 id="details-heading" className="mb-4 display text-xl text-ink">Your details</h2>
+          {user?.profile && <ProfileForm profile={user.profile} email={user.email} />}
         </section>
 
         <section aria-labelledby="notifications-heading">
-          <h2
-            id="notifications-heading"
-            className="mb-4 display text-xl text-ink"
-          >
-            Notifications
-          </h2>
+          <h2 id="notifications-heading" className="mb-4 display text-xl text-ink">Notifications</h2>
           <NotificationForm prefs={prefs ?? null} />
         </section>
       </div>
@@ -94,44 +67,19 @@ export default async function ProfilePage() {
       {myReviews.length > 0 && (
         <>
           <CheckerBand />
-
           <section aria-labelledby="reviews-heading">
-            <h2
-              id="reviews-heading"
-              className="mb-1 display text-xl text-ink"
-            >
-              Your reviews
-            </h2>
+            <h2 id="reviews-heading" className="mb-1 display text-xl text-ink">Your reviews</h2>
             <ul className="flex flex-col gap-3">
               {myReviews.map((review) => (
-                <li
-                  key={review.id}
-                  className="rounded-lg border border-line bg-card p-4"
-                >
+                <li key={review.id} className="rounded-lg border border-line bg-card p-4">
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <Link
-                      href={`/menu/${review.menu_item_id}`}
-                      className="text-sm font-semibold text-ink underline-offset-4 hover:underline"
-                    >
+                    <Link href={`/menu/${review.menu_item_id}`} className="text-sm font-semibold text-ink underline-offset-4 hover:underline">
                       {review.menu_items?.name ?? "A drink"}
                     </Link>
-                    <time
-                      dateTime={review.created_at}
-                      className="text-xs text-muted"
-                    >
-                      {formatDate(review.created_at)}
-                    </time>
+                    <time dateTime={review.created_at} className="text-xs text-muted">{formatDate(review.created_at)}</time>
                   </div>
-
-                  <div className="mt-2">
-                    <StarRating value={review.rating} readOnly size="sm" />
-                  </div>
-
-                  {review.comment && (
-                    <p className="mt-2 max-w-[60ch] text-sm text-ink-soft">
-                      &ldquo;{review.comment}&rdquo;
-                    </p>
-                  )}
+                  <div className="mt-2"><StarRating value={review.rating} readOnly size="sm" /></div>
+                  {review.comment && <p className="mt-2 max-w-[60ch] text-sm text-ink-soft">&ldquo;{review.comment}&rdquo;</p>}
                 </li>
               ))}
             </ul>

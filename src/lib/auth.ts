@@ -1,19 +1,7 @@
-import { createClient } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/supabase/server";
+import { apiJson } from "@/lib/api-client";
 import type { Profile, Role } from "@/types/database";
 
-/**
- * The signed-in person and what they may do, for Server Components.
- *
- * Layouts, the navbar and half a dozen pages all needed the same two facts —
- * "who is this" and "what role" — and each had grown its own copy of the same
- * two queries. This is the one implementation.
- *
- * Returns null for `profile` rather than throwing when a session exists but no
- * profile row does. That gap is real: the row is created by an `auth.users`
- * trigger, and a signup interrupted between the two leaves an account with no
- * profile. Treating it as "no permissions" degrades correctly; throwing would
- * turn it into a 500 on every page.
- */
 export type CurrentUser = {
   id: string;
   email: string;
@@ -23,34 +11,41 @@ export type CurrentUser = {
 };
 
 export async function getCurrentUser(): Promise<CurrentUser | null> {
-  const supabase = await createClient();
+  const token = await getServerToken();
+  if (!token) return null;
 
-  // getUser(), not getSession(): only the former revalidates the JWT with the
-  // auth server. A session read from a cookie is whatever the cookie says.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  try {
+    const user = await apiJson<{
+      _id: string;
+      email: string;
+      full_name: string | null;
+      phone: string | null;
+      role: Role;
+      is_active: boolean;
+      created_at: string;
+    }>("/auth/me", { token });
 
-  if (!user) return null;
+    const profile: Profile = {
+      id: user._id,
+      full_name: user.full_name,
+      phone: user.phone,
+      role: user.role,
+      is_active: user.is_active,
+      created_at: user.created_at,
+    };
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("*")
-    .eq("id", user.id)
-    .single<Profile>();
-
-  return {
-    id: user.id,
-    email: user.email ?? "",
-    profile: profile ?? null,
-    // A missing profile is read as the least privilege that exists, never as
-    // a default that happens to be convenient.
-    role: profile?.role ?? "customer",
-    isActive: profile?.is_active ?? false,
-  };
+    return {
+      id: user._id,
+      email: user.email,
+      profile,
+      role: user.role,
+      isActive: user.is_active,
+    };
+  } catch {
+    return null;
+  }
 }
 
-/** The access shape src/lib/roles.ts helpers take. */
 export function accessOf(user: CurrentUser | null) {
   return user ? { role: user.role, isActive: user.isActive } : null;
 }
