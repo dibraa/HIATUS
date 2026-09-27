@@ -1,16 +1,23 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 
 const initialState: AuthState = { error: null };
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SignupForm() {
   const [state, formAction, pending] = useActionState(signUp, initialState);
   const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [emailTouched, setEmailTouched] = useState(false);
+  const emailError = emailTouched && !EMAIL_PATTERN.test(email.trim())
+    ? "Please enter email address"
+    : null;
 
   return (
     <form action={formAction} className="flex flex-col gap-3">
@@ -29,7 +36,16 @@ export function SignupForm() {
         label="Email"
         type="email"
         required
+        pattern="[^\s@]+@[^\s@]+\.[^\s@]+"
+        title="Enter a valid email address, such as name@example.com."
         autoComplete="email"
+        value={email}
+        error={emailError}
+        onChange={(event) => {
+          setEmail(event.target.value);
+          setEmailTouched(true);
+        }}
+        onBlur={() => setEmailTouched(true)}
       />
 
       {/* Optional, unlike the email — the account is keyed on the address, and
@@ -41,8 +57,12 @@ export function SignupForm() {
         name="phone"
         label="Phone"
         type="tel"
-        inputMode="tel"
+        inputMode="numeric"
+        pattern="[0-9]*"
+        title="Enter numbers only."
         autoComplete="tel"
+        value={phone}
+        onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))}
       />
 
       {/* minLength is echoed in the hint rather than left for the browser to

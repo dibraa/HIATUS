@@ -5,15 +5,9 @@
  * MEDIUM. Small and large are derived from it via the deltas below, so the
  * shop keeps managing a single price per item in the admin UI.
  *
- * ┌──────────────────────────────────────────────────────────────────────┐
- * │ KEEP IN SYNC with `hiatus_size_delta()` in                           │
- * │ supabase/patches/001_size_pricing.sql.                               │
- * │                                                                      │
- * │ `create_order` re-derives every line price server-side so a client   │
- * │ cannot dictate what an order costs. That means the server needs the  │
- * │ same deltas — if these two drift, the cart will quote one total and  │
- * │ the order will record another.                                       │
- * └──────────────────────────────────────────────────────────────────────┘
+ * The Express order route re-derives every line price server-side so a client
+ * cannot dictate what an order costs. The server and client must use the same
+ * deltas or the cart will quote one total and the order will record another.
  */
 
 export type DrinkSize = "S" | "M" | "L";

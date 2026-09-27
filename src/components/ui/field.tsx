@@ -25,7 +25,7 @@ import { useState, type ComponentProps, type ReactNode } from "react";
  *  but not the client, which produces a hydration mismatch. */
 const CONTROL = "w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink transition-colors placeholder:text-muted hover:border-ink-soft focus:border-ink disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted";
 
-const CONTROL_INVALID = "border-danger hover:border-danger focus:border-danger";
+const CONTROL_INVALID = "border-danger shadow-[0_0_0_3px_rgb(165_31_24_/_0.2)] hover:border-danger focus:border-danger";
 
 function controlClasses(invalid: boolean, className?: string) {
   return [CONTROL, invalid ? CONTROL_INVALID : "", className].filter(Boolean).join(" ");

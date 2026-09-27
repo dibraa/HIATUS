@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getServerToken } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import type { Role } from "@/types/database";
 

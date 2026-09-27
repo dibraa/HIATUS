@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getServerToken } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { formatPrice } from "@/lib/format";
 import { priceForSize } from "@/lib/sizes";

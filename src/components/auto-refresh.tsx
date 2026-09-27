@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 /**
  * Keeps the queue current without anyone pressing anything.
  *
- * A polled `router.refresh()` rather than a Supabase realtime subscription.
+ * A polled `router.refresh()` rather than a realtime subscription.
  * The tradeoff is deliberate: a websocket would be a few seconds fresher, but
  * it also means a second data path with its own auth, its own reconnect
  * behaviour and its own way of being subtly wrong after a laptop lid closes.

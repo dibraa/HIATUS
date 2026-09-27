@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getServerToken } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/ui/page-header";

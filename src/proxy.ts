@@ -30,7 +30,7 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value ?? null;
 
   let role: Role | null = null;
-  let isActive = true;
+  const isActive = true;
 
   if (token) {
     try {
