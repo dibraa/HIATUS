@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getServerToken } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth";
 import { MenuItemCard } from "@/components/menu-item-card";

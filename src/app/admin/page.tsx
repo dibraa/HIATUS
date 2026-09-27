@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getServerToken } from "@/lib/supabase/server";
+import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";

@@ -1,7 +1,7 @@
 # Hiatus
 
-Order-ahead coffee shop system built with Next.js (App Router) and Supabase, with
-three roles — **customer**, **staff** and **admin** — sharing one design system.
+Order-ahead coffee shop system built with Next.js (App Router), Express and MongoDB,
+with three roles — **customer**, **staff** and **admin** — sharing one design system.
 
 Customers browse, customise and order; staff work a live queue, take payment and
 run their shift; admins manage the menu, the team, promotions, settings and the
@@ -10,72 +10,33 @@ reports.
 ## Stack
 
 - Next.js 16 (App Router, TypeScript, Server Actions)
-- Supabase (Postgres, Auth, Storage) via `@supabase/ssr`
+- Express and MongoDB (Mongoose) API in `../server`
 - Tailwind CSS v4 (design tokens via `@theme inline`)
 - Recharts (admin analytics)
 
 ## Setup
 
-1. **Create a Supabase project** at [supabase.com](https://supabase.com).
-2. **Run the SQL, in order**, in the Supabase SQL editor:
-
-   | File | What it adds |
-   | --- | --- |
-   | [`supabase/schema.sql`](supabase/schema.sql) | Base tables, RLS, `create_order` / `cancel_order` / `update_order_status`, `menu-images` bucket |
-   | [`supabase/patches/001_size_pricing.sql`](supabase/patches/001_size_pricing.sql) | `order_items.size` and size-aware pricing |
-   | [`supabase/patches/002_staff_role.sql`](supabase/patches/002_staff_role.sql) | The `staff` role, `is_staff()`, activity log, shifts, `orders.ready_at` |
-   | [`supabase/patches/003_order_fulfillment.sql`](supabase/patches/003_order_fulfillment.sql) | Dine-in/takeout, tables, queue priority, the `payments` ledger |
-   | [`supabase/patches/004_promotions.sql`](supabase/patches/004_promotions.sql) | Promo codes, order discounts, the final `create_order` |
-   | [`supabase/patches/005_customer_prefs.sql`](supabase/patches/005_customer_prefs.sql) | Favourites, saved presets, notification preferences |
-   | [`supabase/patches/006_settings.sql`](supabase/patches/006_settings.sql) | `app_settings` (hours, tenders, shop info, message wording) |
-   | [`supabase/patches/007_analytics.sql`](supabase/patches/007_analytics.sql) | Sales, peak hours, popularity, customer and wait-time reporting |
-   | [`supabase/patches/008_team_directory.sql`](supabase/patches/008_team_directory.sql) | `shifts` and a re-published `list_team()` for databases where 002 landed before the function existed |
-   | [`supabase/patches/009_order_queue_columns.sql`](supabase/patches/009_order_queue_columns.sql) | Repairs the `orders` columns the staff queue needs — `order_type`, `table_label`, `priority`, `payment_method`, `payment_status` |
-
-   Order matters — 004 replaces a function 001 created, and several patches call
-   `log_staff_activity` from 002. Each file is additive and safe to re-run.
-
-   008 and 009 are **repairs**, written after 002 and 003 were applied to a
-   database that ended up missing pieces of them. On a fresh project they are
-   no-ops; run them anyway, because a staff queue without `order_type` fails at
-   the first ticket rather than at deploy.
-
-   > ⚠ **004 drops `create_order(jsonb, text)`** and replaces it with a wider
-   > signature. That is deliberate: keeping both would make a two-argument call
-   > ambiguous and fail at runtime rather than at deploy.
-
-3. **Set env vars**: create `.env.local` in the repo root. Both values are on
-   Project Settings → API, and both are public — they ship in the client bundle,
-   and RLS, not secrecy, is what protects the data:
+1. **Configure the API**: copy `server/.env.example` to `server/.env` and set
+  `MONGO_URI`, `JWT_SECRET`, `PORT` and `CLIENT_URL`.
+2. **Configure the frontend**: create `HIATUS/.env.local` with:
 
    ```bash
-   NEXT_PUBLIC_SUPABASE_URL=https://<project-ref>.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable key>
+  NEXT_PUBLIC_API_URL=http://localhost:4000/api
+  JWT_SECRET=change_this_secret
    ```
-
-   New projects issue a `sb_publishable_…` key rather than the older `eyJ…` JWT;
-   either works, but a project with legacy JWT keys disabled will reject the old
-   one with a 401 on every request while the URL still looks correct.
-
-   `NEXT_PUBLIC_SITE_URL` is optional. Password-reset links derive their origin
-   from the request, so set it only where that origin is wrong — behind a proxy
-   that does not set `x-forwarded-host`.
-
-   > `.env.local` is gitignored and is never committed. Joining an existing
-   > project means getting these two values from whoever owns it; nothing in a
-   > `git pull` will deliver them, and their absence surfaces as
-   > `supabaseUrl is required` or `TypeError: Invalid URL` rather than as a
-   > missing-config message.
-4. **Install and run**:
+3. **Install and run the API**:
+  ```bash
+  cd server
+  npm install
+  npm run dev
+  ```
+4. **Install and run the frontend** in a second terminal:
    ```bash
+  cd HIATUS
    npm install
    npm run dev
    ```
-5. **Make yourself an admin**. There is no public "become admin" flow by design:
-   ```sql
-   update public.profiles set role = 'admin'
-     where id = (select id from auth.users where email = 'you@example.com');
-   ```
+5. **Make yourself an admin** by updating the user's `role` to `admin` in MongoDB.
 6. **Add menu items** at `/admin/menu`. Each needs a `flavor` and a `category` —
    both drive the storefront filters, and flavour drives the best-seller report.
 
@@ -95,16 +56,13 @@ locked out of their own queue.
 | Clock in/out, drawer report | | ✅ | ✅ |
 | Menu CRUD, team, promos, settings, reports | | | ✅ |
 
-Access is enforced in **three** places, so a gap in one does not open the others:
+Access is enforced in three places:
 
-1. `src/proxy.ts` → `src/lib/supabase/middleware.ts` — the request-time gate.
+1. `src/proxy.ts` — the request-time gate.
 2. Each area's `layout.tsx` — a Server Component redirect.
-3. Postgres RLS and every `security definer` RPC — the only one that stops a
-   crafted request straight to the API.
+3. Express JWT middleware and role checks — the API boundary.
 
-Staff accounts are **not** created in-app. Creating an `auth.users` row needs the
-service-role key, which bypasses every RLS policy and has no business in a server
-action. Instead the person signs up normally and an admin grants the role at
+Staff accounts are created by signing up normally; an admin grants the role at
 `/admin/team`.
 
 ## Routes

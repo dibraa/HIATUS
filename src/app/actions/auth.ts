@@ -15,28 +15,37 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "");
 
+  let token: string;
+  let role: Role;
+
   try {
-    const { token, role } = await apiJson<{ token: string; role: Role }>("/auth/login", {
+    ({ token, role } = await apiJson<{ token: string; role: Role }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
-    });
+    }));
 
     const store = await cookies();
     store.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax" });
-
-    if (next) redirect(next);
-    redirect(homePathFor(role));
   } catch (err: unknown) {
     return { error: (err as Error).message };
   }
+
+  if (next) redirect(next);
+  redirect(homePathFor(role));
 }
 
 export async function signUp(_prevState: AuthState, formData: FormData): Promise<AuthState> {
-  const email = String(formData.get("email") ?? "");
+  const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
   const fullName = String(formData.get("full_name") ?? "");
   const phone = String(formData.get("phone") ?? "").trim();
 
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Please enter email address" };
+  }
+  if (phone && !/^\d+$/.test(phone)) {
+    return { error: "Phone number must contain numbers only" };
+  }
   if (password.length < 8) return { error: "Password must be at least 8 characters." };
 
   try {
