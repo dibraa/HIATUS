@@ -33,7 +33,6 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
   const p = prefs ?? {
     order_updates: true,
     ready_alerts: true,
-    promotions: false,
     email_channel: true,
     sms_channel: false,
   };
@@ -56,12 +55,6 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
           name="ready_alerts"
           label="Ready for pickup"
           defaultChecked={p.ready_alerts}
-        />
-        <CheckboxField
-          id="promotions"
-          name="promotions"
-          label="Offers and new drinks"
-          defaultChecked={p.promotions}
         />
       </fieldset>
 

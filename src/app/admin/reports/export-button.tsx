@@ -7,7 +7,6 @@ import { formatHour } from "@/lib/order-meta";
 import type {
   PeakHourRow,
   PopularItemRow,
-  PromoPerformance,
   SalesReportRow,
   TopCustomerRow,
 } from "@/types/database";
@@ -28,8 +27,7 @@ type Exportable =
   | { kind: "sales"; rows: SalesReportRow[]; grain: "day" | "month" | "year" }
   | { kind: "hours"; rows: PeakHourRow[] }
   | { kind: "items"; rows: PopularItemRow[] }
-  | { kind: "customers"; rows: TopCustomerRow[] }
-  | { kind: "promos"; rows: PromoPerformance[] };
+  | { kind: "customers"; rows: TopCustomerRow[] };
 
 const COLUMNS: {
   [K in Exportable["kind"]]: (
@@ -77,25 +75,6 @@ const COLUMNS: {
       { header: "Last order", value: (r: TopCustomerRow) => formatDate(r.last_order_at) },
     ] as CsvColumn<never>[],
 
-  promos: () =>
-    [
-      { header: "Code", value: (r: PromoPerformance) => r.code },
-      { header: "Description", value: (r: PromoPerformance) => r.description ?? "" },
-      {
-        header: "Discount",
-        value: (r: PromoPerformance) =>
-          r.discount_type === "percent"
-            ? `${r.discount_value}%`
-            : String(r.discount_value),
-      },
-      { header: "Active", value: (r: PromoPerformance) => (r.is_active ? "Yes" : "No") },
-      { header: "Redemptions", value: (r: PromoPerformance) => r.redemptions },
-      { header: "Discount given", value: (r: PromoPerformance) => r.discount_given },
-      {
-        header: "Revenue influenced",
-        value: (r: PromoPerformance) => r.revenue_influenced,
-      },
-    ] as CsvColumn<never>[],
 };
 
 export function ExportButton({

@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 /**
  * A small labelled pill for a fact about a row: a role, a tender, whether the
- * money arrived, whether a promo is live.
+ * money arrived, whether an order needs attention.
  *
  * The order-status badge stays its own component (`order-status-badge.tsx`)
  * because a lifecycle has an opinion about which state should shout — this one

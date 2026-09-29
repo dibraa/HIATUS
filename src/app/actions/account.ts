@@ -53,7 +53,6 @@ export async function saveNotificationPreferences(
       body: JSON.stringify({
         order_updates: formData.get("order_updates") === "on",
         ready_alerts: formData.get("ready_alerts") === "on",
-        promotions: formData.get("promotions") === "on",
         email_channel: formData.get("email_channel") === "on",
         sms_channel: formData.get("sms_channel") === "on",
       }),

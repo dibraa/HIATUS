@@ -37,7 +37,6 @@ export type PosOrder = {
   subtotal_amount: number;
   discount_amount: number;
   total_amount: number;
-  promo_code: string | null;
   created_at: string;
   paid_at: string | null;
   profiles: { full_name: string | null } | null;
@@ -152,7 +151,6 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
           {ORDER_TYPE_LABELS[order.order_type]}
           {order.table_label && ` · ${order.table_label}`}
         </Badge>
-        {order.promo_code && <Badge tone="accent">{order.promo_code}</Badge>}
       </div>
 
       {/* ---------- The bill ---------- */}
@@ -184,7 +182,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
         {order.discount_amount > 0 && (
           <div className="flex justify-between gap-4">
             <dt className="text-muted">
-              Discount{order.promo_code ? ` (${order.promo_code})` : ""}
+              Discount
             </dt>
             <dd className="numeric text-success">
               −{formatPrice(order.discount_amount)}

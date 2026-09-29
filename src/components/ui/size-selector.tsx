@@ -75,7 +75,7 @@ export function SizeSelector({
                       ? "border-inverse-fg bg-inverse-fg text-inverse-bg"
                       : "border-inverse-line text-inverse-fg group-hover:border-inverse-muted"
                     : selected
-                      ? "border-ink bg-ink text-accent-fg"
+                      ? "border-ink bg-ink text-cta-fg"
                       : "border-line-strong text-ink-soft group-hover:border-ink group-hover:bg-raised",
                 ].join(" ")}
               >
@@ -85,7 +85,7 @@ export function SizeSelector({
                     selected
                       ? isDark
                         ? "text-inverse-bg/70"
-                        : "text-accent-fg/70"
+                        : "text-cta-fg/70"
                       : isDark
                         ? "text-inverse-muted"
                         : "text-muted"

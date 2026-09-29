@@ -32,7 +32,6 @@ export type QueueOrder = {
   payment_status: "unpaid" | "paid" | "refunded" | "voided";
   total_amount: number;
   discount_amount: number;
-  promo_code: string | null;
   pickup_note: string | null;
   created_at: string;
   profiles: { full_name: string | null; phone: string | null } | null;
@@ -68,6 +67,7 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
   const advanceLabel = ADVANCE_LABELS[order.status];
   const customer = order.profiles?.full_name?.trim() || "Walk-in";
   const isUrgent = order.priority > 0;
+  const cannotHandOver = next === "completed" && order.payment_status !== "paid";
 
   /** One place to run an action, so every one of them reports the same way. */
   function run(fn: () => Promise<{ error: string | null }>, success: string) {
@@ -130,7 +130,6 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
           {PAYMENT_METHOD_LABELS[order.payment_method]}
         </Badge>
 
-        {order.promo_code && <Badge tone="accent">{order.promo_code}</Badge>}
       </div>
 
       {/* ---------- What to make ---------- */}
@@ -181,18 +180,23 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
         </div>
 
         {next && advanceLabel && (
-          <Button
-            size="md"
-            disabled={pending}
-            onClick={() =>
-              run(
-                () => advanceOrderStatus(order.id, next),
-                `${orderCode(order.id)} → ${STATUS_LABELS[next]}`
-              )
-            }
-          >
-            {pending ? "Working…" : advanceLabel}
-          </Button>
+          <div className="flex flex-col items-end gap-1.5">
+            <Button
+              size="md"
+              disabled={pending || cannotHandOver}
+              onClick={() =>
+                run(
+                  () => advanceOrderStatus(order.id, next),
+                  `${orderCode(order.id)} → ${STATUS_LABELS[next]}`
+                )
+              }
+            >
+              {pending ? "Working…" : advanceLabel}
+            </Button>
+            {cannotHandOver && (
+              <span className="text-xs text-warning-soft-fg">Pay before handover</span>
+            )}
+          </div>
         )}
       </div>
 

@@ -121,7 +121,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             </div>
             {order.discount_amount > 0 && (
               <div className="flex justify-between gap-4">
-                <dt className="text-muted">Discount{order.promo_code ? ` (${order.promo_code})` : ""}</dt>
+                <dt className="text-muted">Discount</dt>
                 <dd className="numeric text-success">−{formatPrice(order.discount_amount)}</dd>
               </div>
             )}

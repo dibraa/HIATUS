@@ -32,7 +32,10 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
     .map((o) => ({
       ...o,
       id: o._id ?? o.id,
-      order_items: ((o as unknown as { items: unknown[] }).items ?? []) as import("@/types/database").OrderItem[],
+      order_items: ((o as unknown as { items: (import("@/types/database").OrderItem & { _id?: string })[] }).items ?? []).map((item) => ({
+        ...item,
+        id: item._id ?? item.id,
+      })),
       profiles: (o as unknown as { user_id: unknown }).user_id as { full_name: string | null } | null,
     }))
     .filter((o) => {

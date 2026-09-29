@@ -10,13 +10,15 @@ import {
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
+import { Field } from "@/components/ui/field";
 import type { MenuItem } from "@/types/database";
 
 const initialState: MenuFormState = { error: null };
 
 export function MenuItemForm({ item }: { item?: MenuItem }) {
   const [state, formAction, pending] = useActionState(saveMenuItem, initialState);
-  const [imageUrl, setImageUrl] = useState(item?.image_url ?? "");
+  const imageUrl = item?.image_url ?? "";
+  const [imagePreview, setImagePreview] = useState(item?.image_url ?? "");
 
   return (
     <form action={formAction} className="grid gap-5 sm:grid-cols-2">
@@ -29,21 +31,24 @@ export function MenuItemForm({ item }: { item?: MenuItem }) {
       <TextField id="price" name="price" label="Price (PHP)" type="number" min="0" step="0.01" required inputMode="decimal" defaultValue={item?.price} />
       <TextAreaField id="description" name="description" label="Description" rows={3} defaultValue={item?.description ?? ""} />
 
-      <div className="flex flex-col gap-2">
-        <TextField
-          id="image_url_input"
-          name="image_url_input"
-          label="Photo URL"
-          placeholder="https://..."
-          defaultValue={item?.image_url ?? ""}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImageUrl(e.target.value)}
+      <Field id="photo" label="Photo" hint="JPG, PNG, WEBP, or GIF up to 5 MB">
+        <input
+          id="photo"
+          name="photo"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink file:mr-3 file:rounded file:border-0 file:bg-raised file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink"
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) setImagePreview(URL.createObjectURL(file));
+          }}
         />
-        {imageUrl && (
+        {imagePreview && (
           <div className="w-24">
-            <ProductImage src={imageUrl} alt="Preview" sizes="96px" rounded="rounded-md" />
+            <ProductImage src={imagePreview} alt="Preview" sizes="96px" rounded="rounded-md" />
           </div>
         )}
-      </div>
+      </Field>
 
       <div className="flex items-start pt-1">
         <CheckboxField id="is_available" name="is_available" label="Available on the menu" defaultChecked={item?.is_available ?? true} />

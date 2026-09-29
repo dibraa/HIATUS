@@ -170,6 +170,7 @@ export default async function HomePage({
                   src={heroItem.image_url}
                   alt={heroItem.name}
                   fill
+                  unoptimized={heroItem.image_url.includes("/uploads/")}
                   // The hero is the LCP element: it must not lazy-load, and the
                   // sizes hint has to describe the full-width container or the
                   // browser downloads a thumbnail and upscales it.
@@ -381,6 +382,7 @@ export default async function HomePage({
                         src={item.image_url}
                         alt=""
                         fill
+                        unoptimized={item.image_url.includes("/uploads/")}
                         sizes="(min-width: 1024px) 264px, 45vw"
                         className="object-cover transition-transform duration-(--hi-dur-slow) ease-hi-out group-hover:scale-[1.04]"
                       />
