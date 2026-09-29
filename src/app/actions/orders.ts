@@ -11,7 +11,6 @@ export type PlaceOrderInput = {
   pickupNote: string;
   orderType: OrderType;
   paymentMethod: PaymentMethod;
-  promoCode: string;
   tableLabel: string;
 };
 
@@ -28,7 +27,6 @@ export async function placeOrder(
         pickup_note: input.pickupNote || null,
         order_type: input.orderType,
         payment_method: input.paymentMethod,
-        promo_code: input.promoCode || null,
         table_label: input.tableLabel || null,
       }),
     });

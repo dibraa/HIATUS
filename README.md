@@ -4,8 +4,7 @@ Order-ahead coffee shop system built with Next.js (App Router), Express and Mong
 with three roles — **customer**, **staff** and **admin** — sharing one design system.
 
 Customers browse, customise and order; staff work a live queue, take payment and
-run their shift; admins manage the menu, the team, promotions, settings and the
-reports.
+run their shift; admins manage the menu, the team, settings and reports.
 
 ## Stack
 
@@ -54,7 +53,7 @@ locked out of their own queue.
 | Order queue, mark sold out, assign tables | | ✅ | ✅ |
 | Take payment, refund, void, manual discount | | ✅ | ✅ |
 | Clock in/out, drawer report | | ✅ | ✅ |
-| Menu CRUD, team, promos, settings, reports | | | ✅ |
+| Menu CRUD, team, settings, reports | | | ✅ |
 
 Access is enforced in three places:
 
@@ -74,18 +73,14 @@ Staff accounts are created by signing up normally; an admin grants the role at
 **Staff** — `/staff` (queue) · `/staff/pos` · `/staff/menu` · `/staff/shift`
 
 **Admin** — `/admin` (dashboard) · `/admin/orders` · `/admin/menu` ·
-`/admin/promos` · `/admin/reports` · `/admin/team` · `/admin/settings`
+`/admin/reports` · `/admin/team` · `/admin/settings`
 
 ## How it works
 
 - **Pricing is server-derived, always.** The cart lives in `localStorage`, but
-  checkout sends *choices* — item, size, code — never prices. `create_order`
-  re-derives every line from the menu and every discount from `evaluate_promo`.
-  `orders.total_amount` keeps its meaning (what the customer pays); the new
-  `subtotal_amount` and `discount_amount` sit alongside it.
-- **Promos have one implementation.** Checkout calls `evaluate_promo` to *preview*
-  a discount and `create_order` calls the same function to *apply* one, so the
-  quote and the charge cannot disagree.
+  checkout sends *choices* — item and size — never prices. The API re-derives
+  every line from the menu. Staff may apply manual discounts at the counter;
+  `orders.total_amount` remains the amount the customer pays.
 - **Money is a ledger, not a flag.** `payments` is append-only; a refund is a new
   row, not the erasure of the payment it reverses. `orders.payment_status` is a
   cached rollup of it. That is what makes "reconcile the drawer" answerable.
@@ -146,7 +141,7 @@ Reach for these before writing markup:
 | [`ui/filter-tabs.tsx`](src/components/ui/filter-tabs.tsx) | Link-based segmented filters — each state is a URL. |
 | [`ui/stat-card.tsx`](src/components/ui/stat-card.tsx) | `StatCard` / `StatGrid` — the dashboards' unit. |
 | [`ui/empty-state.tsx`](src/components/ui/empty-state.tsx) | Says what happened *and* offers the way out. |
-| [`ui/badge.tsx`](src/components/ui/badge.tsx) | Facts about a row (role, tender, promo state). Order status has its own component. |
+| [`ui/badge.tsx`](src/components/ui/badge.tsx) | Facts about a row (role, tender, attention state). Order status has its own component. |
 | [`ui/checker.tsx`](src/components/ui/checker.tsx) | The checkered rule, with the correct colour per surface. |
 | [`ui/product-image.tsx`](src/components/ui/product-image.tsx) | Fixed aspect ratio with a real placeholder — no layout shift. |
 | [`lib/use-token-colors.ts`](src/lib/use-token-colors.ts) | Resolves `--hi-*` tokens to hex for Recharts, which writes `fill` as an SVG attribute and cannot hold `var()`. |

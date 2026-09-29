@@ -8,7 +8,6 @@ import { formatPrice } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { placeOrder } from "@/app/actions/orders";
-import { checkPromoCode } from "@/app/actions/promotions";
 import {
   ORDER_TYPE_HINTS,
   ORDER_TYPE_LABELS,
@@ -21,23 +20,14 @@ import type {
   OrderingSettings,
   PaymentMethod,
   PaymentMethodSettings,
-  PromoVerdict,
 } from "@/types/database";
 
 /**
  * Checkout.
  *
- * Four decisions, in the order a customer actually makes them: where they are
- * eating, how they will pay, whether they have a code, and then confirm. Each
- * is its own labelled card so nothing is buried, and the running total is
- * restated at the bottom next to the button that commits it.
- *
- * THE DISCOUNT SHOWN HERE IS A QUOTE, NOT A PROMISE. `checkPromoCode` calls the
- * same `evaluate_promo` the server calls when the order is created, so the two
- * agree — but the authoritative calculation happens inside `create_order`
- * against a subtotal the server derives itself. If a code is claimed by
- * someone else between the quote and the confirm, the order is refused with a
- * message rather than placed at a price the customer did not agree to.
+ * The customer chooses where they are eating, how they will pay, and any notes
+ * for the shop before confirming. Each decision is its own labelled card, and
+ * the running total is restated beside the button that commits the order.
  */
 export function CheckoutForm({
   paymentMethods,
@@ -66,10 +56,6 @@ export function CheckoutForm({
   const [tableLabel, setTableLabel] = useState("");
   const [method, setMethod] = useState<PaymentMethod>(availableMethods[0] ?? "cash");
   const [pickupNote, setPickupNote] = useState("");
-
-  const [codeInput, setCodeInput] = useState("");
-  const [verdict, setVerdict] = useState<PromoVerdict | null>(null);
-  const [checking, startChecking] = useTransition();
 
   const [error, setError] = useState<string | null>(null);
   const [placing, startPlacing] = useTransition();
@@ -122,20 +108,6 @@ export function CheckoutForm({
     );
   }
 
-  const discount = verdict?.valid ? verdict.discount : 0;
-  const dueNow = Math.max(0, totalPrice - discount);
-
-  function applyCode() {
-    const code = codeInput.trim();
-    if (!code) return;
-
-    startChecking(async () => {
-      const result = await checkPromoCode(code, totalPrice);
-      setVerdict(result);
-      if (result.valid) toast.success(result.message);
-    });
-  }
-
   function submit() {
     setError(null);
     startPlacing(async () => {
@@ -148,9 +120,6 @@ export function CheckoutForm({
         pickupNote,
         orderType,
         paymentMethod: method,
-        // Only sent when the quote came back valid — sending a rejected code
-        // would make create_order refuse the whole order.
-        promoCode: verdict?.valid ? codeInput.trim() : "",
         tableLabel: orderType === "dine_in" ? tableLabel : "",
       });
 
@@ -259,58 +228,7 @@ export function CheckoutForm({
         </div>
       </Card>
 
-      {/* ---------- 3. Promo ---------- */}
-      <Card title="Have a code?">
-        <div className="flex flex-wrap gap-2">
-          <label htmlFor="promo_code" className="sr-only">
-            Promotional code
-          </label>
-          <input
-            id="promo_code"
-            value={codeInput}
-            onChange={(e) => {
-              setCodeInput(e.target.value);
-              // Clearing the verdict on edit stops a stale "applied" message
-              // sitting under a code that has since been changed.
-              if (verdict) setVerdict(null);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                e.preventDefault();
-                applyCode();
-              }
-            }}
-            placeholder="WELCOME10"
-            aria-describedby="promo-feedback"
-            className="min-w-0 flex-1 rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm uppercase text-ink placeholder:normal-case placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
-          />
-          <Button
-            variant="secondary"
-            onClick={applyCode}
-            disabled={checking || codeInput.trim() === ""}
-          >
-            {checking ? "Checking…" : "Apply"}
-          </Button>
-        </div>
-
-        {/* aria-live so the verdict is announced when it arrives, not only
-            found by someone who tabs back. */}
-        <p id="promo-feedback" aria-live="polite" className="mt-2 text-sm">
-          {verdict && (
-            <span
-              className={
-                verdict.valid ? "font-medium text-success" : "font-medium text-danger"
-              }
-            >
-              {verdict.valid
-                ? `${verdict.message} You save ${formatPrice(verdict.discount)}.`
-                : verdict.message}
-            </span>
-          )}
-        </p>
-      </Card>
-
-      {/* ---------- 4. Notes ---------- */}
+      {/* ---------- 3. Notes ---------- */}
       <Card title="Anything we should know?">
         <label htmlFor="pickup_note" className="sr-only">
           Notes for the shop
@@ -368,17 +286,10 @@ export function CheckoutForm({
               <dd className="numeric text-ink-soft">{formatPrice(totalPrice)}</dd>
             </div>
 
-            {discount > 0 && (
-              <div className="flex justify-between gap-4">
-                <dt className="text-muted">Discount ({verdict?.code})</dt>
-                <dd className="numeric text-success">−{formatPrice(discount)}</dd>
-              </div>
-            )}
-
             <div className="mt-1.5 flex items-center justify-between gap-4 border-t border-line pt-3">
               <dt className="text-base font-medium text-ink-soft">Total</dt>
               <dd className="text-xl font-semibold numeric text-ink">
-                {formatPrice(dueNow)}
+                {formatPrice(totalPrice)}
               </dd>
             </div>
           </dl>
@@ -406,7 +317,7 @@ export function CheckoutForm({
           >
             {placing
               ? "Placing your order…"
-              : `Place order · ${formatPrice(dueNow)}`}
+              : `Place order · ${formatPrice(totalPrice)}`}
           </Button>
 
           <p className="mt-3 text-center text-xs text-muted">

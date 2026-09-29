@@ -40,9 +40,9 @@ export type Order = {
   status: OrderStatus;
   /** Sum of the lines, before any discount. */
   subtotal_amount: number;
-  /** Promo plus any manual discount. Always >= 0. */
+  /** Manual discount applied by staff. Always >= 0. */
   discount_amount: number;
-  /** What the customer owes: subtotal_amount - discount_amount. */
+  /** What the customer owes after any manual discount. */
   total_amount: number;
   pickup_note: string | null;
   order_type: OrderType;
@@ -51,8 +51,6 @@ export type Order = {
   payment_method: PaymentMethod;
   payment_status: PaymentStatus;
   paid_at: string | null;
-  promotion_id: string | null;
-  promo_code: string | null;
   /** First time the order reached `ready`. Never overwritten. */
   ready_at: string | null;
   created_at: string;
@@ -150,55 +148,6 @@ export type Payment = {
 };
 
 /* ==========================================================================
-   Promotions
-   ========================================================================== */
-
-export type Promotion = {
-  id: string;
-  code: string;
-  description: string | null;
-  discount_type: "percent" | "fixed";
-  discount_value: number;
-  min_order_amount: number;
-  /** Caps a percent promo in money terms. Null means uncapped. */
-  max_discount_amount: number | null;
-  starts_at: string | null;
-  ends_at: string | null;
-  /** Null means unlimited. */
-  usage_limit: number | null;
-  per_user_limit: number | null;
-  is_active: boolean;
-  created_at: string;
-};
-
-/**
- * The verdict from `evaluate_promo`. Returned rather than thrown so checkout
- * can SHOW why a code was refused; `create_order` raises on the same verdict.
- */
-export type PromoVerdict = {
-  valid: boolean;
-  promotion_id: string | null;
-  code: string | null;
-  discount: number;
-  message: string;
-};
-
-export type PromoPerformance = {
-  id: string;
-  code: string;
-  description: string | null;
-  discount_type: "percent" | "fixed";
-  discount_value: number;
-  is_active: boolean;
-  starts_at: string | null;
-  ends_at: string | null;
-  usage_limit: number | null;
-  redemptions: number;
-  discount_given: number;
-  revenue_influenced: number;
-};
-
-/* ==========================================================================
    Customer preferences
    ========================================================================== */
 
@@ -228,7 +177,6 @@ export type NotificationPreferences = {
   user_id: string;
   order_updates: boolean;
   ready_alerts: boolean;
-  promotions: boolean;
   email_channel: boolean;
   sms_channel: boolean;
   updated_at: string;

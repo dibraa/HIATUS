@@ -49,7 +49,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         <StatCard label="Net revenue" value={formatPrice(netTotal)} hint={selected.label.toLowerCase()} tone="positive" />
         <StatCard label="Orders" value={orderTotal} hint="Completed" />
         <StatCard label="Average order" value={formatPrice(orderTotal === 0 ? 0 : netTotal / orderTotal)} hint="Net, per order" />
-        <StatCard label="Discounts given" value={formatPrice(discountTotal)} hint="Promos and manual" />
+        <StatCard label="Discounts given" value={formatPrice(discountTotal)} hint="Manual adjustments" />
       </StatGrid>
 
       <section aria-labelledby="revenue-heading" className="mt-10">

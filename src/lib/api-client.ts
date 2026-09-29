@@ -13,10 +13,8 @@ export async function apiFetch(
   options: RequestInit & { token?: string } = {}
 ): Promise<Response> {
   const { token, ...rest } = options;
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-    ...(rest.headers as Record<string, string>),
-  };
+  const headers: Record<string, string> = { ...(rest.headers as Record<string, string>) };
+  if (!(rest.body instanceof FormData)) headers["Content-Type"] = "application/json";
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
   return fetch(`${BASE}${path}`, { ...rest, headers });

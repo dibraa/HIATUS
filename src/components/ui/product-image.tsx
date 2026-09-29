@@ -44,6 +44,7 @@ export function ProductImage({
           src={src}
           alt={alt}
           fill
+          unoptimized={src.includes("/uploads/")}
           sizes={sizes}
           priority={priority}
           // Everything below the fold defers; the LCP image must not.

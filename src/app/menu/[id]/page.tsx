@@ -125,7 +125,15 @@ export default async function MenuItemPage({ params }: Params) {
               <li key={rating.id} className="rounded-lg border border-line bg-card p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <StarRating value={rating.rating} readOnly size="sm" />
-                  <time dateTime={rating.created_at} className="text-xs text-muted">{dateFormatter.format(new Date(rating.created_at))}</time>
+                  {(() => {
+                    const createdAt = new Date(rating.created_at);
+                    const hasValidDate = !Number.isNaN(createdAt.getTime());
+                    return hasValidDate ? (
+                      <time dateTime={rating.created_at} className="text-xs text-muted">{dateFormatter.format(createdAt)}</time>
+                    ) : (
+                      <span className="text-xs text-muted">Date unavailable</span>
+                    );
+                  })()}
                 </div>
                 {rating.comment && <p className="mt-2 max-w-[70ch] text-sm text-ink-soft">{rating.comment}</p>}
                 <p className="mt-2 eyebrow text-muted">Verified purchase</p>
