@@ -18,6 +18,8 @@ export function RatingForm({
 }) {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
+  const [attachment, setAttachment] = useState<File | null>(null);
+  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -54,13 +56,36 @@ export function RatingForm({
         placeholder="What did you think?"
       />
 
+      <div>
+        <label htmlFor={`${commentId}-attachment`} className="ui-caps text-2xs text-ink-soft">Add a photo or video (optional)</label>
+        <input
+          id={`${commentId}-attachment`}
+          type="file"
+          accept="image/*,video/*"
+          className="mt-2 block w-full text-sm text-ink-soft file:mr-3 file:rounded-md file:border file:border-line-strong file:bg-card file:px-3 file:py-2 file:text-xs file:font-medium file:text-ink hover:file:border-ink"
+          onChange={(event) => {
+            const file = event.target.files?.[0] ?? null;
+            if (file && file.size > 10 * 1024 * 1024) {
+              setAttachment(null);
+              setAttachmentError("Choose a file smaller than 10 MB.");
+              event.target.value = "";
+              return;
+            }
+            setAttachment(file);
+            setAttachmentError(null);
+          }}
+        />
+        {attachment && <p className="mt-1 text-xs text-muted">{attachment.name}</p>}
+        {attachmentError && <p className="mt-1 text-xs text-danger-fg">{attachmentError}</p>}
+      </div>
+
       <Button
         size="sm"
         className="self-start"
         disabled={rating === 0 || pending}
         onClick={() =>
           startTransition(async () => {
-            const result = await submitRating(orderId, menuItemId, rating, comment);
+            const result = await submitRating(orderId, menuItemId, rating, comment, attachment);
             if (result.error) {
               toast.error(result.error);
               return;

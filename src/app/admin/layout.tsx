@@ -4,7 +4,6 @@ import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin } from "@/lib/roles";
 import { AdminNav } from "@/components/admin-nav";
 import { AdminBackButton } from "@/components/admin-back-button";
-import { SignOutButton } from "@/components/sign-out-button";
 
 export default async function AdminLayout({
   children,
@@ -37,9 +36,6 @@ export default async function AdminLayout({
             </span>
           </div>
           <AdminNav />
-          <div className="mt-8 border-t border-line px-3 pt-5">
-            <SignOutButton />
-          </div>
         </aside>
 
         <section className="min-w-0 rounded-[1.5rem] border border-line bg-card px-4 py-5 shadow-lg sm:px-6 lg:px-8 lg:py-8">

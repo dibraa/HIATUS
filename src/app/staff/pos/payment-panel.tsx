@@ -8,7 +8,6 @@ import { OrderStatusBadge } from "@/components/order-status-badge";
 import { formatPrice, formatTime, orderCode } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import {
-  ORDER_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
 } from "@/lib/order-meta";
@@ -41,7 +40,7 @@ export type PosOrder = {
   order_items: OrderItem[];
 };
 
-const METHODS: PaymentMethod[] = ["cash", "card", "ewallet"];
+const METHODS: PaymentMethod[] = ["cash", "ewallet"];
 
 /**
  * One order at the till — distilled to the single question: has the money arrived?

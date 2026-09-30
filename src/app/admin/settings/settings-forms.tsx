@@ -152,7 +152,7 @@ export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings
   return (
     <SettingsCard
       title="Payment methods"
-      description="Which tenders customers can choose at checkout. Payment is still taken at the counter — this app does not process cards itself."
+      description="Which tenders customers can choose at checkout. Payment is still taken at the counter."
       state={state}
       pending={pending}
       action={formAction}
@@ -163,13 +163,6 @@ export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings
         label="Cash"
         defaultChecked={methods.cash}
         hint="Paid at the counter on collection."
-      />
-      <CheckboxField
-        id="card"
-        name="card"
-        label="Card"
-        defaultChecked={methods.card}
-        hint="Tapped or inserted on your own terminal."
       />
       <CheckboxField
         id="ewallet"
