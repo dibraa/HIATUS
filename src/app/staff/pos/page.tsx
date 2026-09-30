@@ -37,6 +37,7 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
         <DataError
           title="Couldn't load POS"
           body="Check your connection and try again."
+          showRetry
         />
       </div>
     );
@@ -46,7 +47,7 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
     .map((o) => ({
       ...o,
       id: o._id ?? o.id,
-      order_items: ((o as unknown as { items: (import("@/types/database").OrderItem & { _id?: string })[] }).items ?? []).map((item) => ({
+    order_items: ((o as unknown as { items: (import("@/types/database").OrderItem & { _id?: string })[] }).items ?? []).map((item) => ({
         ...item,
         id: item._id ?? item.id,
       })),
@@ -66,6 +67,7 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
     <div>
       <AutoRefresh seconds={20} />
       <PageHeader
+        size="utility"
         title="Point of Sale"
         description="Take payment and correct transactions at the counter."
         action={
@@ -78,18 +80,18 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
         }
       />
 
-      {/* Filter tabs — simple text links, not buttons */}
-      <div className="mb-6 flex gap-6 border-b border-line pb-3">
+      {/* Filter tabs — chip style, consistent with admin */}
+      <div className="mb-5 flex gap-1">
         {TABS.map((t) => (
           <a
             key={t.value}
             href={`/staff/pos?tab=${t.value}`}
             aria-current={tab === t.value ? "page" : undefined}
-            className={
+            className={`ui-caps inline-flex h-11 items-center whitespace-nowrap rounded-md border px-3.5 text-2xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
               tab === t.value
-                ? "display text-sm text-ink"
-                : "text-sm text-muted transition-colors hover:text-ink"
-            }
+                ? "border-ink bg-raised text-ink"
+                : "border-line-strong bg-card text-ink-soft hover:border-ink hover:text-ink"
+            }`}
           >
             {t.label}
           </a>
@@ -102,7 +104,7 @@ export default async function PosPage({ searchParams }: { searchParams: Promise<
           body={tab === "unpaid" ? "No open order is waiting on payment right now." : "No orders match this view yet."}
         />
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col divide-y divide-line border-y border-line">
           {list.map((order) => <li key={order.id}><PaymentPanel order={order} /></li>)}
         </ul>
       )}

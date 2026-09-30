@@ -38,8 +38,8 @@ export type QueueOrder = {
  *   - HOW LONG IT'S BEEN WAITING (elapsed time, always visible)
  *   - WHAT TO DO NEXT (one button, always bottom-right)
  *
- * The ticket is not a card — it's a bare list item with a hairline separator.
- * The items are the dominant element. Everything else recedes.
+ * The ticket is a card with a hairline border. The items are the dominant
+ * element. Everything else recedes.
  */
 export function OrderTicket({ order }: { order: QueueOrder }) {
   const [pending, startTransition] = useTransition();
@@ -58,66 +58,55 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
     });
   }
 
+  const elapsed = formatElapsed(order.created_at);
+
   return (
-    <article
-      className={`py-5 ${isUrgent ? "border-l-2 border-accent pl-4" : ""}`}
-    >
-      {/* ---------- Header: code + time + status ---------- */}
-      <div className="flex items-baseline justify-between gap-3">
-        <div className="flex items-baseline gap-3">
-          <span className="display text-lg text-ink">
-            {orderCode(order.id)}
-          </span>
-          {isUrgent && (
-            <span className="rounded-sm bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-fg">
-              Priority
+    <article className="py-4">
+      {/* ---------- Top row: code + items + time + action ---------- */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="display text-base text-ink">
+              {orderCode(order.id)}
             </span>
+            {isUrgent && (
+              <>
+                <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-accent" />
+                <span className="sr-only">Urgent</span>
+              </>
+            )}
+            <OrderStatusBadge status={order.status} />
+          </div>
+          <ul className="mt-1.5 flex flex-col gap-0.5">
+            {order.order_items.map((item) => (
+              <li key={item.id} className="flex items-baseline gap-2 text-lg text-ink">
+                <span className="font-semibold text-accent-ink">
+                  {item.quantity}&times;
+                </span>
+                <span>{item.item_name}</span>
+                {item.size && (
+                  <span className="text-sm text-muted">{getSizeOption(item.size).label}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+          {order.pickup_note && (
+            <p className="mt-1 text-xs text-warning-soft-fg">
+              {order.pickup_note}
+            </p>
           )}
         </div>
-        <div className="flex items-baseline gap-3">
-          <span className="font-mono text-sm text-muted" suppressHydrationWarning>
-            {formatElapsed(order.created_at)}
+
+        <div className="flex shrink-0 flex-col items-end gap-2">
+          <span
+            className="font-mono text-xs text-muted"
+            suppressHydrationWarning
+          >
+            {elapsed}
           </span>
-          <OrderStatusBadge status={order.status} />
-        </div>
-      </div>
-
-      {/* ---------- Items: what to make ---------- */}
-      <ul className="mt-3 flex flex-col gap-1">
-        {order.order_items.map((item) => (
-          <li key={item.id} className="flex items-baseline gap-2 text-xl text-ink">
-            <span className="font-semibold text-accent-ink">
-              {item.quantity}&times;
-            </span>
-            <span>{item.item_name}</span>
-            {item.size && (
-              <span className="text-sm text-muted">{getSizeOption(item.size).label}</span>
-            )}
-          </li>
-        ))}
-      </ul>
-
-      {/* ---------- Pickup note ---------- */}
-      {order.pickup_note && (
-        <p className="mt-2 text-sm text-warning-soft-fg">
-          <span className="font-semibold">Note:</span> {order.pickup_note}
-        </p>
-      )}
-
-      {/* ---------- Customer + action ---------- */}
-      <div className="mt-4 flex items-end justify-between gap-4">
-        <div>
-          <p className="text-sm text-muted">{customer}</p>
-          <p className="text-xs text-muted">
-            {ORDER_TYPE_LABELS[order.order_type]}
-            {order.table_label && ` · ${order.table_label}`}
-          </p>
-        </div>
-
-        {next && advanceLabel && (
-          <div className="flex flex-col items-end gap-1">
+          {next && advanceLabel && (
             <Button
-              size="lg"
+              size="sm"
               disabled={pending || cannotHandOver}
               onClick={() =>
                 run(
@@ -126,12 +115,25 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
                 )
               }
             >
-              {pending ? "Working…" : advanceLabel}
+              {pending ? "…" : advanceLabel}
             </Button>
-            {cannotHandOver && (
-              <span className="text-xs text-warning-soft-fg">Pay before handover</span>
-            )}
-          </div>
+          )}
+          {cannotHandOver && (
+            <span className="text-xs font-medium text-warning-soft-fg">Pay first</span>
+          )}
+        </div>
+      </div>
+
+      {/* ---------- Bottom row: customer + type ---------- */}
+      <div className="mt-2 flex items-baseline gap-2 text-xs text-muted">
+        <span>{customer}</span>
+        <span aria-hidden="true">&middot;</span>
+        <span>{ORDER_TYPE_LABELS[order.order_type]}</span>
+        {order.table_label && (
+          <>
+            <span aria-hidden="true">&middot;</span>
+            <span>{order.table_label}</span>
+          </>
         )}
       </div>
     </article>

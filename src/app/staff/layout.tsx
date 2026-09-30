@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin, isStaff } from "@/lib/roles";
 import { StaffNav } from "@/components/staff-nav";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export default async function StaffLayout({
   children,
@@ -15,35 +15,29 @@ export default async function StaffLayout({
   if (!user) redirect("/login?next=/staff");
 
   // Belt and braces: src/proxy.ts gates /staff/* at the request boundary and
-  // the SQL functions gate every write. This is the third check, and the
-  // cheapest to keep. isStaff() is true for admins too, deliberately — an
-  // owner working the counter is the normal case, not an exception.
+  // this layout keeps admins in the admin workspace even if they reach this
+  // route through a stale page or client-side navigation.
+  if (isAdmin(access)) redirect("/admin");
   if (!isStaff(access)) redirect("/");
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Top bar */}
-      <div className="border-b border-line bg-card">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
-          <span className="display text-lg tracking-[-0.02em] text-ink">Counter</span>
-          {isAdmin(access) && (
-            <Link
-              href="/admin"
-              className="text-sm text-muted transition-colors hover:text-ink"
-            >
-              Admin dashboard
-            </Link>
-          )}
-        </div>
-        <div className="mx-auto max-w-5xl px-4 sm:px-6">
-          <StaffNav />
-        </div>
-      </div>
+    <ThemeProvider>
+      <div className="min-h-screen bg-surface">
+        {/* Top bar — full-width header, one row */}
+        <header className="border-b border-line bg-surface">
+          <div className="mx-auto flex max-w-5xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
+            <span className="display text-lg tracking-[-0.02em] text-ink">Counter</span>
+            <StaffNav />
+            <div className="flex items-center gap-2">
+            </div>
+          </div>
+        </header>
 
-      {/* Content */}
-      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
-        {children}
+        {/* Content */}
+        <div className="mx-auto max-w-5xl px-4 py-6 sm:px-6">
+          {children}
+        </div>
       </div>
-    </div>
+    </ThemeProvider>
   );
 }

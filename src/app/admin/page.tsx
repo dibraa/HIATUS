@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { DataError } from "@/components/ui/data-error";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/order-status-badge";
-import { formatPrice, formatTime, orderCode } from "@/lib/format";
+import { formatPrice, formatTime, formatElapsed, orderCode } from "@/lib/format";
 import { ORDER_TYPE_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import type { OrderStatus, PaymentStatus, PopularItemRow, SalesReportRow, TodaySummary } from "@/types/database";
 
@@ -64,6 +64,7 @@ export default async function AdminDashboardPage() {
       <DataError
         title="Couldn't load dashboard"
         body="Some data couldn't be fetched. Check your connection and try again."
+        showRetry
       />
     );
   }
@@ -76,10 +77,14 @@ export default async function AdminDashboardPage() {
     <div className="space-y-5">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Welcome to Hiatus</h1>
-          <p className="mt-1 text-sm text-muted">Choose the category</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+            {openNow > 0 ? `${openNow} order${openNow === 1 ? "" : "s"} need attention` : "You're all caught up"}
+          </h1>
+          <p className="mt-1 text-sm text-muted">
+            {summary ? `${formatPrice(summary.revenue_today)} today · ${summary.orders_today} orders` : "Loading today's summary…"}
+          </p>
         </div>
-        <Link href="/staff" className="inline-flex min-h-10 items-center rounded-full bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover">
+        <Link href="/staff" className="inline-flex min-h-11 items-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
           Open the queue
         </Link>
       </header>
@@ -97,7 +102,7 @@ export default async function AdminDashboardPage() {
         <section aria-labelledby="analytics-heading" className="rounded-2xl border border-line bg-card p-5 sm:p-6">
           <div className="mb-6 flex items-baseline justify-between gap-4">
             <h2 id="analytics-heading" className="text-lg font-semibold text-ink">Sales analytics</h2>
-            <Link href="/admin/reports" className="text-xs font-medium text-accent-ink hover:text-ink">See all</Link>
+            <Link href="/admin/reports" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
           </div>
           <SalesTrend data={salesRaw} />
         </section>
@@ -105,7 +110,7 @@ export default async function AdminDashboardPage() {
         <section aria-labelledby="top-items-heading" className="rounded-2xl border border-line bg-card p-5 sm:p-6">
           <div className="mb-5 flex items-baseline justify-between gap-4">
             <h2 id="top-items-heading" className="text-lg font-semibold text-ink">Trending coffee</h2>
-            <Link href="/admin/reports" className="text-xs font-medium text-accent-ink hover:text-ink">See all</Link>
+            <Link href="/admin/reports" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
           </div>
           {topItems.length === 0 ? (
             <EmptyState as="h3" title="Nothing sold yet" body="Popular drinks appear here after orders complete." />
@@ -129,7 +134,7 @@ export default async function AdminDashboardPage() {
       <section aria-labelledby="recent-heading" className="rounded-2xl border border-line bg-card p-5 sm:p-6">
         <div className="mb-4 flex items-baseline justify-between gap-4">
           <h2 id="recent-heading" className="text-lg font-semibold text-ink">Recent orders</h2>
-          <Link href="/admin/orders" className="text-xs font-medium text-accent-ink hover:text-ink">See all</Link>
+          <Link href="/admin/orders" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
         </div>
         {recentOrders.length === 0 ? (
           <EmptyState as="h3" title="No orders yet" body="Orders placed through the storefront appear here as they come in." />
@@ -155,7 +160,7 @@ export default async function AdminDashboardPage() {
                       {(order.user_id as { full_name: string | null } | null)?.full_name?.trim() || orderCode(order.id!)}
                     </th>
                     <td className="whitespace-nowrap px-2 py-4 text-xs text-muted">
-                      <time dateTime={order.created_at}>{formatTime(order.created_at)}</time>
+                      <time dateTime={order.created_at}>{formatElapsed(order.created_at)}</time>
                     </td>
                     <td className="px-2 py-4 text-xs">{ORDER_TYPE_LABELS[order.order_type]}</td>
                     <td className="px-2 py-4 font-semibold tabular-nums text-ink">{formatPrice(order.total_amount)}</td>

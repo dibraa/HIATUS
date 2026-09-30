@@ -14,8 +14,8 @@ export const dynamic = "force-dynamic";
 
 export default async function StaffMenuPage() {
   const token = await getServerToken();
-  const raw = await apiJson<(MenuItem & { _id: string })[]>("/menu", { token: token ?? undefined }).catch(() => []);
-  const items = raw
+  const raw = await apiJson<(MenuItem & { _id: string })[]>("/menu", { token: token ?? undefined }).catch(() => null);
+  const items = (raw ?? [])
     .map((m) => ({ ...m, id: m._id ?? m.id }))
     .sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
 
@@ -30,7 +30,7 @@ export default async function StaffMenuPage() {
 
   return (
     <div>
-      <PageHeader title="Availability" description="Flip a drink off when you run out. Customers see the change straight away." />
+      <PageHeader size="utility" title="Availability" description="Flip a drink off when you run out. Customers see the change straight away." />
 
       {items.length === 0 ? (
         <EmptyState title="No menu items yet" body="Once the shop adds drinks to the menu, they will be listed here." />
@@ -41,20 +41,30 @@ export default async function StaffMenuPage() {
               ? `All ${items.length} items are available.`
               : `${soldOut} of ${items.length} ${soldOut === 1 ? "item is" : "items are"} sold out.`}
           </p>
-          <div className="flex flex-col gap-8">
+          <div className="flex flex-col gap-6">
             {[...byCategory.entries()].map(([category, group]) => {
               const headingId = `cat-${category.replace(/\s+/g, "-").toLowerCase()}`;
+              const availableCount = group.filter((i) => i.is_available).length;
               return (
                 <section key={category} aria-labelledby={headingId}>
-                  <h2 id={headingId} className="mb-3 eyebrow text-muted">{category}</h2>
+                  <div className="mb-2 flex items-baseline justify-between">
+                    <h2 id={headingId} className="display text-sm text-ink">{category}</h2>
+                    <span className="text-xs text-muted">{availableCount} of {group.length}</span>
+                  </div>
                   <ul className="flex flex-col gap-2">
                     {group.map((item) => (
-                      <li key={item.id} className={`flex items-center gap-3 rounded-lg border bg-card p-3 ${item.is_available ? "border-line" : "border-danger/30"}`}>
-                        <div className="w-14 shrink-0">
+                      <li key={item.id} className={`flex items-center gap-3 rounded-lg border bg-card p-3 transition-all ${
+                        item.is_available
+                          ? "border-line hover:border-line-strong hover:shadow-sm"
+                          : "border-danger/30 bg-danger-soft-bg/30"
+                      }`}>
+                        <div className={`w-14 shrink-0 ${!item.is_available ? "opacity-40 grayscale" : ""}`}>
                           <ProductImage src={item.image_url} alt="" sizes="56px" rounded="rounded-md" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold text-ink">{item.name}</p>
+                          <p className={`truncate text-sm font-semibold ${item.is_available ? "text-ink" : "text-muted line-through"}`}>
+                            {item.name}
+                          </p>
                           <p className="mt-0.5 flex flex-wrap items-center gap-x-2 text-xs text-muted">
                             <span>{item.flavor}</span>
                             <span aria-hidden="true">&middot;</span>

@@ -52,6 +52,10 @@ const CATEGORY_GLYPHS = [CupGlyph, BeansGlyph, FilterGlyph, PotGlyph];
  * assembled at runtime (`sm:grid-cols-${n}`) is never generated and silently
  * does nothing.
  */
+// DEPENDENCY: these widths are n * 268px + (n - 1) * 16px — the measured
+// card width and the gap-4 between them. If the card width or gap changes,
+// these max-w values must be updated in lockstep or the grid will silently
+// cap at the wrong width.
 const MENU_GRID_COLUMNS = [
   "grid-cols-1", // unused: zero items renders an EmptyState instead
   "grid-cols-1 max-w-[268px]",
@@ -70,14 +74,15 @@ export default async function HomePage({
   const token = await getServerToken();
 
   const [allItemsRaw, allRatingsRaw, user, settings] = await Promise.all([
-    apiJson<(MenuItem & { _id: string })[]>("/menu").catch(() => []),
-    apiJson<(Rating & { _id: string })[]>("/menu/ratings/all").catch(() => []),
+    apiJson<(MenuItem & { _id: string })[]>("/menu").catch(() => null),
+    apiJson<(Rating & { _id: string })[]>("/menu/ratings/all").catch(() => null),
     getCurrentUser(),
     getSettings(),
   ]);
 
-  const allItems = allItemsRaw.map((m) => ({ ...m, id: m._id ?? m.id }));
-  const allRatings = allRatingsRaw.map((r) => ({ ...r, id: r._id ?? r.id, menu_item_id: (r.menu_item_id as unknown as { _id?: string } | string) }));
+  const menuFailed = allItemsRaw === null;
+  const allItems = (allItemsRaw ?? []).map((m) => ({ ...m, id: m._id ?? m.id }));
+  const allRatings = (allRatingsRaw ?? []).map((r) => ({ ...r, id: r._id ?? r.id, menu_item_id: (r.menu_item_id as unknown as { _id?: string } | string) }));
 
   const favoriteRows = user
     ? await apiJson<{ menu_item_id: string }[]>("/account/favorites", { token: token ?? undefined }).catch(() => [])
@@ -189,42 +194,34 @@ export default async function HomePage({
             </div>
           </div>
 
-          {/* Category tiles, laid over the photograph's top-right corner.
-              Hidden below sm, where they would cover most of the image. */}
-          {categories.length > 0 && (
-            <nav
-              aria-label="Browse by category"
-              className="absolute right-5 top-5 hidden rounded-xl bg-card p-1.5 sm:flex sm:gap-1.5"
-            >
-              {categories.slice(0, 4).map((name, i) => {
-                const Glyph = CATEGORY_GLYPHS[i % CATEGORY_GLYPHS.length];
-                return (
-                  <Link
-                    key={name}
-                    href={`/?category=${encodeURIComponent(name)}#menu`}
-                    title={name}
-                    className="flex h-11 w-11 items-center justify-center rounded-lg bg-cta text-cta-fg transition-colors hover:bg-cta-hover"
-                  >
-                    <Glyph className="h-5 w-5" />
-                    <span className="sr-only">{name}</span>
-                  </Link>
-                );
-              })}
-            </nav>
-          )}
-
-          {/* The mark, hanging off the photograph's bottom-left corner. */}
-          <div
-            aria-hidden="true"
-            className="absolute bottom-5 left-5 hidden rounded-xl bg-inverse-bg px-5 py-3 text-inverse-fg sm:block"
-          >
-            <Wordmark size="sm" />
-          </div>
         </div>
+
+        {/* Category tiles — visible on all viewports. On desktop they sit
+            below the photo as a horizontal row; on mobile they scroll. */}
+        {categories.length > 0 && (
+          <nav
+            aria-label="Browse by category"
+            className="no-scrollbar rise mt-4 flex gap-2 overflow-x-auto [--rise:3]"
+          >
+            {categories.slice(0, 4).map((name, i) => {
+              const Glyph = CATEGORY_GLYPHS[i % CATEGORY_GLYPHS.length];
+              return (
+                <Link
+                  key={name}
+                  href={`/?category=${encodeURIComponent(name)}#menu`}
+                  className="ui-caps flex shrink-0 items-center gap-2 rounded-md border border-line-strong bg-card px-3 py-2.5 text-2xs text-ink-soft transition-colors hover:border-ink hover:text-ink"
+                >
+                  <Glyph className="h-4 w-4" />
+                  {name}
+                </Link>
+              );
+            })}
+          </nav>
+        )}
 
         {/* The two facts a shopper needs before they start: whether the shop is
             open, and where the menu is. */}
-        <div className="rise mt-block flex flex-wrap items-center justify-between gap-x-6 gap-y-4 [--rise:3]">
+        <div className="rise mt-block flex flex-wrap items-center justify-between gap-x-6 gap-y-4 [--rise:4]">
           <div className="flex flex-wrap items-center gap-3">
             <Badge tone={open ? "success" : "neutral"}>
               {open ? "Open now" : "Closed"}
@@ -236,13 +233,16 @@ export default async function HomePage({
             )}
           </div>
 
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap items-center gap-4">
             <ButtonLink href="#menu" size="lg">
               Browse the menu
             </ButtonLink>
-            <ButtonLink href="/orders" variant="outline" size="lg">
+            <Link
+              href="/orders"
+              className="ui-caps text-2xs text-ink-soft underline-offset-4 transition-colors hover:text-ink hover:underline"
+            >
               Track an order
-            </ButtonLink>
+            </Link>
           </div>
         </div>
       </section>
@@ -271,6 +271,36 @@ export default async function HomePage({
           </ul>
         </div>
       </section>
+
+      {/* ====================================== Power-user: favorites ======
+          For logged-in returning customers, surface their favorites above the
+          full menu so a repeat order is one click away. */}
+      {user && favoriteIds.size > 0 && (
+        <section aria-labelledby="favorites-heading" className="mt-heading">
+          <h2 id="favorites-heading" className="display text-2xl text-ink">
+            Your favorites
+          </h2>
+          <ul className="mt-block grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {items
+              .filter((item) => favoriteIds.has(item.id))
+              .slice(0, 3)
+              .map((item) => {
+                const stat = ratingStats.get(item.id);
+                return (
+                  <li key={item.id} className="flex">
+                    <MenuItemCard
+                      item={item}
+                      averageRating={stat?.average ?? null}
+                      ratingCount={stat?.count ?? 0}
+                      isFavorite={true}
+                      isLoggedIn={true}
+                    />
+                  </li>
+                );
+              })}
+          </ul>
+        </section>
+      )}
 
       {/* ======================================================= Menu ======
           The comp's "Best products": a centred display heading over a grid of
@@ -313,7 +343,18 @@ export default async function HomePage({
         </div>
 
         <div className="mt-block">
-          {items.length === 0 ? (
+          {menuFailed ? (
+            <EmptyState
+              as="h3"
+              title="We couldn't load the menu"
+              body="Something went wrong on our end. Try refreshing the page."
+              action={
+                <ButtonLink href="/#menu" variant="outline" size="md">
+                  Try again
+                </ButtonLink>
+              }
+            />
+          ) : items.length === 0 ? (
             <EmptyState
               as="h3"
               title="The menu is being set up"
@@ -358,56 +399,6 @@ export default async function HomePage({
           )}
         </div>
       </section>
-
-      {/* ================================================ Pair strip ======
-          The comp's four-across photo run. Four highest-rated drinks, cropped
-          tall, captioned only with a name and a price — appetite first, detail
-          on the product page. */}
-      {featured.length >= 4 && (
-        <section aria-labelledby="pair-heading">
-          <h2 id="pair-heading" className="display text-5xl text-ink">
-            Brew. Pair. Enjoy.
-          </h2>
-
-          <ul className="mt-heading grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-            {featured.slice(0, 4).map(({ item }) => (
-              <li key={item.id}>
-                <Link
-                  href={`/menu/${item.id}`}
-                  className="group block rounded-xl focus-visible:outline-offset-4"
-                >
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-raised">
-                    {item.image_url ? (
-                      <Image
-                        src={item.image_url}
-                        alt=""
-                        fill
-                        unoptimized={item.image_url.includes("/uploads/")}
-                        sizes="(min-width: 1024px) 264px, 45vw"
-                        className="object-cover transition-transform duration-(--hi-dur-slow) ease-hi-out group-hover:scale-[1.04]"
-                      />
-                    ) : (
-                      <div
-                        aria-hidden="true"
-                        className="flex h-full w-full items-center justify-center"
-                      >
-                        <BeanDoodle className="doodle h-14 w-14" />
-                      </div>
-                    )}
-                  </div>
-
-                  <p className="display mt-snug text-lg text-ink group-hover:underline">
-                    {item.name}
-                  </p>
-                  <p className="numeric mt-0.5 text-xs text-muted">
-                    from {formatPrice(priceForSize(item.price, "S"))}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {/* =============================================== Featured panel ==== */}
       <FeaturedCarousel featured={featured} />
@@ -583,6 +574,23 @@ export default async function HomePage({
             );
           })}
         </ul>
+      </section>
+
+      {/* ================================================== Closing CTA =====
+          End on a peak, not a valley. The peak-end rule says the last thing
+          a user sees is what they remember. */}
+      <section aria-labelledby="closing-heading" className="mt-band text-center">
+        <h2 id="closing-heading" className="display text-4xl text-ink sm:text-5xl">
+          Ready to skip the line?
+        </h2>
+        <p className="mx-auto mt-snug max-w-[44ch] text-base text-muted">
+          Order ahead, pay cash on pickup, and spend your time on something better.
+        </p>
+        <div className="mt-heading flex justify-center">
+          <ButtonLink href="#menu" size="lg">
+            Browse the menu
+          </ButtonLink>
+        </div>
       </section>
     </div>
   );

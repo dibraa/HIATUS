@@ -58,6 +58,7 @@ export function FeaturedCarousel({ featured }: { featured: FeaturedItem[] }) {
   return (
     <section
       aria-labelledby="featured-heading"
+      aria-roledescription="carousel"
       className="@container relative overflow-hidden rounded-2xl bg-inverse-bg px-5 py-8 text-inverse-fg sm:px-8 sm:py-10"
     >
       {/* Marginalia, in the panel's own line colour so it reads as a drawing
@@ -105,7 +106,7 @@ export function FeaturedCarousel({ featured }: { featured: FeaturedItem[] }) {
               type="button"
               onClick={() => go(-1)}
               aria-label="Show previous featured drink"
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-inverse-line transition-colors hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
+              className="flex h-11 w-11 items-center justify-center rounded-md border border-inverse-line transition-colors hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
             >
               <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
                 <path d="M12.5 4L7 10l5.5 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -115,7 +116,7 @@ export function FeaturedCarousel({ featured }: { featured: FeaturedItem[] }) {
               type="button"
               onClick={() => go(1)}
               aria-label="Show next featured drink"
-              className="flex h-10 w-10 items-center justify-center rounded-md border border-inverse-line transition-colors hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
+              className="flex h-11 w-11 items-center justify-center rounded-md border border-inverse-line transition-colors hover:bg-inverse-fg/10 focus-visible:outline-inverse-fg"
             >
               <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
                 <path d="M7.5 4L13 10l-5.5 6" strokeLinecap="round" strokeLinejoin="round" />
@@ -154,7 +155,7 @@ function FeaturedCard({
       {/* The photograph, matted in the panel's own cream so the image never
           touches the pine directly — the comp's rule, inverted. */}
       <div className="matte matte-dark @3xl:ml-8">
-        <div className="matte-inner">
+        <div className="matte-inner aspect-[4/3]">
           <ProductImage
             src={item.image_url}
             alt={item.name}

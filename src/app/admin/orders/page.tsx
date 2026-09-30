@@ -8,10 +8,45 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { DataError } from "@/components/ui/data-error";
 import { formatPrice } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
+import { Button } from "@/components/ui/button";
+import { ADVANCE_LABELS, NEXT_STATUS } from "@/lib/order-meta";
+import { advanceOrderStatus } from "@/app/actions/staff";
+import { useTransition } from "react";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import type { OrderItem, OrderStatus } from "@/types/database";
 import { StatusSelect } from "./status-select";
 
 export const metadata: Metadata = { title: "Orders" };
+
+function AdvanceButton({ orderId, status }: { orderId: string; status: OrderStatus }) {
+  const [pending, startTransition] = useTransition();
+  const router = useRouter();
+  const next = NEXT_STATUS[status];
+  const label = ADVANCE_LABELS[status];
+  if (!next || !label) return null;
+
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={pending}
+      onClick={() => {
+        startTransition(async () => {
+          const result = await advanceOrderStatus(orderId, next);
+          if (result.error) {
+            toast.error(result.error);
+            return;
+          }
+          toast.success(`Order advanced to ${next}`);
+          router.refresh();
+        });
+      }}
+    >
+      {pending ? "…" : label}
+    </Button>
+  );
+}
 
 type OrderRow = {
   _id: string; id?: string; status: OrderStatus; total_amount: number;
@@ -98,6 +133,9 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <OrderStatusBadge status={order.status} />
+                    {NEXT_STATUS[order.status] && ADVANCE_LABELS[order.status] && (
+                      <AdvanceButton orderId={order.id!} status={order.status} />
+                    )}
                     <StatusSelect orderId={order.id!} status={order.status} customerName={customer} />
                   </div>
                 </div>

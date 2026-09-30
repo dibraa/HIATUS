@@ -35,7 +35,7 @@ export function AdminBackButton() {
           strokeWidth="1.8"
           aria-hidden="true"
         >
-          <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+          <path d="M15 6l-6 6 6 6" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
     </div>

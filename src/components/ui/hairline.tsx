@@ -20,15 +20,13 @@ export function Hairline({
   className = "",
 }: {
   /** The surface it sits on, which decides the line colour. */
-  tone?: "accent" | "green" | "soft" | "inverse";
+  tone?: "accent" | "inverse";
   className?: string;
 }) {
   const toneClass = {
     accent: "bg-line",
-    green: "bg-line",
-    soft: "bg-line",
     inverse: "bg-inverse-line/50",
-  }[tone];
+  }[tone] ?? "bg-line";
 
   return (
     <div

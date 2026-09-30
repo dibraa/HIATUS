@@ -27,6 +27,7 @@ export function StarRating({
   size = "md",
   label = "Your rating",
   tone = "light",
+  name = "star-rating",
 }: {
   value: number;
   onChange?: (value: number) => void;
@@ -35,6 +36,8 @@ export function StarRating({
   label?: string;
   /** Set to "dark" on inverted surfaces — ink-filled stars vanish on them. */
   tone?: "light" | "dark";
+  /** Unique name for the radio group. Defaults to "star-rating" — pass a unique name when multiple ratings appear on one page. */
+  name?: string;
 }) {
   const starClass = SIZES[size];
   const filledColor = tone === "dark" ? "text-inverse-fg" : "text-ink";
@@ -83,7 +86,7 @@ export function StarRating({
           <label key={star} className="cursor-pointer">
             <input
               type="radio"
-              name="star-rating"
+              name={name}
               value={star}
               checked={value === star}
               onChange={() => onChange?.(star)}
