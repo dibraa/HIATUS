@@ -5,7 +5,7 @@ import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { formatPrice } from "@/lib/format";
 import { priceForSize } from "@/lib/sizes";
-import { StarRating, RatingSummary } from "@/components/star-rating";
+import { RatingSummary } from "@/components/star-rating";
 import { MenuItemCard } from "@/components/menu-item-card";
 import { ProductImage } from "@/components/ui/product-image";
 import { aggregateRatings } from "@/lib/ratings";
@@ -13,8 +13,16 @@ import type { MenuItem, Rating } from "@/types/database";
 import { FavoriteButton } from "@/components/favorite-button";
 import { getCurrentUser } from "@/lib/auth";
 import { AddToCart } from "./add-to-cart";
+import { ReviewCard } from "./review-card";
 
 type Params = { params: Promise<{ id: string }> };
+type MenuRating = Omit<Rating, "user_id" | "menu_item_id"> & {
+  _id: string;
+  user_id: string | { full_name: string | null };
+  menu_item_id: string | { _id: string };
+  attachment_url: string | null;
+  attachment_type: "image" | "video" | null;
+};
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
@@ -35,7 +43,7 @@ export default async function MenuItemPage({ params }: Params) {
   const item: MenuItem = { ...raw, id: raw._id ?? raw.id };
 
   const [allRatingsRaw, user] = await Promise.all([
-    apiJson<(Rating & { _id: string; menu_item_id: string | { _id: string } })[]>("/menu/ratings/all").catch(() => []),
+    apiJson<MenuRating[]>("/menu/ratings/all").catch(() => []),
     getCurrentUser(),
   ]);
 
@@ -122,22 +130,23 @@ export default async function MenuItemPage({ params }: Params) {
         ) : (
           <ul className="mt-5 flex flex-col gap-4">
             {ratingList.map((rating) => (
-              <li key={rating.id} className="rounded-lg border border-line bg-card p-4">
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <StarRating value={rating.rating} readOnly size="sm" />
-                  {(() => {
+              <ReviewCard
+                key={rating.id}
+                review={{
+                  rating: rating.rating,
+                  comment: rating.comment,
+                  reviewerName: typeof rating.user_id === "object" && rating.user_id !== null
+                    ? rating.user_id.full_name?.trim() || "Anonymous customer"
+                    : "Anonymous customer",
+                  dateLabel: (() => {
                     const createdAt = new Date(rating.created_at);
-                    const hasValidDate = !Number.isNaN(createdAt.getTime());
-                    return hasValidDate ? (
-                      <time dateTime={rating.created_at} className="text-xs text-muted">{dateFormatter.format(createdAt)}</time>
-                    ) : (
-                      <span className="text-xs text-muted">Date unavailable</span>
-                    );
-                  })()}
-                </div>
-                {rating.comment && <p className="mt-2 max-w-[70ch] text-sm text-ink-soft">{rating.comment}</p>}
-                <p className="mt-2 eyebrow text-muted">Verified purchase</p>
-              </li>
+                    return Number.isNaN(createdAt.getTime()) ? "Date unavailable" : dateFormatter.format(createdAt);
+                  })(),
+                  createdAt: rating.created_at,
+                  attachmentUrl: rating.attachment_url,
+                  attachmentType: rating.attachment_type,
+                }}
+              />
             ))}
           </ul>
         )}

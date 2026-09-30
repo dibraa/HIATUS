@@ -9,7 +9,7 @@ export type OrderStatus = "pending" | "preparing" | "ready" | "completed" | "can
 export type Role = "customer" | "staff" | "admin";
 
 export type OrderType = "dine_in" | "takeout";
-export type PaymentMethod = "cash" | "card" | "ewallet";
+export type PaymentMethod = "cash" | "ewallet";
 export type PaymentStatus = "unpaid" | "paid" | "refunded" | "voided";
 
 export type Profile = {

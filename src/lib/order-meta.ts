@@ -30,13 +30,11 @@ export const ORDER_TYPE_HINTS: Record<OrderType, string> = {
 
 export const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
   cash: "Cash",
-  card: "Card",
   ewallet: "E-wallet",
 };
 
 export const PAYMENT_METHOD_HINTS: Record<PaymentMethod, string> = {
   cash: "Pay at the counter when you collect.",
-  card: "Tap or insert at the counter.",
   ewallet: "GCash, Maya or a QR wallet at the counter.",
 };
 

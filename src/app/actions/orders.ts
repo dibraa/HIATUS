@@ -75,14 +75,20 @@ export async function submitRating(
   orderId: string,
   menuItemId: string,
   rating: number,
-  comment: string
+  comment: string,
+  attachment: File | null
 ): Promise<{ error: string | null }> {
   const token = await getServerToken();
   try {
+    const body = new FormData();
+    body.set("menu_item_id", menuItemId);
+    body.set("rating", String(rating));
+    body.set("comment", comment);
+    if (attachment) body.set("attachment", attachment);
     await apiJson(`/orders/${orderId}/rating`, {
       method: "POST",
       token: token ?? undefined,
-      body: JSON.stringify({ menu_item_id: menuItemId, rating, comment }),
+      body,
     });
     revalidatePath(`/orders/${orderId}`);
     revalidatePath("/");

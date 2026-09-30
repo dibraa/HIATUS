@@ -21,7 +21,7 @@ export type QueueOrder = {
   order_type: "dine_in" | "takeout";
   table_label: string | null;
   priority: number;
-  payment_method: "cash" | "card" | "ewallet";
+  payment_method: "cash" | "ewallet";
   payment_status: "unpaid" | "paid" | "refunded" | "voided";
   total_amount: number;
   discount_amount: number;

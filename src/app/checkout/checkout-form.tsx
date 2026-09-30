@@ -49,9 +49,7 @@ export function CheckoutForm({
     ] as (OrderType | null)[]
   ).filter((t): t is OrderType => t !== null);
 
-  const availableMethods = (
-    Object.keys(paymentMethods) as PaymentMethod[]
-  ).filter((m) => paymentMethods[m]);
+  const availableMethods = ( ["cash", "ewallet"] as PaymentMethod[]).filter((method) => paymentMethods[method]);
 
   const [orderType, setOrderType] = useState<OrderType>(availableTypes[0] ?? "takeout");
   const [tableLabel, setTableLabel] = useState("");

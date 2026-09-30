@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { SignOutButton } from "@/components/sign-out-button";
 
 /**
  * Admin section nav.
@@ -52,6 +53,9 @@ export function AdminNav() {
             </li>
           );
         })}
+        <li className="shrink-0">
+          <SignOutButton />
+        </li>
       </ul>
     </nav>
   );

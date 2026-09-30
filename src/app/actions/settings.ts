@@ -31,8 +31,8 @@ export async function saveBusinessHours(_prev: SettingsState, formData: FormData
 }
 
 export async function savePaymentMethods(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
-  const methods = { cash: formData.get("cash") === "on", card: formData.get("card") === "on", ewallet: formData.get("ewallet") === "on" };
-  if (!methods.cash && !methods.card && !methods.ewallet)
+  const methods = { cash: formData.get("cash") === "on", ewallet: formData.get("ewallet") === "on" };
+  if (!methods.cash && !methods.ewallet)
     return { error: "At least one payment method has to stay switched on.", success: null };
   return writeSetting("payment_methods", methods, ["/checkout"]);
 }

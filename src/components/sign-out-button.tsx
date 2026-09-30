@@ -11,7 +11,7 @@ export function SignOutButton() {
     <button
       type="button"
       disabled={pending}
-      className="ui-caps text-2xs text-ink-soft transition-colors hover:text-ink disabled:opacity-50"
+      className="inline-flex min-h-11 items-center whitespace-nowrap rounded-xl px-3 py-2.5 text-sm font-medium text-ink-soft transition-colors duration-150 ease-hi hover:bg-card hover:text-ink disabled:opacity-50"
       onClick={async () => {
         setPending(true);
         await fetch("/api/auth/signout", { method: "POST" });
