@@ -1,5 +1,5 @@
 /**
- * A section rule.
+ * A section rule — a 1px hairline that separates content.
  *
  * This used to paint the old palette's checkerboard, which the Co-Fi direction
  * has no place for — that comp separates sections with space, a surface change
@@ -14,17 +14,13 @@
  *      accessibility tree.
  *   2. The right colour for the surface underneath — a line in the page's line
  *      colour disappears on the pine panel, so `tone` picks it.
- *
- * `size` is kept in the signature so existing call sites still typecheck; a
- * hairline has one weight, so it no longer changes what is drawn.
  */
-export function CheckerBand({
+export function Hairline({
   tone = "accent",
   className = "",
 }: {
   /** The surface it sits on, which decides the line colour. */
   tone?: "accent" | "green" | "soft" | "inverse";
-  size?: "sm" | "md" | "lg";
   className?: string;
 }) {
   const toneClass = {
@@ -35,11 +31,6 @@ export function CheckerBand({
   }[tone];
 
   return (
-    // The height is an inline style, not a class: several call sites still
-    // pass their old `h-2` / `h-1.5` for the band this used to be, and which of
-    // two competing height utilities wins is decided by stylesheet order, not
-    // by the order they appear in the attribute. An inline style is the only
-    // way to guarantee a hairline stays a hairline.
     <div
       aria-hidden="true"
       role="presentation"

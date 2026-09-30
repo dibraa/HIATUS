@@ -7,6 +7,7 @@ import { useCart, lineKey } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import { Button, ButtonLink } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { placeOrder } from "@/app/actions/orders";
 import {
   ORDER_TYPE_HINTS,
@@ -60,9 +61,6 @@ export function CheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [placing, startPlacing] = useTransition();
 
-  // The cart lives in localStorage, so the server renders it empty. Showing a
-  // placeholder until hydration avoids flashing "nothing to check out" at
-  // someone who has a full cart.
   if (!hydrated) {
     return (
       <div className="flex flex-col gap-4">
@@ -327,24 +325,5 @@ export function CheckoutForm({
         </div>
       </section>
     </div>
-  );
-}
-
-/** One labelled step. Keeps the four cards on the same padding and rhythm. */
-function Card({
-  title,
-  hint,
-  children,
-}: {
-  title: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="rounded-lg border border-line bg-card p-5">
-      <h2 className="display text-lg text-ink">{title}</h2>
-      {hint && <p className="mt-1 text-xs text-muted">{hint}</p>}
-      <div className="mt-4">{children}</div>
-    </section>
   );
 }

@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { formatPrice, formatTime, orderCode } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
@@ -11,11 +10,9 @@ import {
   ORDER_TYPE_LABELS,
   PAYMENT_METHOD_LABELS,
   PAYMENT_STATUS_LABELS,
-  STATUS_LABELS,
 } from "@/lib/order-meta";
 import {
   applyManualDiscount,
-  advanceOrderStatus,
   refundOrder,
   takePayment,
   voidOrder,
@@ -46,21 +43,13 @@ export type PosOrder = {
 const METHODS: PaymentMethod[] = ["cash", "card", "ewallet"];
 
 /**
- * One order at the till.
+ * One order at the till — distilled to the single question: has the money arrived?
  *
- * The whole panel is organised around a single question — has the money
- * arrived — because that is the only thing this screen is for. An unpaid order
- * shows the tender buttons and nothing else; a paid one shows what was taken
- * and folds the awkward operations (refund, void) behind a disclosure.
+ *   - WHAT'S OWED (items + total)
+ *   - HOW TO TAKE IT (payment method + one button)
  *
- * WHAT IS AND IS NOT SENT TO THE SERVER
- *
- * Cash tendered is computed here purely to show change due. It is NOT what
- * gets recorded: `takePayment` sends `null` for the amount, and the RPC fills
- * in the order total from the database. A till that recorded whatever number
- * the client typed would be a till that could be talked into recording ₱1 for
- * a ₱200 order, and server-derived pricing everywhere else would have been
- * for nothing.
+ * The panel is not a card — it's a bare section with a hairline separator.
+ * The total is the dominant element. Everything else recedes.
  */
 export function PaymentPanel({ order }: { order: PosOrder }) {
   const [pending, startTransition] = useTransition();
@@ -74,7 +63,6 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
   const isUnpaid = order.payment_status === "unpaid";
   const customer = order.profiles?.full_name?.trim() || "Walk-in";
 
-  // Only meaningful for cash, and only once enough has been handed over.
   const tenderedNumber = Number(tendered);
   const change =
     method === "cash" && tendered !== "" && Number.isFinite(tenderedNumber)
@@ -97,150 +85,75 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
   }
 
   return (
-    <article className="rounded-lg border border-line bg-card p-4">
-      {/* ---------- Identity ---------- */}
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <div className="min-w-0">
-          <p className="font-mono text-sm font-semibold tracking-wide text-ink">
+    <article className="py-5">
+      {/* ---------- Header: code + customer + status ---------- */}
+      <div className="flex items-baseline justify-between gap-3">
+        <div>
+          <span className="display text-lg text-ink">
             {orderCode(order.id)}
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {customer} &middot;{" "}
-            <time dateTime={order.created_at}>{formatTime(order.created_at)}</time>
+          </span>
+          <p className="mt-0.5 text-sm text-muted">
+            {customer} · {ORDER_TYPE_LABELS[order.order_type]}
+            {order.table_label && ` · ${order.table_label}`}
           </p>
         </div>
-
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
-          <OrderStatusBadge status={order.status} />
-          <Badge tone={isUnpaid ? "warning" : "success"}>
-            {PAYMENT_STATUS_LABELS[order.payment_status]}
-          </Badge>
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line pt-3">
-        <label
-          htmlFor={`pos-status-${order.id}`}
-          className="text-xs font-medium text-ink-soft"
-        >
-          Order status
-        </label>
-        <select
-          id={`pos-status-${order.id}`}
-          value={order.status}
-          disabled={pending}
-          onChange={(event) => {
-            const nextStatus = event.target.value as OrderStatus;
-            run(
-              () => advanceOrderStatus(order.id, nextStatus),
-              `${orderCode(order.id)} updated to ${STATUS_LABELS[nextStatus]}`
-            );
-          }}
-          className="rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs text-ink"
-        >
-          {(Object.keys(STATUS_LABELS) as OrderStatus[]).map((status) => (
-            <option key={status} value={status}>
-              {STATUS_LABELS[status]}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Badge tone={order.order_type === "dine_in" ? "green" : "neutral"}>
-          {ORDER_TYPE_LABELS[order.order_type]}
-          {order.table_label && ` · ${order.table_label}`}
-        </Badge>
+        <OrderStatusBadge status={order.status} />
       </div>
 
       {/* ---------- The bill ---------- */}
-      <ul className="mt-4 flex flex-col gap-1 border-t border-line pt-3 text-sm">
+      <ul className="mt-4 flex flex-col gap-1">
         {order.order_items.map((item) => (
-          <li key={item.id} className="flex justify-between gap-4">
+          <li key={item.id} className="flex justify-between gap-4 text-base">
             <span className="min-w-0 text-ink-soft">
-              <span className="numeric text-muted">{item.quantity}&times;</span>{" "}
+              <span className="text-muted">{item.quantity}&times;</span>{" "}
               {item.item_name}
               {item.size && (
-                <span className="text-muted"> &middot; {getSizeOption(item.size).label}</span>
+                <span className="text-sm text-muted"> · {getSizeOption(item.size).label}</span>
               )}
             </span>
-            <span className="shrink-0 numeric text-ink">
+            <span className="shrink-0 font-medium text-ink">
               {formatPrice(item.subtotal)}
             </span>
           </li>
         ))}
       </ul>
 
-      <dl className="mt-3 flex flex-col gap-1 border-t border-line pt-3 text-sm">
-        <div className="flex justify-between gap-4">
-          <dt className="text-muted">Subtotal</dt>
-          <dd className="numeric text-ink-soft">
-            {formatPrice(order.subtotal_amount)}
-          </dd>
-        </div>
-
-        {order.discount_amount > 0 && (
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted">
-              Discount
-            </dt>
-            <dd className="numeric text-success">
-              −{formatPrice(order.discount_amount)}
-            </dd>
-          </div>
-        )}
-
-        <div className="mt-1 flex justify-between gap-4 border-t border-line pt-2">
-          <dt className="display text-lg text-ink">Total</dt>
-          <dd className="text-base font-semibold numeric text-ink">
-            {formatPrice(order.total_amount)}
-          </dd>
-        </div>
-      </dl>
+      <div className="mt-3 flex justify-between border-t border-line pt-3">
+        <span className="text-muted">Total</span>
+        <span className="display text-2xl text-ink">
+          {formatPrice(order.total_amount)}
+        </span>
+      </div>
 
       {/* ---------- Take the money ---------- */}
       {isUnpaid ? (
-        <div className="mt-4 border-t border-line pt-4">
-          <fieldset>
-            <legend className="eyebrow text-muted">
-              Tender
-            </legend>
-
-            {/* Radios, not buttons: this is a single choice from a fixed set,
-                and radios give arrow-key navigation and a group name for free. */}
-            <div className="mt-2.5 flex flex-wrap gap-2">
-              {METHODS.map((m) => (
-                <label
-                  key={m}
-                  className={`ui-caps inline-flex cursor-pointer items-center gap-2 rounded-md border px-3.5 py-2 text-2xs transition-colors ${
-                    method === m
-                      ? "border-accent bg-accent text-accent-fg"
-                      : "border-line-strong bg-card text-ink-soft hover:border-ink-soft hover:text-ink"
-                  }`}
-                >
-                  <input
-                    type="radio"
-                    name={`method-${order.id}`}
-                    value={m}
-                    checked={method === m}
-                    onChange={() => setMethod(m)}
-                    className="sr-only"
-                  />
-                  {PAYMENT_METHOD_LABELS[m]}
-                </label>
-              ))}
-            </div>
-          </fieldset>
+        <div className="mt-5">
+          {/* Payment method: 3 large buttons */}
+          <div className="grid grid-cols-3 gap-2">
+            {METHODS.map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMethod(m)}
+                className={`rounded-md border-2 px-3 py-3 text-sm font-medium transition-colors ${
+                  method === m
+                    ? "border-accent bg-accent text-accent-fg"
+                    : "border-line bg-card text-ink-soft hover:border-ink-soft hover:text-ink"
+                }`}
+              >
+                {PAYMENT_METHOD_LABELS[m]}
+              </button>
+            ))}
+          </div>
 
           {method === "cash" && (
-            <div className="mt-3 flex flex-wrap items-end gap-3">
-              <div className="flex min-w-0 flex-1 flex-col gap-1.5">
+            <div className="mt-4 flex items-end gap-3">
+              <div className="flex-1">
                 <label
                   htmlFor={`tendered-${order.id}`}
-                  className="text-xs font-medium text-ink-soft"
+                  className="mb-1 block text-xs text-muted"
                 >
-                  Cash received{" "}
-                  <span className="font-normal text-muted">(for change only)</span>
+                  Cash received
                 </label>
                 <input
                   id={`tendered-${order.id}`}
@@ -251,26 +164,16 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
                   value={tendered}
                   onChange={(e) => setTendered(e.target.value)}
                   placeholder={String(order.total_amount)}
-                  className="w-full rounded-md border border-line-strong bg-card px-3 py-2 text-sm numeric text-ink placeholder:text-muted"
+                  className="w-full rounded-md border border-line bg-card px-3 py-2.5 text-base font-medium text-ink placeholder:text-muted"
                 />
               </div>
-
-              {/* aria-live: the change is the number the barista reads aloud,
-                  and it appears away from the field being typed into. */}
-              <p
-                aria-live="polite"
-                className="min-w-[8rem] pb-2 text-sm numeric"
-              >
+              <p aria-live="polite" className="min-w-[6rem] pb-2 text-sm font-medium">
                 {change === null ? (
                   <span className="text-muted">Change —</span>
                 ) : change < 0 ? (
-                  <span className="font-medium text-danger">
-                    Short {formatPrice(Math.abs(change))}
-                  </span>
+                  <span className="text-danger">Short {formatPrice(Math.abs(change))}</span>
                 ) : (
-                  <span className="font-semibold text-success">
-                    Change {formatPrice(change)}
-                  </span>
+                  <span className="text-success">Change {formatPrice(change)}</span>
                 )}
               </p>
             </div>
@@ -289,11 +192,11 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
           >
             {pending
               ? "Recording…"
-              : `Take ${formatPrice(order.total_amount)} · ${PAYMENT_METHOD_LABELS[method]}`}
+              : `Take ${formatPrice(order.total_amount)}`}
           </Button>
         </div>
       ) : (
-        <p className="mt-4 border-t border-line pt-4 text-sm text-muted">
+        <p className="mt-5 text-sm text-muted">
           {PAYMENT_STATUS_LABELS[order.payment_status]} by{" "}
           {PAYMENT_METHOD_LABELS[order.payment_method].toLowerCase()}
           {order.paid_at && (
@@ -306,35 +209,31 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
         </p>
       )}
 
-      {/* ---------- Adjustments ---------- */}
-      <div className="mt-3 border-t border-line pt-3">
+      {/* ---------- Adjustments (folded away) ---------- */}
+      <div className="mt-4">
         <button
           type="button"
           onClick={() => setShowAdjust((v) => !v)}
           aria-expanded={showAdjust}
-          className="text-xs font-medium text-muted underline underline-offset-4 transition-colors hover:text-ink"
+          className="text-xs text-muted underline underline-offset-4 transition-colors hover:text-ink"
         >
           {showAdjust ? "Hide adjustments" : "Discount, refund or void"}
         </button>
 
         {showAdjust && (
-          <div className="mt-3 flex flex-col gap-4">
+          <div className="mt-3 flex flex-col gap-3">
             {isUnpaid && (
-              // Only offered before payment. Discounting a settled bill is a
-              // refund, and the RPC refuses it — so the UI does not offer it.
               <form
                 className="flex flex-col gap-2 rounded-md border border-line bg-raised p-3"
                 onSubmit={(e) => {
                   e.preventDefault();
                   run(
-                    () =>
-                      applyManualDiscount(order.id, Number(discount), discountReason),
+                    () => applyManualDiscount(order.id, Number(discount), discountReason),
                     "Discount applied"
                   );
                 }}
               >
                 <p className="text-xs font-semibold text-ink-soft">Manual discount</p>
-
                 <div className="flex flex-wrap gap-2">
                   <input
                     type="number"
@@ -345,18 +244,15 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
                     onChange={(e) => setDiscount(e.target.value)}
                     placeholder="Amount"
                     aria-label="Discount amount"
-                    className="w-28 rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs numeric text-ink placeholder:text-muted"
+                    className="w-28 rounded-md border border-line bg-card px-2.5 py-1.5 text-sm text-ink placeholder:text-muted"
                   />
-                  {/* Required, and the RPC rejects a blank one too: "who
-                      discounted this and why" is the first question asked when
-                      a drawer comes up short. */}
                   <input
                     required
                     value={discountReason}
                     onChange={(e) => setDiscountReason(e.target.value)}
                     placeholder="Reason (required)"
                     aria-label="Reason for the discount"
-                    className="min-w-0 flex-1 rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs text-ink placeholder:text-muted"
+                    className="min-w-0 flex-1 rounded-md border border-line bg-card px-2.5 py-1.5 text-sm text-ink placeholder:text-muted"
                   />
                   <Button type="submit" size="sm" variant="outline" disabled={pending}>
                     Apply
@@ -382,7 +278,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
                   onChange={(e) => setRefundReason(e.target.value)}
                   placeholder="Reason"
                   aria-label="Reason for the refund"
-                  className="min-w-0 flex-1 rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs text-ink placeholder:text-muted"
+                  className="min-w-0 flex-1 rounded-md border border-line bg-card px-2.5 py-1.5 text-sm text-ink placeholder:text-muted"
                 />
                 <Button
                   type="submit"
@@ -394,7 +290,7 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
                 </Button>
               </div>
               {isUnpaid && (
-                <p className="text-2xs text-muted">
+                <p className="text-xs text-muted">
                   Nothing has been taken for this order yet.
                 </p>
               )}
@@ -402,9 +298,8 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
 
             <div className="rounded-md border border-line bg-raised p-3">
               <p className="text-xs font-semibold text-ink-soft">Void</p>
-              <p className="mt-1 text-2xs text-muted">
-                Cancels the order and reverses anything taken. For a ticket rung
-                up by mistake — not for a customer changing their mind.
+              <p className="mt-1 text-xs text-muted">
+                Cancels the order and reverses anything taken.
               </p>
               <Button
                 size="sm"

@@ -575,31 +575,6 @@ body:has(.admin-workspace) #main {
   opacity: 0.55;
 }
 
-/* --- Checkered pattern ---------------------------------------------------
-   Retained from the previous palette for anything still reaching for it, but
-   no longer part of the visual language — the Co-Fi comp separates sections
-   with space and surface changes, not with a rule. `CheckerBand` now renders
-   a hairline instead, so this is unused by default. */
-.checker {
-  background-image:
-    linear-gradient(
-      45deg,
-      var(--hi-checker-color, var(--hi-accent)) 25%,
-      transparent 25%,
-      transparent 75%,
-      var(--hi-checker-color, var(--hi-accent)) 75%
-    ),
-    linear-gradient(
-      45deg,
-      var(--hi-checker-color, var(--hi-accent)) 25%,
-      transparent 25%,
-      transparent 75%,
-      var(--hi-checker-color, var(--hi-accent)) 75%
-    );
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
-}
-
 /* Skip link: off-screen until focused, then pinned top-left. Lets keyboard
    users jump the header nav and land straight on the menu grid. */
 .skip-link {

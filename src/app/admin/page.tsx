@@ -4,6 +4,7 @@ import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { StatCard } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
+import { DataError } from "@/components/ui/data-error";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { formatPrice, formatTime, orderCode } from "@/lib/format";
@@ -46,12 +47,26 @@ function SalesTrend({ data }: { data: SalesReportRow[] }) {
 export default async function AdminDashboardPage() {
   const token = await getServerToken();
 
-  const [summary, salesRaw, popularRaw, recentRaw] = await Promise.all([
-    apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }).catch(() => null),
-    apiJson<SalesReportRow[]>("/analytics/sales?days=7", { token: token ?? undefined }).catch(() => []),
-    apiJson<PopularItemRow[]>("/analytics/popular-items", { token: token ?? undefined }).catch(() => []),
-    apiJson<RecentOrder[]>("/orders", { token: token ?? undefined }).catch(() => []),
-  ]);
+  let summary: TodaySummary | null;
+  let salesRaw: SalesReportRow[];
+  let popularRaw: PopularItemRow[];
+  let recentRaw: RecentOrder[];
+
+  try {
+    [summary, salesRaw, popularRaw, recentRaw] = await Promise.all([
+      apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }),
+      apiJson<SalesReportRow[]>("/analytics/sales?days=7", { token: token ?? undefined }),
+      apiJson<PopularItemRow[]>("/analytics/popular-items", { token: token ?? undefined }),
+      apiJson<RecentOrder[]>("/orders", { token: token ?? undefined }),
+    ]);
+  } catch {
+    return (
+      <DataError
+        title="Couldn't load dashboard"
+        body="Some data couldn't be fetched. Check your connection and try again."
+      />
+    );
+  }
 
   const recentOrders = recentRaw.slice(0, 8).map((o) => ({ ...o, id: o._id ?? o.id }));
   const topItems = popularRaw.slice(0, 5);

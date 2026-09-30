@@ -7,6 +7,7 @@ import { getSizeOption } from "@/lib/sizes";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import { SavePreset } from "./save-preset";
 
 export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
@@ -30,17 +31,11 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   if (lines.length === 0) {
     return (
-      <div className="mx-auto max-w-md py-16 text-center">
-        <h1 className="display text-2xl text-ink">Your cart is empty</h1>
-        <p className="mt-2 text-sm text-muted">
-          Add a drink from the menu and it will show up here.
-        </p>
-        <div className="mt-6 flex justify-center">
-          <ButtonLink href="/" size="lg">
-            Browse the menu
-          </ButtonLink>
-        </div>
-      </div>
+      <EmptyState
+        title="Your cart is empty"
+        body="Add a drink from the menu and it will show up here."
+        action={<ButtonLink href="/" size="lg">Browse the menu</ButtonLink>}
+      />
     );
   }
 

@@ -4,6 +4,8 @@ import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { PageHeader } from "@/components/ui/page-header";
 import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { DataError } from "@/components/ui/data-error";
 import { ProductImage } from "@/components/ui/product-image";
 import { formatPrice } from "@/lib/format";
 import type { MenuItem } from "@/types/database";
@@ -13,7 +15,26 @@ export const metadata: Metadata = { title: "Menu items" };
 
 export default async function AdminMenuPage() {
   const token = await getServerToken();
-  const raw = await apiJson<(MenuItem & { _id: string })[]>("/menu", { token: token ?? undefined }).catch(() => []);
+
+  let raw: (MenuItem & { _id: string })[];
+  try {
+    raw = await apiJson<(MenuItem & { _id: string })[]>("/menu", { token: token ?? undefined });
+  } catch {
+    return (
+      <div>
+        <PageHeader
+          title="Menu items"
+          description="Every drink the storefront can sell. Flavour drives both the customer filter and the best-seller report."
+          action={<ButtonLink href="/admin/menu/new" size="md">Add item</ButtonLink>}
+        />
+        <DataError
+          title="Couldn't load menu"
+          body="Check your connection and try again."
+        />
+      </div>
+    );
+  }
+
   const menuItems = raw.map((m) => ({ ...m, id: m._id ?? m.id })).sort((a, b) => a.name.localeCompare(b.name));
 
   return (
@@ -25,10 +46,11 @@ export default async function AdminMenuPage() {
       />
 
       {menuItems.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-line-strong bg-card px-6 py-12 text-center">
-          <p className="text-sm text-muted">No menu items yet.</p>
-          <div className="mt-5 flex justify-center"><ButtonLink href="/admin/menu/new">Add the first item</ButtonLink></div>
-        </div>
+        <EmptyState
+          title="No menu items yet"
+          body="Once the shop adds drinks to the menu, they will be listed here."
+          action={<ButtonLink href="/admin/menu/new">Add the first item</ButtonLink>}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {menuItems.map((item) => (

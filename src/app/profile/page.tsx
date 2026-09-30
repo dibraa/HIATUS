@@ -5,8 +5,9 @@ import { apiJson } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/ui/page-header";
 import { Badge } from "@/components/ui/badge";
-import { CheckerBand } from "@/components/ui/checker";
+import { Hairline } from "@/components/ui/hairline";
 import { StarRating } from "@/components/star-rating";
+import { DataError } from "@/components/ui/data-error";
 import { formatDate } from "@/lib/format";
 import { ROLE_LABELS } from "@/lib/roles";
 import type { NotificationPreferences, Rating } from "@/types/database";
@@ -20,12 +21,26 @@ export default async function ProfilePage() {
   const token = await getServerToken();
   const user = await getCurrentUser();
 
-  const [prefs, reviewsRaw] = await Promise.all([
-    apiJson<NotificationPreferences>("/account/notifications", { token: token ?? undefined }).catch(() => null),
-    apiJson<(Rating & { _id: string; menu_item_id: { _id: string; name: string } | string })[]>(
-      "/account/ratings", { token: token ?? undefined }
-    ).catch(() => []),
-  ]);
+  let prefs: NotificationPreferences | null;
+  let reviewsRaw: (Rating & { _id: string; menu_item_id: { _id: string; name: string } | string })[];
+  try {
+    [prefs, reviewsRaw] = await Promise.all([
+      apiJson<NotificationPreferences>("/account/notifications", { token: token ?? undefined }),
+      apiJson<(Rating & { _id: string; menu_item_id: { _id: string; name: string } | string })[]>(
+        "/account/ratings", { token: token ?? undefined }
+      ),
+    ]);
+  } catch {
+    return (
+      <div className="mx-auto max-w-6xl py-2">
+        <PageHeader title="Your account" />
+        <DataError
+          title="Couldn't load profile"
+          body="Check your connection and try again."
+        />
+      </div>
+    );
+  }
 
   const myReviews = reviewsRaw.map((r) => ({
     ...r,
@@ -66,7 +81,7 @@ export default async function ProfilePage() {
 
       {myReviews.length > 0 && (
         <>
-          <CheckerBand />
+          <Hairline />
           <section aria-labelledby="reviews-heading">
             <h2 id="reviews-heading" className="mb-1 display text-xl text-ink">Your reviews</h2>
             <ul className="flex flex-col gap-3">

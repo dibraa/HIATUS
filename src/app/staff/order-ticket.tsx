@@ -1,25 +1,18 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/order-status-badge";
-import { formatPrice, formatElapsed, formatTime, orderCode } from "@/lib/format";
+import { formatElapsed, orderCode } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import {
   ADVANCE_LABELS,
   NEXT_STATUS,
   ORDER_TYPE_LABELS,
-  PAYMENT_METHOD_LABELS,
-  PAYMENT_STATUS_LABELS,
   STATUS_LABELS,
 } from "@/lib/order-meta";
-import {
-  advanceOrderStatus,
-  assignTable,
-  setOrderPriority,
-} from "@/app/actions/staff";
+import { advanceOrderStatus } from "@/app/actions/staff";
 import type { OrderItem, OrderStatus } from "@/types/database";
 
 export type QueueOrder = {
@@ -39,29 +32,17 @@ export type QueueOrder = {
 };
 
 /**
- * One ticket in the queue.
+ * One ticket in the queue — distilled to what a barista needs:
  *
- * The design question this screen answers is "what does a barista holding a
- * hot drink need", and the answer shapes everything:
+ *   - WHAT TO MAKE (items are the biggest text)
+ *   - HOW LONG IT'S BEEN WAITING (elapsed time, always visible)
+ *   - WHAT TO DO NEXT (one button, always bottom-right)
  *
- *   - THE ITEMS ARE THE BIGGEST TEXT. Not the customer's name, not the total.
- *     The list of drinks is what the ticket is for, so it gets the weight; the
- *     money is secondary here and belongs to the Payments screen.
- *   - ONE PRIMARY ACTION, always in the same corner. A ticket advances along a
- *     fixed chain (pending → preparing → ready → completed), so the common
- *     case is a single tap on a button whose label says what happens next
- *     ("Start making", "Mark ready"), never a dropdown.
- *   - CORRECTIONS ARE FOLDED AWAY. Re-statusing, seating and bumping are real
- *     needs but rare ones; they live behind a disclosure so they cannot be hit
- *     by accident and do not compete with the primary action.
- *
- * `ready` deliberately does not auto-advance to `completed` — completing means
- * the customer took the drink, which only a person can know.
+ * The ticket is not a card — it's a bare list item with a hairline separator.
+ * The items are the dominant element. Everything else recedes.
  */
 export function OrderTicket({ order }: { order: QueueOrder }) {
   const [pending, startTransition] = useTransition();
-  const [showMore, setShowMore] = useState(false);
-  const [tableInput, setTableInput] = useState(order.table_label ?? "");
 
   const next = NEXT_STATUS[order.status];
   const advanceLabel = ADVANCE_LABELS[order.status];
@@ -69,7 +50,6 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
   const isUrgent = order.priority > 0;
   const cannotHandOver = next === "completed" && order.payment_status !== "paid";
 
-  /** One place to run an action, so every one of them reports the same way. */
   function run(fn: () => Promise<{ error: string | null }>, success: string) {
     startTransition(async () => {
       const { error } = await fn();
@@ -80,68 +60,36 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
 
   return (
     <article
-      className={`rounded-lg border bg-card p-4 transition-shadow duration-(--hi-dur-base) ease-hi ${
-        isUrgent ? "border-accent shadow-md" : "border-line"
-      }`}
+      className={`py-5 ${isUrgent ? "border-l-2 border-accent pl-4" : ""}`}
     >
-      {/* ---------- Identity row ---------- */}
-      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
-        <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-sm font-semibold tracking-wide text-ink">
-              {orderCode(order.id)}
+      {/* ---------- Header: code + time + status ---------- */}
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="flex items-baseline gap-3">
+          <span className="display text-lg text-ink">
+            {orderCode(order.id)}
+          </span>
+          {isUrgent && (
+            <span className="rounded-sm bg-accent px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-accent-fg">
+              Priority
             </span>
-            {isUrgent && <Badge tone="accent">Priority</Badge>}
-          </p>
-
-          <p className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-            {/* The elapsed time is the number that decides which ticket to
-                pick up next, so it sits with the code, not in a footer.
-
-                suppressHydrationWarning: this is a clock. `formatElapsed`
-                defaults its `now` to the moment it is called, so the server
-                renders the age at request time and the browser re-renders it at
-                hydration time — a ticket that crosses a minute boundary in
-                between legitimately produces "4m" on one and "5m" on the other.
-                The client's value is the correct one and React keeps it; this
-                tells React the difference is expected rather than a bug. */}
-            <span className="font-medium text-ink-soft" suppressHydrationWarning>
-              {formatElapsed(order.created_at)}
-            </span>
-            <span aria-hidden="true">&middot;</span>
-            <time dateTime={order.created_at}>{formatTime(order.created_at)}</time>
-          </p>
+          )}
         </div>
-
-        <div className="flex shrink-0 flex-wrap items-center gap-2">
+        <div className="flex items-baseline gap-3">
+          <span className="font-mono text-sm text-muted" suppressHydrationWarning>
+            {formatElapsed(order.created_at)}
+          </span>
           <OrderStatusBadge status={order.status} />
         </div>
       </div>
 
-      {/* ---------- Fulfilment facts ---------- */}
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Badge tone={order.order_type === "dine_in" ? "green" : "neutral"}>
-          {ORDER_TYPE_LABELS[order.order_type]}
-          {order.table_label && ` · ${order.table_label}`}
-        </Badge>
-
-        <Badge tone={order.payment_status === "paid" ? "success" : "warning"}>
-          {PAYMENT_STATUS_LABELS[order.payment_status]} ·{" "}
-          {PAYMENT_METHOD_LABELS[order.payment_method]}
-        </Badge>
-
-      </div>
-
-      {/* ---------- What to make ---------- */}
-      <ul className="mt-4 flex flex-col gap-1.5 border-t border-line pt-3">
+      {/* ---------- Items: what to make ---------- */}
+      <ul className="mt-3 flex flex-col gap-1">
         {order.order_items.map((item) => (
-          <li key={item.id} className="flex items-baseline gap-2 text-base text-ink">
-            <span className="font-semibold numeric text-accent-ink">
+          <li key={item.id} className="flex items-baseline gap-2 text-xl text-ink">
+            <span className="font-semibold text-accent-ink">
               {item.quantity}&times;
             </span>
-            <span className="font-medium">{item.item_name}</span>
-            {/* Size is optional on the type — rows predating the pricing patch
-                have none, and "Medium" would be a guess there. */}
+            <span>{item.item_name}</span>
             {item.size && (
               <span className="text-sm text-muted">{getSizeOption(item.size).label}</span>
             )}
@@ -149,40 +97,27 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
         ))}
       </ul>
 
+      {/* ---------- Pickup note ---------- */}
       {order.pickup_note && (
-        // A dietary note or a "less ice" is the single most missable thing on
-        // a ticket, so it gets a tinted panel rather than a line of body text.
-        <p className="mt-3 rounded-md border border-warning-soft-fg/25 bg-warning-soft-bg px-3 py-2 text-sm text-warning-soft-fg">
+        <p className="mt-2 text-sm text-warning-soft-fg">
           <span className="font-semibold">Note:</span> {order.pickup_note}
         </p>
       )}
 
-      {/* ---------- Customer + money + primary action ---------- */}
-      <div className="mt-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-3 border-t border-line pt-3">
-        <div className="min-w-0">
-          <p className="text-sm font-medium text-ink">{customer}</p>
-          {order.profiles?.phone && (
-            <a
-              href={`tel:${order.profiles.phone}`}
-              className="text-xs text-accent-ink underline underline-offset-4"
-            >
-              {order.profiles.phone}
-            </a>
-          )}
-          <p className="mt-1 text-sm font-semibold numeric text-ink-soft">
-            {formatPrice(order.total_amount)}
-            {order.discount_amount > 0 && (
-              <span className="ml-1.5 text-xs font-normal text-muted">
-                (−{formatPrice(order.discount_amount)})
-              </span>
-            )}
+      {/* ---------- Customer + action ---------- */}
+      <div className="mt-4 flex items-end justify-between gap-4">
+        <div>
+          <p className="text-sm text-muted">{customer}</p>
+          <p className="text-xs text-muted">
+            {ORDER_TYPE_LABELS[order.order_type]}
+            {order.table_label && ` · ${order.table_label}`}
           </p>
         </div>
 
         {next && advanceLabel && (
-          <div className="flex flex-col items-end gap-1.5">
+          <div className="flex flex-col items-end gap-1">
             <Button
-              size="md"
+              size="lg"
               disabled={pending || cannotHandOver}
               onClick={() =>
                 run(
@@ -196,97 +131,6 @@ export function OrderTicket({ order }: { order: QueueOrder }) {
             {cannotHandOver && (
               <span className="text-xs text-warning-soft-fg">Pay before handover</span>
             )}
-          </div>
-        )}
-      </div>
-
-      {/* ---------- Corrections ---------- */}
-      <div className="mt-3 border-t border-line pt-3">
-        <button
-          type="button"
-          onClick={() => setShowMore((v) => !v)}
-          aria-expanded={showMore}
-          className="text-xs font-medium text-muted underline underline-offset-4 transition-colors hover:text-ink"
-        >
-          {showMore ? "Hide options" : "More options"}
-        </button>
-
-        {showMore && (
-          <div className="mt-3 flex flex-col gap-3">
-            {/* Re-status, for corrections the chain cannot express */}
-            <div className="flex flex-wrap items-center gap-2">
-              <label
-                htmlFor={`status-${order.id}`}
-                className="text-xs font-medium text-ink-soft"
-              >
-                Set status
-              </label>
-              <select
-                id={`status-${order.id}`}
-                value={order.status}
-                disabled={pending}
-                onChange={(e) =>
-                  run(
-                    () => advanceOrderStatus(order.id, e.target.value as OrderStatus),
-                    `${orderCode(order.id)} updated`
-                  )
-                }
-                className="rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs text-ink"
-              >
-                {(Object.keys(STATUS_LABELS) as OrderStatus[]).map((s) => (
-                  <option key={s} value={s}>
-                    {STATUS_LABELS[s]}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Seating. Submitting on a form so Enter works, which is how this
-                actually gets used with a keyboard at the till. */}
-            <form
-              className="flex flex-wrap items-center gap-2"
-              onSubmit={(e) => {
-                e.preventDefault();
-                run(
-                  () => assignTable(order.id, tableInput),
-                  tableInput ? `Seated at ${tableInput}` : "Table cleared"
-                );
-              }}
-            >
-              <label
-                htmlFor={`table-${order.id}`}
-                className="text-xs font-medium text-ink-soft"
-              >
-                Table
-              </label>
-              <input
-                id={`table-${order.id}`}
-                value={tableInput}
-                onChange={(e) => setTableInput(e.target.value)}
-                placeholder="e.g. 4, or by the window"
-                className="min-w-0 flex-1 rounded-md border border-line-strong bg-card px-2.5 py-1.5 text-xs text-ink placeholder:text-muted"
-              />
-              <Button type="submit" size="sm" variant="outline" disabled={pending}>
-                Seat
-              </Button>
-            </form>
-
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-medium text-ink-soft">Queue</span>
-              <Button
-                size="sm"
-                variant={isUrgent ? "outline" : "secondary"}
-                disabled={pending}
-                onClick={() =>
-                  run(
-                    () => setOrderPriority(order.id, isUrgent ? 0 : 1),
-                    isUrgent ? "Priority cleared" : "Bumped to the front"
-                  )
-                }
-              >
-                {isUrgent ? "Clear priority" : "Bump to front"}
-              </Button>
-            </div>
           </div>
         )}
       </div>
