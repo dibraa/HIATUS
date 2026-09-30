@@ -21,29 +21,29 @@ export default async function StaffLayout({
   if (!isStaff(access)) redirect("/");
 
   return (
-    <div className="rounded-2xl border border-line bg-card p-4 shadow-sm sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <p className="eyebrow text-accent-ink">
-          Counter
-        </p>
-
-        {/* An owner working the queue needs one tap back to the books, and a
-            plain barista should not see a link to a page they cannot open. */}
-        {isAdmin(access) && (
-          <Link
-            href="/admin"
-            className="ui-caps text-2xs text-muted underline underline-offset-4 transition-colors hover:text-ink"
-          >
-            Admin dashboard
-          </Link>
-        )}
+    <div className="min-h-screen bg-surface">
+      {/* Top bar */}
+      <div className="border-b border-line bg-card">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3 sm:px-6">
+          <span className="display text-lg tracking-[-0.02em] text-ink">Counter</span>
+          {isAdmin(access) && (
+            <Link
+              href="/admin"
+              className="text-sm text-muted transition-colors hover:text-ink"
+            >
+              Admin dashboard
+            </Link>
+          )}
+        </div>
+        <div className="mx-auto max-w-5xl px-4 sm:px-6">
+          <StaffNav />
+        </div>
       </div>
 
-      <div className="mt-5">
-        <StaffNav />
+      {/* Content */}
+      <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6">
+        {children}
       </div>
-
-      <div className="mt-7">{children}</div>
     </div>
   );
 }

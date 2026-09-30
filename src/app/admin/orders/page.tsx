@@ -4,6 +4,8 @@ import { apiJson } from "@/lib/api-client";
 import { PageHeader } from "@/components/ui/page-header";
 import { FilterTabs } from "@/components/ui/filter-tabs";
 import { OrderStatusBadge } from "@/components/order-status-badge";
+import { EmptyState } from "@/components/ui/empty-state";
+import { DataError } from "@/components/ui/data-error";
 import { formatPrice } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import type { OrderItem, OrderStatus } from "@/types/database";
@@ -32,7 +34,23 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
   const { tab = "active" } = await searchParams;
   const token = await getServerToken();
 
-  const allOrders = await apiJson<OrderRow[]>("/orders", { token: token ?? undefined }).catch(() => []);
+  let allOrders: OrderRow[];
+  try {
+    allOrders = await apiJson<OrderRow[]>("/orders", { token: token ?? undefined });
+  } catch {
+    return (
+      <div>
+        <PageHeader
+          title="Orders"
+          description="Move an order along with the status control on its card. The customer sees the change immediately."
+        />
+        <DataError
+          title="Couldn't load orders"
+          body="Check your connection and try again."
+        />
+      </div>
+    );
+  }
 
   const filtered = allOrders.filter((o) => {
     if (tab === "active") return ACTIVE_STATUSES.includes(o.status);
@@ -57,9 +75,10 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       />
 
       {orderList.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-line-strong bg-card px-6 py-12 text-center text-sm text-muted">
-          No orders in this view.
-        </p>
+        <EmptyState
+          title="No orders in this view"
+          body={tab === "active" ? "Orders placed through the storefront appear here as they come in." : "No orders match this filter yet."}
+        />
       ) : (
         <ul className="flex flex-col gap-3">
           {orderList.map((order) => {

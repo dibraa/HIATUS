@@ -4,7 +4,7 @@ import { apiJson } from "@/lib/api-client";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { ButtonLink } from "@/components/ui/button";
-import { CheckerBand } from "@/components/ui/checker";
+import { Hairline } from "@/components/ui/hairline";
 import { MenuItemCard } from "@/components/menu-item-card";
 import { aggregateRatings } from "@/lib/ratings";
 import type { MenuItem, OrderPreset, Rating } from "@/types/database";
@@ -59,7 +59,7 @@ export default async function FavoritesPage() {
             </section>
           )}
 
-          {favoriteItems.length > 0 && presetList.length > 0 && <CheckerBand />}
+          {favoriteItems.length > 0 && presetList.length > 0 && <Hairline />}
 
           {favoriteItems.length > 0 && (
             <section aria-labelledby="favorites-heading">

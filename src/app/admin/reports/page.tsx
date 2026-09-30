@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { FilterTabs } from "@/components/ui/filter-tabs";
 import { StatCard, StatGrid } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { CheckerBand } from "@/components/ui/checker";
+import { Hairline } from "@/components/ui/hairline";
 import { formatPrice } from "@/lib/format";
 import type { BestSellingFlavor, PopularItemRow, SalesReportRow } from "@/types/database";
 import { SalesChart } from "./charts";
@@ -53,13 +53,13 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       </StatGrid>
 
       <section aria-labelledby="revenue-heading" className="mt-10">
-        <CheckerBand className="mb-6" />
+        <Hairline className="mb-6" />
         <h2 id="revenue-heading" className="display text-xl text-ink mb-4">Revenue</h2>
         <SalesChart data={salesRaw} grain={selected.grain} />
       </section>
 
       <section aria-labelledby="items-heading" className="mt-10">
-        <CheckerBand className="mb-6" />
+        <Hairline className="mb-6" />
         <h2 id="items-heading" className="display text-xl text-ink mb-4">What sells</h2>
         {itemsRaw.length === 0 ? (
           <EmptyState as="h3" title="Nothing sold in this range" body="Try a longer period." />
@@ -90,7 +90,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       </section>
 
       <section aria-labelledby="flavors-heading" className="mt-10">
-        <CheckerBand className="mb-6" />
+        <Hairline className="mb-6" />
         <h2 id="flavors-heading" className="display text-xl text-ink mb-4">Best-selling flavours</h2>
         <BestSellerChart data={flavorsRaw} />
       </section>

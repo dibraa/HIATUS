@@ -2,10 +2,8 @@ import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { PageHeader } from "@/components/ui/page-header";
-import { FilterTabs } from "@/components/ui/filter-tabs";
-import { StatCard, StatGrid } from "@/components/ui/stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { formatPrice } from "@/lib/format";
+import { DataError } from "@/components/ui/data-error";
 import { ACTIVE_STATUSES } from "@/lib/order-meta";
 import type { OrderStatus, TodaySummary } from "@/types/database";
 import { OrderTicket, type QueueOrder } from "./order-ticket";
@@ -26,10 +24,25 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
   const active = TABS.find((t) => t.value === tab) ?? TABS[0];
   const token = await getServerToken();
 
-  const [summary, allOrders] = await Promise.all([
-    apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }).catch(() => null),
-    apiJson<(QueueOrder & { _id: string })[]>("/orders", { token: token ?? undefined }).catch(() => []),
-  ]);
+  let summary: TodaySummary | null;
+  let allOrders: (QueueOrder & { _id: string })[];
+  try {
+    [summary, allOrders] = await Promise.all([
+      apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }),
+      apiJson<(QueueOrder & { _id: string })[]>("/orders", { token: token ?? undefined }),
+    ]);
+  } catch {
+    return (
+      <div>
+        <AutoRefresh seconds={15} />
+        <PageHeader title="Order Queue" description="Newest at the bottom, longest wait at the top." />
+        <DataError
+          title="Couldn't load queue"
+          body="Check your connection and try again."
+        />
+      </div>
+    );
+  }
 
   const queue = allOrders
     .filter((o) => active.statuses.includes(o.status))
@@ -44,27 +57,50 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
     }))
     .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0) || new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
 
+  const newCount = summary?.pending_now ?? 0;
+  const readyCount = summary?.ready_now ?? 0;
+
   return (
     <div>
       <AutoRefresh seconds={15} />
-      <PageHeader title="Order queue" description="Newest at the bottom, longest wait at the top." />
-
-      {summary && (
-        <div className="mb-6">
-          <StatGrid>
-            <StatCard label="New" value={summary.pending_now} tone={summary.pending_now > 0 ? "attention" : "default"} hint="Not started yet" />
-            <StatCard label="Making" value={summary.preparing_now} hint="In progress" />
-            <StatCard label="Ready" value={summary.ready_now} tone={summary.ready_now > 0 ? "positive" : "default"} hint="On the counter" />
-            <StatCard label="Today" value={formatPrice(summary.revenue_today)} hint={`${summary.orders_today} completed`} />
-          </StatGrid>
-        </div>
-      )}
-
-      <FilterTabs
-        label="Filter the queue by status"
-        className="mb-6"
-        tabs={TABS.map((t) => ({ label: t.label, href: `/staff?tab=${t.value}`, active: t.value === active.value }))}
+      <PageHeader
+        title="Order Queue"
+        description="Newest at the bottom, longest wait at the top."
+        action={
+          <div className="flex items-center gap-6">
+            {newCount > 0 && (
+              <div className="text-right">
+                <p className="display text-2xl text-accent">{newCount}</p>
+                <p className="text-xs text-muted">New</p>
+              </div>
+            )}
+            {readyCount > 0 && (
+              <div className="text-right">
+                <p className="display text-2xl text-success-soft-fg">{readyCount}</p>
+                <p className="text-xs text-muted">Ready</p>
+              </div>
+            )}
+          </div>
+        }
       />
+
+      {/* Filter tabs — simple text links, not buttons */}
+      <div className="mb-6 flex gap-6 border-b border-line pb-3">
+        {TABS.map((t) => (
+          <a
+            key={t.value}
+            href={`/staff?tab=${t.value}`}
+            aria-current={t.value === active.value ? "page" : undefined}
+            className={
+              t.value === active.value
+                ? "display text-sm text-ink"
+                : "text-sm text-muted transition-colors hover:text-ink"
+            }
+          >
+            {t.label}
+          </a>
+        ))}
+      </div>
 
       {queue.length === 0 ? (
         <EmptyState

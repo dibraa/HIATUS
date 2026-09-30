@@ -5,6 +5,8 @@ import { apiJson } from "@/lib/api-client";
 import { OrderStatusBadge } from "@/components/order-status-badge";
 import { PageHeader } from "@/components/ui/page-header";
 import { ButtonLink } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
+import { DataError } from "@/components/ui/data-error";
 import { formatPrice } from "@/lib/format";
 import type { Order } from "@/types/database";
 
@@ -14,9 +16,25 @@ const DATE_FORMAT = new Intl.DateTimeFormat("en-PH", { dateStyle: "medium", time
 
 export default async function OrdersPage() {
   const token = await getServerToken();
-  const orders = await apiJson<(Order & { _id: string })[]>("/orders", { token: token ?? undefined }).catch(() => []);
 
-  // normalise _id → id
+  let orders: (Order & { _id: string })[];
+  try {
+    orders = await apiJson<(Order & { _id: string })[]>("/orders", { token: token ?? undefined });
+  } catch {
+    return (
+      <div className="mx-auto max-w-2xl py-2">
+        <PageHeader
+          title="My orders"
+          description="Track what is being made and revisit anything you have ordered before."
+        />
+        <DataError
+          title="Couldn't load orders"
+          body="Check your connection and try again."
+        />
+      </div>
+    );
+  }
+
   const orderList = orders.map((o) => ({ ...o, id: o._id ?? o.id }));
   const active = orderList.filter((o) => ["pending", "preparing", "ready"].includes(o.status));
   const past = orderList.filter((o) => !active.includes(o));
@@ -29,15 +47,11 @@ export default async function OrdersPage() {
       />
 
       {orderList.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-line-strong bg-card px-6 py-14 text-center">
-          <h2 className="display text-xl text-ink">No orders yet</h2>
-          <p className="mx-auto mt-2 max-w-[44ch] text-sm text-muted">
-            Once you order ahead, it shows up here with its live pickup status.
-          </p>
-          <div className="mt-6 flex justify-center">
-            <ButtonLink href="/">Browse the menu</ButtonLink>
-          </div>
-        </div>
+        <EmptyState
+          title="No orders yet"
+          body="Once you order ahead, it shows up here with its live pickup status."
+          action={<ButtonLink href="/">Browse the menu</ButtonLink>}
+        />
       ) : (
         <div className="flex flex-col gap-8">
           {active.length > 0 && <OrderGroup title="In progress" orders={active} />}
