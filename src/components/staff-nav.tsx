@@ -10,12 +10,15 @@ const LINKS = [
   { href: "/staff/shift", label: "My shift" },
 ];
 
+const CHIP =
+  "ui-caps inline-flex h-11 items-center whitespace-nowrap rounded-md border px-3.5 text-2xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink";
+
 export function StaffNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Staff sections">
-      <ul className="flex gap-1">
+    <nav aria-label="Staff sections" className="flex items-center gap-1">
+      <ul className="no-scrollbar -mx-1 flex gap-1 overflow-x-auto px-1 py-0.5">
         {LINKS.map((link) => {
           const active =
             link.href === "/staff"
@@ -23,14 +26,14 @@ export function StaffNav() {
               : pathname.startsWith(link.href);
 
           return (
-            <li key={link.href}>
+            <li key={link.href} className="min-w-0 shrink-0">
               <Link
                 href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={
                   active
-                    ? "display inline-flex items-center px-3 py-2 text-sm text-ink"
-                    : "display inline-flex items-center px-3 py-2 text-sm text-muted transition-colors hover:text-ink"
+                    ? `${CHIP} border-ink bg-raised text-ink`
+                    : `${CHIP} border-line-strong bg-card text-ink-soft hover:border-ink hover:text-ink`
                 }
               >
                 {link.label}
@@ -39,6 +42,7 @@ export function StaffNav() {
           );
         })}
       </ul>
+
     </nav>
   );
 }

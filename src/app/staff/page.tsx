@@ -39,6 +39,7 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
         <DataError
           title="Couldn't load queue"
           body="Check your connection and try again."
+          showRetry
         />
       </div>
     );
@@ -64,6 +65,7 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
     <div>
       <AutoRefresh seconds={15} />
       <PageHeader
+        size="utility"
         title="Order Queue"
         description="Newest at the bottom, longest wait at the top."
         action={
@@ -84,18 +86,18 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
         }
       />
 
-      {/* Filter tabs — simple text links, not buttons */}
-      <div className="mb-6 flex gap-6 border-b border-line pb-3">
+      {/* Filter tabs — chip style, consistent with admin */}
+      <div className="mb-5 flex gap-1">
         {TABS.map((t) => (
           <a
             key={t.value}
             href={`/staff?tab=${t.value}`}
             aria-current={t.value === active.value ? "page" : undefined}
-            className={
+            className={`ui-caps inline-flex h-11 items-center whitespace-nowrap rounded-md border px-3.5 text-2xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
               t.value === active.value
-                ? "display text-sm text-ink"
-                : "text-sm text-muted transition-colors hover:text-ink"
-            }
+                ? "border-ink bg-raised text-ink"
+                : "border-line-strong bg-card text-ink-soft hover:border-ink hover:text-ink"
+            }`}
           >
             {t.label}
           </a>
@@ -108,7 +110,7 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
           body={active.value === "active" ? "Every order has been handed over." : "No orders are at this stage right now."}
         />
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="flex flex-col divide-y divide-line border-y border-line">
           {queue.map((order) => <li key={order.id}><OrderTicket order={order} /></li>)}
         </ul>
       )}

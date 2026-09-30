@@ -9,13 +9,27 @@ import type { OrderStatus } from "@/types/database";
 
 /** Written out rather than title-casing the enum, so the option list reads the
  *  same as the badge sitting next to it. */
-const OPTIONS: { value: OrderStatus; label: string }[] = [
+const ALL_OPTIONS: { value: OrderStatus; label: string }[] = [
   { value: "pending", label: "Pending" },
   { value: "preparing", label: "Preparing" },
   { value: "ready", label: "Ready for pickup" },
   { value: "completed", label: "Completed" },
   { value: "cancelled", label: "Cancelled" },
 ];
+
+/** Legal forward transitions. A cancelled order stays cancelled; a completed
+ *  order stays completed. Everything else can move forward one step. */
+const NEXT_STATUS: Partial<Record<OrderStatus, OrderStatus>> = {
+  pending: "preparing",
+  preparing: "ready",
+  ready: "completed",
+};
+
+function legalOptions(current: OrderStatus): { value: OrderStatus; label: string }[] {
+  const next = NEXT_STATUS[current];
+  if (!next) return ALL_OPTIONS.filter((o) => o.value === current);
+  return ALL_OPTIONS.filter((o) => o.value === current || o.value === next);
+}
 
 export function StatusSelect({
   orderId,
@@ -47,13 +61,13 @@ export function StatusSelect({
             toast.error(result.error);
             return;
           }
-          const option = OPTIONS.find((o) => o.value === newStatus);
+          const option = ALL_OPTIONS.find((o) => o.value === newStatus);
           toast.success("Order marked " + (option?.label ?? newStatus).toLowerCase());
           router.refresh();
         });
       }}
     >
-      {OPTIONS.map((opt) => (
+      {legalOptions(status).map((opt) => (
         <option key={opt.value} value={opt.value}>
           {opt.label}
         </option>

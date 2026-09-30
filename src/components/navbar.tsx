@@ -81,7 +81,7 @@ export async function Navbar() {
           )}
         </nav>
 
-        {/* Right: account, theme, cart */}
+        {/* Right: account, cart */}
         <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-4">
           {user ? (
             <>
@@ -108,9 +108,6 @@ export async function Navbar() {
             </>
           )}
 
-          {/* Hidden on the narrowest screens, where the header already has
-              the identity, cart and menu trigger competing for 320px — the
-              mobile sheet carries it there instead. */}
           <span className="hidden sm:inline-flex">
             <ThemeToggle />
           </span>

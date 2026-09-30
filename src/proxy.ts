@@ -5,9 +5,9 @@ import {
   AUTH_REQUIRED_PREFIXES,
   STAFF_PREFIX,
   isAdmin,
-  isStaffOnly,
   isStaff,
   CUSTOMER_ONLY_PREFIXES,
+  homePathFor,
 } from "@/lib/roles";
 import type { Role } from "@/types/database";
 
@@ -50,9 +50,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
-  if (wantsCustomerArea && isStaffOnly(access)) {
+  if (wantsCustomerArea && isStaff(access)) {
     const url = request.nextUrl.clone();
-    url.pathname = STAFF_PREFIX;
+    url.pathname = homePathFor(role!);
     url.search = "";
     return NextResponse.redirect(url);
   }
@@ -61,6 +61,13 @@ export async function proxy(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = isStaff(access) ? STAFF_PREFIX : "/";
     url.searchParams.set("denied", "admin");
+    return NextResponse.redirect(url);
+  }
+
+  if (wantsStaff && isAdmin(access)) {
+    const url = request.nextUrl.clone();
+    url.pathname = ADMIN_PREFIX;
+    url.search = "";
     return NextResponse.redirect(url);
   }
 

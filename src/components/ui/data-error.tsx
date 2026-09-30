@@ -1,4 +1,4 @@
-import { Button } from "./button";
+import { RetryButton } from "./retry-button";
 
 /**
  * What a data-fetching section shows when the fetch fails.
@@ -9,17 +9,18 @@ import { Button } from "./button";
  * them — the old `.catch(() => [])` pattern — tells the user there is no
  * data when the real problem is the network.
  *
- * `onRetry` is optional because not every error is retryable (a 403, for
- * example). When absent, the component renders without the button.
+ * `showRetry` is optional because not every error is retryable (a 403, for
+ * example). The retry behavior lives in a client component so server pages
+ * can render this error without passing event handlers across the boundary.
  */
 export function DataError({
   title = "Couldn't load",
   body = "Something went wrong while fetching this data.",
-  onRetry,
+  showRetry = false,
 }: {
   title?: string;
   body?: string;
-  onRetry?: () => void;
+  showRetry?: boolean;
 }) {
   return (
     <div
@@ -28,11 +29,9 @@ export function DataError({
     >
       <p className="display text-xl text-danger-fg">{title}</p>
       <p className="mx-auto mt-2 max-w-[44ch] text-sm text-danger-fg/80">{body}</p>
-      {onRetry && (
+      {showRetry && (
         <div className="mt-6 flex justify-center">
-          <Button variant="outline" size="md" onClick={onRetry}>
-            Try again
-          </Button>
+          <RetryButton />
         </div>
       )}
     </div>

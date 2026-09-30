@@ -25,7 +25,7 @@ export function ClockInForm() {
 
   return (
     <form
-      className="rounded-lg border border-line bg-card p-5"
+      className="rounded-lg border border-line bg-card p-5 shadow-sm"
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {
@@ -78,7 +78,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
 
   return (
     <form
-      className="rounded-lg border border-line bg-card p-5"
+      className="rounded-lg border border-line bg-card p-5 shadow-sm"
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {
