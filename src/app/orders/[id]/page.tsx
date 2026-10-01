@@ -10,11 +10,13 @@ import { formatPrice, formatDateTime, orderCode } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import { getSettings } from "@/lib/settings";
 import { ORDER_TYPE_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
-import type { Order, OrderItem } from "@/types/database";
+import type { NotificationPreferences, Order, OrderItem } from "@/types/database";
 import { RatingForm } from "./rating-form";
 import { CancelButton } from "./cancel-button";
 import { WaitEstimate } from "./wait-estimate";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { OrderAlerts } from "@/components/order-alerts";
+import { DEFAULT_ALERT_PREFERENCES } from "@/lib/order-alerts";
 
 export const metadata: Metadata = { title: "Order details" };
 export const dynamic = "force-dynamic";
@@ -36,10 +38,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const settings = await getSettings();
   const typicalMinutes = settings.ordering.default_prep_minutes;
 
-  // Which items haven't been rated yet — fetch existing ratings
-  const existingRatings = await apiJson<{ menu_item_id: string }[]>(
-    `/orders/${id}/ratings`, { token: token ?? undefined }
-  ).catch(() => []);
+  // Which items haven't been rated yet, and which alerts the customer wants.
+  // A failed preferences load falls back to the defaults (everything on):
+  // missing an alert is worse than an alert they had turned off.
+  const [existingRatings, prefs] = await Promise.all([
+    apiJson<{ menu_item_id: string }[]>(`/orders/${id}/ratings`, { token: token ?? undefined }).catch(() => []),
+    apiJson<NotificationPreferences>("/account/notifications", { token: token ?? undefined }).catch(() => null),
+  ]);
+  const alertPrefs = {
+    order_updates: prefs?.order_updates ?? DEFAULT_ALERT_PREFERENCES.order_updates,
+    ready_alerts: prefs?.ready_alerts ?? DEFAULT_ALERT_PREFERENCES.ready_alerts,
+  };
   const ratedIds = new Set(existingRatings.map((r) => r.menu_item_id));
   const rateable = order.items.filter((i) => i.menu_item_id && !ratedIds.has(i.menu_item_id as string));
 
@@ -55,7 +64,14 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
   return (
     <div className="mx-auto max-w-2xl py-2">
-      {["pending", "preparing", "ready"].includes(order.status) && <AutoRefresh seconds={20} />}
+      {["pending", "preparing", "ready"].includes(order.status) && <AutoRefresh seconds={20} whileHidden />}
+      <OrderAlerts
+        orderId={order.id}
+        code={orderCode(order.id)}
+        status={order.status}
+        message={statusMessage[order.status]}
+        prefs={alertPrefs}
+      />
 
       <Link href="/orders" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink">
         <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
