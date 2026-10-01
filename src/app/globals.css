@@ -344,12 +344,17 @@
   --shadow-lg: var(--hi-shadow-lg);
 
   /* --- Spacing rhythm -> utilities --------------------------------------
-     `gap-section`, `py-band`, `mt-heading`, `mt-block`, `mt-tight`. The
+     `gap-section`, `py-band`, `mt-heading`, `mt-stack`, `mt-tight`. The
      numeric spacing scale is untouched; these sit alongside it and are what a
-     SECTION should reach for, so the rhythm is named at the call site. */
+     SECTION should reach for, so the rhythm is named at the call site.
+
+     The block step is exposed as `stack`, not `block`: Tailwind v4 has
+     `inline-*` sizing utilities, so a `--spacing-block` key turns the class
+     `inline-block` into `display: inline-block` PLUS `inline-size: 1.5rem`,
+     and any element given it collapses to 24px wide. */
   --spacing-tight: var(--hi-space-tight);
   --spacing-snug: var(--hi-space-snug);
-  --spacing-block: var(--hi-space-block);
+  --spacing-stack: var(--hi-space-block);
   --spacing-heading: var(--hi-space-heading);
   --spacing-band: var(--hi-space-band);
   --spacing-section: var(--hi-space-section);

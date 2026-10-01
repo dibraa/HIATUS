@@ -118,7 +118,7 @@ export function MobileNav({
               visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
             }`}
           >
-            {!staffOnly && (
+            {isLoggedIn && !staffOnly && (
               <Link href="/" className={linkClass}>
                 Menu
               </Link>

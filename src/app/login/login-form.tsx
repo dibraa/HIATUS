@@ -40,6 +40,7 @@ export function LoginForm() {
         type="email"
         required
         autoComplete="email"
+        defaultValue={state.email}
       />
 
       <PasswordField

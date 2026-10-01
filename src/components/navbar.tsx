@@ -20,7 +20,8 @@ import { ThemeToggle } from "@/components/theme-toggle";
  *
  * The work links are role-gated. A barista sees "Counter", an owner sees both
  * "Counter" and "Admin", and a customer sees neither — a nav link to a page
- * that will bounce you is worse than no link at all.
+ * that will bounce you is worse than no link at all. The same rule hides the
+ * menu and cart from guests: both sit behind sign-in.
  */
 export async function Navbar() {
   const user = await getCurrentUser();
@@ -39,7 +40,13 @@ export async function Navbar() {
         {/* Identity */}
         <Link
           href={staffOnly ? "/staff" : "/"}
-          aria-label={staffOnly ? "Hiatus Coffee, go to counter" : "Hiatus Coffee, go to menu"}
+          aria-label={
+            staffOnly
+              ? "Hiatus Coffee, go to counter"
+              : user
+                ? "Hiatus Coffee, go to menu"
+                : "Hiatus Coffee, go to home page"
+          }
           className="flex shrink-0 items-center gap-2.5 text-ink"
         >
           <Image
@@ -54,13 +61,11 @@ export async function Navbar() {
 
         {/* Primary nav — collapses into MobileNav below lg */}
         <nav aria-label="Main" className="hidden shrink-0 items-center gap-6 lg:flex">
-          {!staffOnly && (
-            <Link href="/" className={navLink}>
-              Menu
-            </Link>
-          )}
           {user && !staffOnly && (
             <>
+              <Link href="/" className={navLink}>
+                Menu
+              </Link>
               <Link href="/orders" className={navLink}>
                 Orders
               </Link>
@@ -112,7 +117,7 @@ export async function Navbar() {
             <ThemeToggle />
           </span>
 
-          {!staffOnly && <CartBadge />}
+          {user && !staffOnly && <CartBadge />}
           <MobileNav isLoggedIn={!!user} isStaff={staff} isAdmin={admin} staffOnly={staffOnly} />
         </div>
       </div>
