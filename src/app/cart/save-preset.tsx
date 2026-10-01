@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { savePreset } from "@/app/actions/account";
@@ -24,12 +24,26 @@ export function SavePreset({
   isLoggedIn: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
   const [name, setName] = useState("");
   const [pending, startTransition] = useTransition();
 
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      const raf = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setVisible(false);
+      const timeout = setTimeout(() => setMounted(false), 200);
+      return () => clearTimeout(timeout);
+    }
+  }, [open]);
+
   if (!isLoggedIn || lines.length === 0) return null;
 
-  if (!open) {
+  if (!mounted) {
     return (
       <button
         type="button"
@@ -43,7 +57,9 @@ export function SavePreset({
 
   return (
     <form
-      className="flex flex-col gap-2"
+      className={`flex flex-col gap-2 transition-[opacity,transform] duration-(--hi-dur-base) ease-hi-out ${
+        visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+      }`}
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "./button";
 
@@ -42,6 +42,20 @@ export function Modal({
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      const raf = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setVisible(false);
+      const timeout = setTimeout(() => setMounted(false), 200);
+      return () => clearTimeout(timeout);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -83,7 +97,7 @@ export function Modal({
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [open, onCancel]);
 
-  if (!open) return null;
+  if (!mounted) return null;
 
   return createPortal(
     <div
@@ -92,7 +106,12 @@ export function Modal({
       onClick={onCancel}
     >
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" aria-hidden="true" />
+      <div
+        className={`absolute inset-0 bg-ink/50 backdrop-blur-sm transition-opacity duration-(--hi-dur-base) ease-hi-out ${
+          visible ? "opacity-100" : "opacity-0"
+        }`}
+        aria-hidden="true"
+      />
 
       {/* Dialog */}
       <div
@@ -101,7 +120,9 @@ export function Modal({
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby="modal-body"
-        className="relative w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-xl"
+        className={`relative w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-xl transition-[opacity,transform] duration-(--hi-dur-base) ease-hi-out ${
+          visible ? "opacity-100 scale-100" : "opacity-0 scale-[0.97]"
+        }`}
         onClick={(e) => e.stopPropagation()}
       >
         <h2 id="modal-title" className="display text-2xl text-ink">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
@@ -56,12 +56,26 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
   const [method, setMethod] = useState<PaymentMethod>(order.payment_method);
   const [tendered, setTendered] = useState("");
   const [showAdjust, setShowAdjust] = useState(false);
+  const [adjustMounted, setAdjustMounted] = useState(false);
+  const [adjustVisible, setAdjustVisible] = useState(false);
   const [discount, setDiscount] = useState("");
   const [discountReason, setDiscountReason] = useState("");
   const [refundReason, setRefundReason] = useState("");
   const [confirmPayment, setConfirmPayment] = useState(false);
   const [confirmRefund, setConfirmRefund] = useState(false);
   const [confirmVoid, setConfirmVoid] = useState(false);
+
+  useEffect(() => {
+    if (showAdjust) {
+      setAdjustMounted(true);
+      const raf = requestAnimationFrame(() => setAdjustVisible(true));
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setAdjustVisible(false);
+      const timeout = setTimeout(() => setAdjustMounted(false), 200);
+      return () => clearTimeout(timeout);
+    }
+  }, [showAdjust]);
 
   const isUnpaid = order.payment_status === "unpaid";
   const customer = order.profiles?.full_name?.trim() || "Walk-in";
@@ -233,8 +247,10 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
           {showAdjust ? "Hide" : "Discount, refund or void"}
         </button>
 
-        {showAdjust && (
-          <div className="mt-2 flex flex-col gap-2">
+        {adjustMounted && (
+          <div className={`mt-2 flex flex-col gap-2 transition-[opacity,transform] duration-(--hi-dur-base) ease-hi-out ${
+            adjustVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-1"
+          }`}>
             {isUnpaid && (
               <form
                 className="flex flex-col gap-1.5 rounded-md border border-line p-2.5"
