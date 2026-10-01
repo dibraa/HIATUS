@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+import { getPushTargets, sendOrderPush } from "@/lib/push-server";
 import { revalidatePath } from "next/cache";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
@@ -57,6 +59,7 @@ export async function updateOrderStatus(
 ): Promise<{ error: string | null }> {
   const token = await getServerToken();
   try {
+    const pushTargets = await getPushTargets(orderId, token ?? undefined);
     await apiJson(`/orders/${orderId}/status`, {
       method: "PUT",
       token: token ?? undefined,
@@ -65,6 +68,7 @@ export async function updateOrderStatus(
     revalidatePath("/admin/orders");
     revalidatePath("/staff");
     revalidatePath(`/orders/${orderId}`);
+    if (pushTargets) after(() => sendOrderPush(orderId, pushTargets, newStatus, token ?? undefined));
     return { error: null };
   } catch (err: unknown) {
     return { error: (err as Error).message };

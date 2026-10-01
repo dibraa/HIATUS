@@ -54,6 +54,13 @@ export const metadata: Metadata = {
   },
   description:
     "Order coffee ahead from Hiatus and pick it up without queueing. Pay cash on pickup.",
+  // iOS reads these, not the manifest, when the site is added to the Home
+  // Screen — and only an installed site can receive push there.
+  appleWebApp: {
+    capable: true,
+    title: "Hiatus",
+    statusBarStyle: "default",
+  },
 };
 
 /**

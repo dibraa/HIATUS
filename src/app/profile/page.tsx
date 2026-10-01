@@ -13,6 +13,7 @@ import { ROLE_LABELS } from "@/lib/roles";
 import type { NotificationPreferences, Rating } from "@/types/database";
 import { ProfileForm } from "./profile-form";
 import { NotificationForm } from "./notification-form";
+import { PushToggle } from "@/components/push-toggle";
 
 export const metadata: Metadata = { title: "Profile" };
 export const dynamic = "force-dynamic";
@@ -76,6 +77,9 @@ export default async function ProfilePage() {
         <section aria-labelledby="notifications-heading">
           <h2 id="notifications-heading" className="mb-4 display text-xl text-ink">Notifications</h2>
           <NotificationForm prefs={prefs ?? null} />
+          <div className="mt-6">
+            <PushToggle />
+          </div>
         </section>
       </div>
 
