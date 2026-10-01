@@ -70,7 +70,7 @@ export function FavoriteButton({
       aria-pressed={optimistic}
       aria-label={label}
       title={label}
-      className={`relative z-10 flex ${dimension} shrink-0 items-center justify-center rounded-full border transition-colors ${
+      className={`relative z-10 flex ${dimension} shrink-0 items-center justify-center rounded-full border transition-[background-color,border-color,color,transform] active:scale-95 active:duration-(--hi-dur-fast) active:ease-hi-spring ${
         optimistic
           ? "border-accent bg-accent-soft text-accent-ink"
           : "border-line-strong bg-card text-muted hover:border-ink-soft hover:text-ink"

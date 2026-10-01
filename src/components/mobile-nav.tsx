@@ -27,6 +27,8 @@ export function MobileNav({
   staffOnly: boolean;
 }) {
   const [open, setOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [visible, setVisible] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
@@ -39,6 +41,18 @@ export function MobileNav({
     setRenderedPathname(pathname);
     setOpen(false);
   }
+
+  useEffect(() => {
+    if (open) {
+      setMounted(true);
+      const raf = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf);
+    } else {
+      setVisible(false);
+      const timeout = setTimeout(() => setMounted(false), 200);
+      return () => clearTimeout(timeout);
+    }
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
@@ -84,13 +98,15 @@ export function MobileNav({
         </svg>
       </button>
 
-      {open && (
+      {mounted && (
         <>
           {/* Scrim: closing on an outside tap is the expected gesture */}
           <div
             // top-16 matches the header height, so the scrim never covers the
             // close button it is meant to sit behind
-            className="fixed inset-0 top-16 z-30 bg-scrim lg:hidden"
+            className={`fixed inset-0 top-16 z-30 bg-scrim transition-opacity duration-(--hi-dur-base) ease-hi-out lg:hidden ${
+              visible ? "opacity-100" : "opacity-0"
+            }`}
             onClick={() => setOpen(false)}
             aria-hidden="true"
           />
@@ -98,7 +114,9 @@ export function MobileNav({
           <nav
             id="mobile-nav-panel"
             aria-label="Main"
-            className="absolute inset-x-0 top-full z-40 flex flex-col gap-0.5 border-b border-line bg-card p-3 shadow-md lg:hidden"
+            className={`absolute inset-x-0 top-full z-40 flex flex-col gap-0.5 border-b border-line bg-card p-3 shadow-md transition-[opacity,transform] duration-(--hi-dur-base) ease-hi-out lg:hidden ${
+              visible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-2"
+            }`}
           >
             {!staffOnly && (
               <Link href="/" className={linkClass}>
