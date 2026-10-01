@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Hiatus — customer menu</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=JetBrains+Mono:wght@500&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#efe9de;color:#14120f;font-family:Geist,system-ui,sans-serif}
+a{color:#964a1c}a:hover{color:#14120f}
+.d{font-family:Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:calc(-0.0397em + 1.11px);line-height:0.92;font-weight:400}
+.caps{font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.12em;font-weight:500}
+</style>
+<style>
+.draft-nav{position:sticky;top:0;z-index:10;display:flex;gap:4px;padding:8px 16px;background:#14120f;font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.draft-nav a{color:#d9ccb6;text-decoration:none;padding:10px 12px;border-radius:8px}
+.draft-nav a[aria-current]{background:#f5ead8;color:#14120f}
+.draft-stage{display:flex;justify-content:center;background:#d9d0bf;padding:24px 0}
+</style>
+</head>
+<body>
+<nav class="draft-nav" aria-label="Drafts"><a href="1-guest-intro.html">Guest intro</a><a href="2-customer-menu.html" aria-current="page">Customer menu</a><a href="3-item-and-cart.html">Item + cart</a><a href="4-order-tracking.html">Order tracking</a><a href="5-staff-queue-pos.html">Staff queue + POS</a></nav>
+<div class="draft-stage"><div style="width: 1440px; height: 1640px; box-sizing: border-box; background: #efe9de; display: flex; flex-direction: column">
+
+<header style="height: 76px; box-sizing: border-box; border-bottom: 1px solid #ded3bf; padding: 0 80px; display: flex; align-items: center; gap: 8px">
+<a href="#" style="display: flex; align-items: center; gap: 12px; color: #14120f; text-decoration: none; min-height: 44px; margin-right: 24px">
+<img src="assets/logo.png" alt="" style="width: 44px; height: 44px; border-radius: 10px; background: #ffffff; object-fit: contain; box-shadow: 0 0 0 1px #ded3bf">
+<span class="caps" style="font-size: 13px">Hiatus</span>
+</a>
+<nav aria-label="Main" style="display: flex; gap: 4px">
+<a href="#" aria-current="page" class="caps" style="font-size: 12px; color: #14120f; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px; box-shadow: inset 0 -2px 0 #c87137">Menu</a>
+<a href="#" class="caps" style="font-size: 12px; color: #3b352c; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px">Orders</a>
+<a href="#" class="caps" style="font-size: 12px; color: #3b352c; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px">Saved</a>
+</nav>
+<div style="margin-left: auto; display: flex; align-items: center; gap: 8px">
+<a href="#" class="caps" style="font-size: 12px; color: #3b352c; text-decoration: none; min-height: 44px; display: inline-flex; align-items: center; padding: 0 12px">Account</a>
+<a href="#" aria-label="Cart, 2 items" class="caps" style="font-size: 12px; color: #f5ead8; background: #241d18; text-decoration: none; height: 44px; display: inline-flex; align-items: center; gap: 10px; padding: 0 16px; border-radius: 10px">Cart <span style="background: #c87137; color: #14120f; border-radius: 999px; min-width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; font-size: 11px">2</span></a>
+</div>
+</header>
+
+<section aria-label="Your current order" style="margin: 40px 80px 0; background: #241d18; color: #f5ead8; border-radius: 20px; padding: 24px 28px; display: flex; align-items: center; gap: 28px">
+<div style="width: 56px; height: 56px; border-radius: 50%; background: #dceccb; display: flex; align-items: center; justify-content: center; flex-shrink: 0">
+<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="#1f6b34" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 12px; color: #9cc4a8">Ready for pickup · Order A1B2</span>
+<span style="font-size: 20px; font-weight: 500">Iced latte (M), Matcha latte (L) — show the code at the counter.</span>
+</div>
+<a href="#" class="caps" style="font-size: 12px; color: #14120f; background: #f5ead8; text-decoration: none; height: 48px; display: inline-flex; align-items: center; padding: 0 22px; border-radius: 10px">View order</a>
+</section>
+
+<section aria-labelledby="menu-h" style="padding: 64px 80px 0">
+<div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 32px">
+<div>
+<h1 id="menu-h" class="d" style="margin: 0; font-size: 96px">The menu</h1>
+<p class="caps" style="margin: 14px 0 0; font-size: 12px; color: #6b6152">8 drinks · Coffee</p>
+</div>
+<form role="search" style="width: 440px; display: flex; flex-direction: column; gap: 8px">
+<label for="q" class="caps" style="font-size: 11px; color: #3b352c">Search the menu</label>
+<div style="display: flex; gap: 8px">
+<input id="q" type="search" placeholder="Latte, matcha, caramel…" style="flex-grow: 1; height: 48px; box-sizing: border-box; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; padding: 0 16px; font: inherit; font-size: 16px; color: #14120f">
+<button type="submit" class="caps" style="height: 48px; padding: 0 20px; border-radius: 10px; border: 0; background: #241d18; color: #f5ead8; font-size: 12px">Search</button>
+</div>
+</form>
+</div>
+
+<div role="group" aria-label="Category" style="margin-top: 32px; display: flex; gap: 8px; flex-wrap: wrap">
+<button type="button" aria-pressed="false" class="caps" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #8a7c63; background: transparent; color: #3b352c; font-size: 12px">All</button>
+<button type="button" aria-pressed="true" class="caps" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #14120f; background: #14120f; color: #f5ead8; font-size: 12px; display: inline-flex; align-items: center; gap: 8px"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Coffee</button>
+<button type="button" aria-pressed="false" class="caps" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #8a7c63; background: transparent; color: #3b352c; font-size: 12px">Matcha</button>
+<button type="button" aria-pressed="false" class="caps" style="height: 44px; padding: 0 18px; border-radius: 999px; border: 1.5px solid #8a7c63; background: transparent; color: #3b352c; font-size: 12px">Non-coffee</button>
+<a href="#" class="caps" style="margin-left: 8px; font-size: 12px; min-height: 44px; display: inline-flex; align-items: center">Clear filter</a>
+</div>
+
+<ul style="list-style: none; margin: 40px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+<div style="height: 250px; border-radius: 14px; overflow: hidden"><img src="assets/kape.jpg" alt="" style="display: block; width: 200%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 58%; transform: translateX(0)"></div>
+
+
+<button type="button" aria-label="Save Iced latte" aria-pressed="true" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Classic</span>
+<span class="d" style="font-size: 26px">Iced latte</span>
+<span style="font-size: 14px; color: #3b352c">★ [avg] · [n] ratings</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+<button type="button" class="caps" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #c87137; color: #14120f; font-size: 12px">Add</button>
+
+
+</div>
+</li>
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+<div style="height: 250px; border-radius: 14px; overflow: hidden"><img src="assets/kape.jpg" alt="" style="display: block; width: 200%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 58%; transform: translateX(-50%)"></div>
+
+
+<button type="button" aria-label="Save Matcha latte" aria-pressed="false" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Matcha</span>
+<span class="d" style="font-size: 26px">Matcha latte</span>
+<span style="font-size: 14px; color: #3b352c">★ [avg] · [n] ratings</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+<button type="button" class="caps" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #c87137; color: #14120f; font-size: 12px">Add</button>
+
+
+</div>
+</li>
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+
+<div style="height: 250px; border-radius: 14px; background: #e7dfcf; display: flex; align-items: center; justify-content: center"><span class="caps" style="font-size: 11px; color: #6b6152">[Drink photo]</span></div>
+
+<button type="button" aria-label="Save Spanish latte" aria-pressed="false" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Sweet</span>
+<span class="d" style="font-size: 26px">Spanish latte</span>
+<span style="font-size: 14px; color: #3b352c">No ratings yet</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+<button type="button" class="caps" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #c87137; color: #14120f; font-size: 12px">Add</button>
+
+
+</div>
+</li>
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+
+<div style="height: 250px; border-radius: 14px; background: #e7dfcf; display: flex; align-items: center; justify-content: center"><span class="caps" style="font-size: 11px; color: #6b6152">[Drink photo]</span></div>
+
+<button type="button" aria-label="Save Americano" aria-pressed="false" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Classic</span>
+<span class="d" style="font-size: 26px">Americano</span>
+<span style="font-size: 14px; color: #3b352c">No ratings yet</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+<button type="button" class="caps" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #c87137; color: #14120f; font-size: 12px">Add</button>
+
+
+</div>
+</li>
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+
+<div style="height: 250px; border-radius: 14px; background: #e7dfcf; display: flex; align-items: center; justify-content: center"><span class="caps" style="font-size: 11px; color: #6b6152">[Drink photo]</span></div>
+
+<button type="button" aria-label="Save Caramel macchiato" aria-pressed="false" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Sweet</span>
+<span class="d" style="font-size: 26px">Caramel macchiato</span>
+<span style="font-size: 14px; color: #3b352c">No ratings yet</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+
+<span class="caps" style="font-size: 11px; color: #3b352c; background: #e7dfcf; padding: 10px 12px; border-radius: 10px">Sold out today</span>
+
+</div>
+</li>
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+
+<div style="height: 250px; border-radius: 14px; background: #e7dfcf; display: flex; align-items: center; justify-content: center"><span class="caps" style="font-size: 11px; color: #6b6152">[Drink photo]</span></div>
+
+<button type="button" aria-label="Save Mocha" aria-pressed="false" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Chocolate</span>
+<span class="d" style="font-size: 26px">Mocha</span>
+<span style="font-size: 14px; color: #3b352c">No ratings yet</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+<button type="button" class="caps" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #c87137; color: #14120f; font-size: 12px">Add</button>
+
+
+</div>
+</li>
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+
+<div style="height: 250px; border-radius: 14px; background: #e7dfcf; display: flex; align-items: center; justify-content: center"><span class="caps" style="font-size: 11px; color: #6b6152">[Drink photo]</span></div>
+
+<button type="button" aria-label="Save Cold brew" aria-pressed="false" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Classic</span>
+<span class="d" style="font-size: 26px">Cold brew</span>
+<span style="font-size: 14px; color: #3b352c">No ratings yet</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+<button type="button" class="caps" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #c87137; color: #14120f; font-size: 12px">Add</button>
+
+
+</div>
+</li>
+
+<li style="background: #fffdf8; border-radius: 20px; padding: 10px; display: flex; flex-direction: column">
+<div style="position: relative">
+
+
+<div style="height: 250px; border-radius: 14px; background: #e7dfcf; display: flex; align-items: center; justify-content: center"><span class="caps" style="font-size: 11px; color: #6b6152">[Drink photo]</span></div>
+
+<button type="button" aria-label="Save Hojicha latte" aria-pressed="false" style="position: absolute; top: 10px; right: 10px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: #fffdf8; display: flex; align-items: center; justify-content: center; color: #964a1c">
+<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.4-9-9.2C1.8 7.6 4 4.5 7.3 4.5c2 0 3.4 1.1 4.7 2.8 1.3-1.7 2.7-2.8 4.7-2.8 3.3 0 5.5 3.1 4.3 6.3C19 15.6 12 20 12 20z"></path></svg>
+</button>
+</div>
+<div style="padding: 16px 8px 8px; display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+<span class="caps" style="font-size: 11px; color: #6b6152">Roasted tea</span>
+<span class="d" style="font-size: 26px">Hojicha latte</span>
+<span style="font-size: 14px; color: #3b352c">No ratings yet</span>
+</div>
+<div style="padding: 8px; display: flex; align-items: center; justify-content: space-between">
+<span style="font-family: 'JetBrains Mono', monospace; font-size: 15px">from [PRICE]</span>
+
+<button type="button" class="caps" style="height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #c87137; color: #14120f; font-size: 12px">Add</button>
+
+
+</div>
+</li>
+
+</ul>
+</section>
+</div></div>
+</body>
+</html>
