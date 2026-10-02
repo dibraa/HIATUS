@@ -249,7 +249,9 @@ type CheckboxFieldProps = Omit<ComponentProps<"input">, "id" | "type"> & {
 export function CheckboxField({ id, label, hint, className, ...props }: CheckboxFieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="flex items-center gap-2.5 text-sm font-medium text-ink-soft">
+      {/* The whole label is the tap target; min-h-11 keeps it at 44px on a
+          phone, where a bare 16px box is easy to miss. */}
+      <label htmlFor={id} className="flex min-h-11 items-center gap-2.5 text-sm font-medium text-ink-soft">
         <input
           id={id}
           type="checkbox"
@@ -259,8 +261,10 @@ export function CheckboxField({ id, label, hint, className, ...props }: Checkbox
         />
         {label}
       </label>
+      {/* Indented by the box (1rem) plus the label gap (0.625rem) so the hint
+          sits under the label it explains rather than under the checkbox. */}
       {hint && (
-        <p id={`${id}-hint`} className="text-xs text-muted">
+        <p id={`${id}-hint`} className="-mt-2 pl-[1.625rem] text-xs text-muted">
           {hint}
         </p>
       )}
