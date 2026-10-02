@@ -4,6 +4,7 @@ import { getSettings } from "@/lib/settings";
 import { orderCode } from "@/lib/format";
 import { STATUS_LABELS } from "@/lib/order-meta";
 import { shouldAlert, type AlertPreferences } from "@/lib/order-alerts";
+import { PUSH_ENABLED } from "@/lib/push-flag";
 import type { OrderStatus } from "@/types/database";
 
 /*
@@ -24,6 +25,7 @@ export type PushTargets = {
 let vapidReady: boolean | null = null;
 
 function configureVapid(): boolean {
+  if (!PUSH_ENABLED) return false;
   if (vapidReady !== null) return vapidReady;
   const publicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
