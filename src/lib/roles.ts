@@ -62,6 +62,8 @@ export function homePathFor(role: Role): string {
 export const ADMIN_PREFIX = "/admin";
 export const STAFF_PREFIX = "/staff";
 export const AUTH_REQUIRED_PREFIXES = [
+  "/menu",
+  "/cart",
   "/checkout",
   "/orders",
   "/profile",

@@ -73,7 +73,7 @@ export default async function ProfilePage() {
           {user?.profile && <ProfileForm profile={user.profile} email={user.email} />}
         </section>
 
-        <section aria-labelledby="notifications-heading">
+        <section id="notifications" aria-labelledby="notifications-heading" className="scroll-mt-20">
           <h2 id="notifications-heading" className="mb-4 display text-xl text-ink">Notifications</h2>
           <NotificationForm prefs={prefs ?? null} />
         </section>

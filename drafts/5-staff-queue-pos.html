@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Hiatus — staff counter</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=JetBrains+Mono:wght@500&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#efe9de;color:#14120f;font-family:Geist,system-ui,sans-serif}
+a{color:#964a1c}a:hover{color:#14120f}
+.d{font-family:Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:calc(-0.0397em + 1.11px);line-height:0.92;font-weight:400}
+.caps{font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.12em;font-weight:500}
+.num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+</style>
+<style>
+.draft-nav{position:sticky;top:0;z-index:10;display:flex;gap:4px;padding:8px 16px;background:#14120f;font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.draft-nav a{color:#d9ccb6;text-decoration:none;padding:10px 12px;border-radius:8px}
+.draft-nav a[aria-current]{background:#f5ead8;color:#14120f}
+.draft-stage{display:flex;justify-content:center;background:#d9d0bf;padding:24px 0}
+</style>
+</head>
+<body>
+<nav class="draft-nav" aria-label="Drafts"><a href="1-guest-intro.html">Guest intro</a><a href="2-customer-menu.html">Customer menu</a><a href="3-item-and-cart.html">Item + cart</a><a href="4-order-tracking.html">Order tracking</a><a href="5-staff-queue-pos.html" aria-current="page">Staff queue + POS</a></nav>
+<div class="draft-stage"><div style="width: 1440px; height: 1000px; box-sizing: border-box; background: #efe9de; display: grid; grid-template-rows: 64px minmax(0, 1fr)">
+
+<header style="background: #241d18; color: #f5ead8; padding: 0 24px; display: flex; align-items: center; gap: 8px">
+<span class="d" style="font-size: 26px; margin-right: 24px">Hiatus · Counter</span>
+<nav aria-label="Counter" style="display: flex; gap: 4px">
+<a href="#" aria-current="page" class="caps" style="font-size: 12px; color: #14120f; background: #f5ead8; text-decoration: none; height: 44px; display: inline-flex; align-items: center; padding: 0 16px; border-radius: 10px">Queue</a>
+<a href="#" class="caps" style="font-size: 12px; color: #f5ead8; text-decoration: none; height: 44px; display: inline-flex; align-items: center; padding: 0 16px">Menu availability</a>
+<a href="#" class="caps" style="font-size: 12px; color: #f5ead8; text-decoration: none; height: 44px; display: inline-flex; align-items: center; padding: 0 16px">Shift</a>
+</nav>
+<span role="status" class="caps" style="margin-left: auto; font-size: 11px; color: #d9ccb6">3 new · 2 making · 2 ready · updated 12:14</span>
+</header>
+
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 470px; min-height: 0">
+<main style="padding: 24px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: start">
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; display: flex; align-items: baseline; gap: 10px"><span class="d" style="font-size: 30px">New</span><span class="num" style="font-size: 15px; color: #964a1c">3</span></h2>
+
+<article style="background: #fffdf8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px -6px rgba(59,53,44,0.16)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="d" style="font-size: 30px">C3D4</span><span class="num" style="font-size: 13px; color: #3b352c">1 min</span></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li style="font-size: 19px; font-weight: 600; line-height: 1.3">2 × Iced latte · M</li><li style="font-size: 19px; font-weight: 600; line-height: 1.3">Mocha · L</li>
+</ul>
+<div style="font-size: 14px; color: #3b352c">Ria · pickup</div>
+
+
+<button type="button" class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #241d18; color: #f5ead8; font-size: 12px">Start making</button>
+
+</article>
+
+<article style="background: #fffdf8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px -6px rgba(59,53,44,0.16)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="d" style="font-size: 30px">E5F6</span><span class="num" style="font-size: 13px; color: #3b352c">2 min</span></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li style="font-size: 19px; font-weight: 600; line-height: 1.3">Matcha latte · M</li>
+</ul>
+<div style="font-size: 14px; color: #3b352c">Walk-in · Jin · dine in</div>
+
+
+<button type="button" class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #241d18; color: #f5ead8; font-size: 12px">Start making</button>
+
+</article>
+
+<article style="background: #fffdf8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px -6px rgba(59,53,44,0.16)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="d" style="font-size: 30px">G7H8</span><span class="num" style="font-size: 13px; color: #3b352c">4 min</span></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li style="font-size: 19px; font-weight: 600; line-height: 1.3">Cold brew · L</li>
+</ul>
+<div style="font-size: 14px; color: #3b352c">Paolo · pickup</div>
+
+
+<button type="button" class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #241d18; color: #f5ead8; font-size: 12px">Start making</button>
+
+</article>
+
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; display: flex; align-items: baseline; gap: 10px"><span class="d" style="font-size: 30px">Making</span><span class="num" style="font-size: 15px; color: #964a1c">2</span></h2>
+
+<article style="background: #fffdf8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px -6px rgba(59,53,44,0.16)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="d" style="font-size: 30px">J9K1</span><span class="num" style="font-size: 13px; color: #3b352c">6 min</span></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li style="font-size: 19px; font-weight: 600; line-height: 1.3">Spanish latte · M</li><li style="font-size: 19px; font-weight: 600; line-height: 1.3">Americano · S</li>
+</ul>
+<div style="font-size: 14px; color: #3b352c">Bea · pickup</div>
+
+
+<button type="button" class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #241d18; color: #f5ead8; font-size: 12px">Mark ready</button>
+
+</article>
+
+<article style="background: #fffdf8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px -6px rgba(59,53,44,0.16)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="d" style="font-size: 30px">L2M3</span><span class="num" style="font-size: 13px; color: #3b352c">7 min</span></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li style="font-size: 19px; font-weight: 600; line-height: 1.3">Hojicha latte · L</li>
+</ul>
+<div style="font-size: 14px; color: #3b352c">Dan · dine in</div>
+
+
+<button type="button" class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #241d18; color: #f5ead8; font-size: 12px">Mark ready</button>
+
+</article>
+
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<h2 style="margin: 0; display: flex; align-items: baseline; gap: 10px"><span class="d" style="font-size: 30px">Ready</span><span class="num" style="font-size: 15px; color: #964a1c">2</span></h2>
+
+<article style="background: #fffdf8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px -6px rgba(59,53,44,0.16)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="d" style="font-size: 30px">A1B2</span><span class="num" style="font-size: 13px; color: #3b352c">10 min</span></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li style="font-size: 19px; font-weight: 600; line-height: 1.3">Iced latte · M</li><li style="font-size: 19px; font-weight: 600; line-height: 1.3">Matcha latte · L</li>
+</ul>
+<div style="font-size: 14px; color: #3b352c">Jinhawaii · pickup</div>
+
+<div style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #ded3bf; padding-top: 12px">
+<span class="caps" style="font-size: 11px; color: #7a3d09">Not paid yet</span>
+<button type="button" class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #c87137; color: #14120f; font-size: 12px">Take payment · [PRICE]</button>
+</div>
+
+
+</article>
+
+<article style="background: #fffdf8; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 2px 10px -6px rgba(59,53,44,0.16)">
+<div style="display: flex; justify-content: space-between; align-items: baseline"><span class="d" style="font-size: 30px">N4P5</span><span class="num" style="font-size: 13px; color: #3b352c">12 min</span></div>
+<ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+<li style="font-size: 19px; font-weight: 600; line-height: 1.3">Americano · M</li>
+</ul>
+<div style="font-size: 14px; color: #3b352c">Mika · pickup · paid</div>
+
+
+<button type="button" class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #241d18; color: #f5ead8; font-size: 12px">Hand over</button>
+
+</article>
+
+</section>
+
+</main>
+
+<aside aria-labelledby="pos-h" style="background: #fffdf8; border-left: 1px solid #ded3bf; padding: 24px; display: flex; flex-direction: column; gap: 18px; min-height: 0">
+<div role="tablist" aria-label="Till" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #e7dfcf; border-radius: 12px; padding: 4px">
+<button type="button" role="tab" aria-selected="true" class="caps" style="height: 44px; border: 0; border-radius: 9px; background: #fffdf8; color: #14120f; font-size: 12px; box-shadow: 0 1px 0 rgba(59,53,44,0.08)">New walk-in</button>
+<button type="button" role="tab" aria-selected="false" class="caps" style="height: 44px; border: 0; border-radius: 9px; background: transparent; color: #3b352c; font-size: 12px">Pay an order</button>
+</div>
+<h2 id="pos-h" class="d" style="margin: 0; font-size: 34px">Walk-in order</h2>
+<div role="group" aria-label="Add a drink" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<button type="button" style="min-height: 56px; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; font: inherit; font-size: 14px; font-weight: 600; color: #14120f; padding: 8px">Iced latte</button><button type="button" style="min-height: 56px; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; font: inherit; font-size: 14px; font-weight: 600; color: #14120f; padding: 8px">Matcha latte</button><button type="button" style="min-height: 56px; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; font: inherit; font-size: 14px; font-weight: 600; color: #14120f; padding: 8px">Spanish latte</button><button type="button" style="min-height: 56px; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; font: inherit; font-size: 14px; font-weight: 600; color: #14120f; padding: 8px">Americano</button><button type="button" style="min-height: 56px; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; font: inherit; font-size: 14px; font-weight: 600; color: #14120f; padding: 8px">Mocha</button><button type="button" style="min-height: 56px; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; font: inherit; font-size: 14px; font-weight: 600; color: #14120f; padding: 8px">Cold brew</button>
+</div>
+<ul style="list-style: none; margin: 0; padding: 0; border-top: 1px solid #ded3bf; font-size: 15px">
+<li style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ded3bf"><span>Iced latte · M · ×2</span><span class="num">[PRICE]</span></li>
+<li style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #ded3bf"><span>Americano · L · ×1</span><span class="num">[PRICE]</span></li>
+</ul>
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="cust" class="caps" style="font-size: 11px; color: #3b352c">Name to call <span style="text-transform: none; letter-spacing: 0; color: #6b6152">(optional)</span></label>
+<input id="cust" type="text" value="Jin" style="height: 44px; box-sizing: border-box; border-radius: 10px; border: 1.5px solid #8a7c63; padding: 0 14px; font: inherit; font-size: 16px; background: #fffdf8">
+</div>
+<fieldset style="border: 0; margin: 0; padding: 0">
+<legend class="caps" style="font-size: 11px; color: #3b352c; margin-bottom: 8px">Payment method</legend>
+<div role="radiogroup" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<label class="caps" style="height: 44px; border-radius: 10px; border: 2px solid #14120f; background: #f6e3d2; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px"><input type="radio" name="pay" checked style="position: absolute; opacity: 0"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Cash</label>
+<label class="caps" style="height: 44px; border-radius: 10px; border: 1.5px solid #8a7c63; display: flex; align-items: center; justify-content: center; font-size: 12px"><input type="radio" name="pay" style="position: absolute; opacity: 0">Card</label>
+<label class="caps" style="height: 44px; border-radius: 10px; border: 1.5px solid #8a7c63; display: flex; align-items: center; justify-content: center; font-size: 12px"><input type="radio" name="pay" style="position: absolute; opacity: 0">E-wallet</label>
+</div>
+</fieldset>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; align-items: end">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="tendered" class="caps" style="font-size: 11px; color: #3b352c">Cash received</label>
+<input id="tendered" type="text" inputmode="decimal" value="[AMOUNT]" aria-describedby="change" style="height: 48px; box-sizing: border-box; border-radius: 10px; border: 1.5px solid #8a7c63; padding: 0 14px; font-family: 'JetBrains Mono', monospace; font-size: 17px; background: #fffdf8">
+</div>
+<div id="change" style="height: 48px; border-radius: 10px; background: #dceccb; color: #22400f; display: flex; align-items: center; justify-content: space-between; padding: 0 14px"><span class="caps" style="font-size: 11px">Change</span><span class="num" style="font-size: 17px">[PRICE]</span></div>
+</div>
+<button type="button" class="caps" style="margin-top: auto; height: 56px; border: 0; border-radius: 12px; background: #241d18; color: #f5ead8; font-size: 13px">Place and take [PRICE]</button>
+<p style="margin: -6px 0 0; font-size: 13px; color: #3b352c">If the cash is short, this button stays off and says by how much.</p>
+</aside>
+</div>
+</div></div>
+</body>
+</html>

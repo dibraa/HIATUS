@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/brand";
+import { getCurrentUser } from "@/lib/auth";
 
 /**
  * Site footer.
@@ -12,8 +13,14 @@ import { Wordmark } from "@/components/brand";
  * surface, and it gives the footer a job other than being the pale strip
  * everything runs out into. Every colour in here is therefore an `inverse-*`
  * token — `muted` and `line` are unreadable on this ground.
+ *
+ * Guests get the shop's own pages in place of the menu and cart, which sit
+ * behind sign-in; the column swaps rather than disappears so the grid keeps
+ * its shape.
  */
-export function SiteFooter() {
+export async function SiteFooter() {
+  const user = await getCurrentUser();
+
   const linkClass =
     "ui-caps text-2xs text-inverse-muted transition-colors hover:text-inverse-fg";
 
@@ -37,44 +44,76 @@ export function SiteFooter() {
             </p>
           </div>
 
-          <nav aria-labelledby="footer-shop">
-            <h2 id="footer-shop" className={headingClass}>
-              Shop
-            </h2>
-            <ul className="mt-3 flex flex-col gap-2">
-              <li>
-                <Link href="/" className={linkClass}>
-                  Full menu
-                </Link>
-              </li>
-              <li>
-                <Link href="/cart" className={linkClass}>
-                  Your cart
-                </Link>
-              </li>
-            </ul>
-          </nav>
+          {user ? (
+            <nav aria-labelledby="footer-shop">
+              <h2 id="footer-shop" className={headingClass}>
+                Shop
+              </h2>
+              <ul className="mt-3 flex flex-col gap-2">
+                <li>
+                  <Link href="/" className={linkClass}>
+                    Full menu
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/cart" className={linkClass}>
+                    Your cart
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          ) : (
+            <nav aria-labelledby="footer-about">
+              <h2 id="footer-about" className={headingClass}>
+                About
+              </h2>
+              <ul className="mt-3 flex flex-col gap-2">
+                <li>
+                  <Link href="/#story" className={linkClass}>
+                    Our story
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/#hours" className={linkClass}>
+                    Opening hours
+                  </Link>
+                </li>
+              </ul>
+            </nav>
+          )}
 
           <nav aria-labelledby="footer-account">
             <h2 id="footer-account" className={headingClass}>
               Account
             </h2>
             <ul className="mt-3 flex flex-col gap-2">
-              <li>
-                <Link href="/orders" className={linkClass}>
-                  My orders
-                </Link>
-              </li>
-              <li>
-                <Link href="/profile" className={linkClass}>
-                  Profile
-                </Link>
-              </li>
-              <li>
-                <Link href="/login" className={linkClass}>
-                  Log in
-                </Link>
-              </li>
+              {user ? (
+                <>
+                  <li>
+                    <Link href="/orders" className={linkClass}>
+                      My orders
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/profile" className={linkClass}>
+                      Profile
+                    </Link>
+                  </li>
+                </>
+              ) : (
+                <>
+                  <li>
+                    <Link href="/login" className={linkClass}>
+                      Log in
+                    </Link>
+                  </li>
+                  <li>
+                    <Link href="/signup" className={linkClass}>
+                      Create account
+                    </Link>
+                  </li>
+                </>
+              )}
             </ul>
           </nav>
 

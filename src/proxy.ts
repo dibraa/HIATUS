@@ -11,7 +11,17 @@ import {
 } from "@/lib/roles";
 import type { Role } from "@/types/database";
 
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? "change_this_secret");
+// The fallback is public (it is in this file), so a token signed with it can
+// be forged by anyone and would pass every role check below. Development keeps
+// it so the app runs without a .env; production refuses to start without one.
+const DEV_FALLBACK_SECRET = "change_this_secret";
+if (!process.env.JWT_SECRET) {
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("JWT_SECRET is not set. Set it to the same value the Express backend signs tokens with.");
+  }
+  console.warn("[proxy] JWT_SECRET is not set; using the development fallback secret.");
+}
+const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? DEV_FALLBACK_SECRET);
 
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);

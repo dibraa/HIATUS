@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
+import { getPushTargets, sendOrderPush } from "@/lib/push-server";
 import type { OrderStatus, PaymentMethod } from "@/types/database";
 
 export type ActionResult = { error: string | null };
@@ -22,8 +24,12 @@ function revalidateOrderViews(orderId?: string) {
 
 export async function advanceOrderStatus(orderId: string, newStatus: OrderStatus): Promise<ActionResult> {
   try {
-    await apiJson(`/orders/${orderId}/status`, { method: "PUT", token: await token(), body: JSON.stringify({ status: newStatus }) });
+    const auth = await token();
+    // Read before the change so the push knows what the status moved from.
+    const pushTargets = await getPushTargets(orderId, auth);
+    await apiJson(`/orders/${orderId}/status`, { method: "PUT", token: auth, body: JSON.stringify({ status: newStatus }) });
     revalidateOrderViews(orderId);
+    if (pushTargets) after(() => sendOrderPush(orderId, pushTargets, newStatus, auth));
     return { error: null };
   } catch (err: unknown) { return { error: (err as Error).message }; }
 }
