@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckboxField, FormError, FormSuccess } from "@/components/ui/field";
 import { PushToggle } from "@/components/push-toggle";
+import { PUSH_ENABLED } from "@/lib/push-flag";
 import { saveNotificationPreferences } from "@/app/actions/account";
 import type { NotificationPreferences } from "@/types/database";
 
@@ -64,6 +65,9 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
             hint="When we accept your order and start making it."
             defaultChecked={p.order_updates}
           />
+          <p className="mt-2 text-xs text-muted">
+            If we ever have to cancel your order, we always tell you, whatever you choose here.
+          </p>
         </fieldset>
       </form>
 
@@ -80,17 +84,16 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
           </div>
         </div>
 
-        <PushToggle />
+        {PUSH_ENABLED ? (
+          <PushToggle />
+        ) : (
+          <ComingSoon
+            label="Browser notifications"
+            hint="Alerts on your phone or computer, even with this site closed."
+          />
+        )}
 
-        <div className="flex items-start gap-2.5">
-          <span aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border border-line-strong" />
-          <div>
-            <p className="text-sm font-medium text-ink-soft">
-              Email <span className="ml-1 rounded-sm bg-raised px-1.5 py-0.5 text-2xs font-medium text-muted">Coming soon</span>
-            </p>
-            <p className="text-xs text-muted">We don&apos;t send order emails yet.</p>
-          </div>
-        </div>
+        <ComingSoon label="Email" hint="We don't send order emails yet." />
       </section>
 
       {state.error && <FormError>{state.error}</FormError>}
@@ -99,6 +102,22 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
       <Button type="submit" form="notification-prefs" size="md" disabled={pending} className="self-start">
         {pending ? "Saving…" : "Save preferences"}
       </Button>
+    </div>
+  );
+}
+
+/** A channel that is planned but not delivering yet: visible, not tickable. */
+function ComingSoon({ label, hint }: { label: string; hint: string }) {
+  return (
+    <div className="flex items-start gap-2.5">
+      <span aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border border-line-strong" />
+      <div>
+        <p className="text-sm font-medium text-ink-soft">
+          {label}{" "}
+          <span className="ml-1 rounded-sm bg-raised px-1.5 py-0.5 text-2xs font-medium text-muted">Coming soon</span>
+        </p>
+        <p className="text-xs text-muted">{hint}</p>
+      </div>
     </div>
   );
 }

@@ -12,10 +12,10 @@ export const DEFAULT_ALERT_PREFERENCES: AlertPreferences = {
 /**
  * Decides whether a status change is worth interrupting the customer for.
  *
- * Called on the order page each time a refresh brings a different status
- * than the one already on screen. `previous` is never equal to `next`.
+ * One rule for every channel: the order page calls it for on-site alerts
+ * (pop-up, chime, tab title) and push-server.ts calls it before sending a
+ * browser push. `previous` is never equal to `next`.
  *
- * Returning true shows the on-site alert (pop-up, chime and tab title).
  * The page itself still updates either way — this only decides whether to
  * draw attention to the change.
  */
@@ -24,9 +24,23 @@ export function shouldAlert(
   next: OrderStatus,
   prefs: AlertPreferences
 ): boolean {
-  // TODO(you): decide which changes deserve an alert. See the notes in the chat.
+  // Every status maps to exactly what the profile's preference labels
+  // promise, so an alert is never something the customer wasn't told about.
   void previous;
-  void next;
-  void prefs;
-  return false;
+  switch (next) {
+    // Always, whatever the switches say: a customer who isn't told walks
+    // over for an order that isn't coming. The preferences screen says so.
+    case "cancelled":
+      return true;
+    // "Ready for pickup — when your order is on the counter."
+    case "ready":
+      return prefs.ready_alerts;
+    // "Order progress — when we accept your order and start making it."
+    case "pending":
+    case "preparing":
+      return prefs.order_updates;
+    // Collected: they're at the counter holding the drink.
+    case "completed":
+      return false;
+  }
 }

@@ -17,12 +17,13 @@ run their shift; admins manage the menu, the team, settings and reports.
 
 1. **Configure the API**: copy `server/.env.example` to `server/.env` and set
   `MONGO_URI`, `JWT_SECRET`, `PORT` and `CLIENT_URL`.
-2. **Configure the frontend**: create `HIATUS/.env.local` with:
-
-   ```bash
-  NEXT_PUBLIC_API_URL=http://localhost:4000/api
-  JWT_SECRET=change_this_secret
-   ```
+2. **Configure the frontend**: copy `HIATUS/.env.local.example` to
+   `HIATUS/.env.local` and fill it in. Each setting is explained in the file.
+   - `JWT_SECRET` **must equal** the one in `server/.env`. In production the
+     app refuses to start without it, rather than accept tokens anyone could
+     forge.
+   - Browser push stays off (`NEXT_PUBLIC_PUSH_ENABLED=false`) until the API
+     has the routes in `docs/push-notifications-backend.md`.
 3. **Install and run the API**:
   ```bash
   cd server
