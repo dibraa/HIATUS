@@ -74,6 +74,8 @@ export default async function HomePage({
   const token = await getServerToken();
 
   const [allItemsRaw, allRatingsRaw, user, settings] = await Promise.all([
+    // `null`, not `[]`, on failure: an unreachable API and an empty menu need
+    // different messages, and an empty array cannot tell them apart.
     apiJson<(MenuItem & { _id: string })[]>("/menu").catch(() => null),
     apiJson<(Rating & { _id: string })[]>("/menu/ratings/all").catch(() => null),
     getCurrentUser(),
@@ -143,6 +145,13 @@ export default async function HomePage({
   const heroItem = featured[0]?.item ?? items[0] ?? null;
   const isFiltered = Boolean(flavor) || Boolean(category) || query.length > 0;
 
+  // Guests get an introduction to the shop, not the shop itself: the menu,
+  // prices and ordering all sit behind sign-in (see AUTH_REQUIRED_PREFIXES).
+  // What they do see of the drinks is a photo teaser — names and pictures,
+  // nothing they could act on.
+  const isGuest = !user;
+  const teaser = featured.slice(0, 4).map(({ item }) => item);
+
   return (
     <div className="flex flex-col gap-section">
       {/* ======================================================= Hero ======
@@ -161,7 +170,7 @@ export default async function HomePage({
           Elevate your everyday brew
         </h1>
 
-        <p className="rise mx-auto mt-block max-w-[38ch] text-center text-lg text-ink-soft [--rise:2]">
+        <p className="rise mx-auto mt-stack max-w-[38ch] text-center text-lg text-ink-soft [--rise:2]">
           Redefining rituals, one sip at a time.
         </p>
 
@@ -198,7 +207,7 @@ export default async function HomePage({
 
         {/* Category tiles — visible on all viewports. On desktop they sit
             below the photo as a horizontal row; on mobile they scroll. */}
-        {categories.length > 0 && (
+        {!isGuest && categories.length > 0 && (
           <nav
             aria-label="Browse by category"
             className="no-scrollbar rise mt-4 flex gap-2 overflow-x-auto [--rise:3]"
@@ -221,7 +230,7 @@ export default async function HomePage({
 
         {/* The two facts a shopper needs before they start: whether the shop is
             open, and where the menu is. */}
-        <div className="rise mt-block flex flex-wrap items-center justify-between gap-x-6 gap-y-4 [--rise:4]">
+        <div className="rise mt-stack flex flex-wrap items-center justify-between gap-x-6 gap-y-4 [--rise:4]">
           <div className="flex flex-wrap items-center gap-3">
             <Badge tone={open ? "success" : "neutral"}>
               {open ? "Open now" : "Closed"}
@@ -234,15 +243,28 @@ export default async function HomePage({
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
-            <ButtonLink href="#menu" size="lg">
-              Browse the menu
-            </ButtonLink>
-            <Link
-              href="/orders"
-              className="ui-caps text-2xs text-ink-soft underline-offset-4 transition-colors hover:text-ink hover:underline"
-            >
-              Track an order
-            </Link>
+            {isGuest ? (
+              <>
+                <ButtonLink href="/signup" size="lg">
+                  Sign up to order
+                </ButtonLink>
+                <ButtonLink href="/login" variant="outline" size="lg">
+                  Log in
+                </ButtonLink>
+              </>
+            ) : (
+              <>
+                <ButtonLink href="#menu" size="lg">
+                  Browse the menu
+                </ButtonLink>
+                <Link
+                  href="/orders"
+                  className="ui-caps text-2xs text-ink-soft underline-offset-4 transition-colors hover:text-ink hover:underline"
+                >
+                  Track an order
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -280,7 +302,7 @@ export default async function HomePage({
           <h2 id="favorites-heading" className="display text-2xl text-ink">
             Your favorites
           </h2>
-          <ul className="mt-block grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-stack grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {items
               .filter((item) => favoriteIds.has(item.id))
               .slice(0, 3)
@@ -302,6 +324,66 @@ export default async function HomePage({
         </section>
       )}
 
+      {isGuest ? (
+        /* ================================================ Guest teaser ====
+           What a guest sees in place of the menu: the four best-rated drinks
+           as photographs and names. No prices, no ratings, no product pages —
+           every tile leads to sign-up, which is the only next step a guest
+           has. Skipped entirely while the menu is empty rather than showing
+           four placeholder doodles. */
+        teaser.length > 0 && (
+          <section aria-labelledby="teaser-heading">
+            <h2 id="teaser-heading" className="display text-5xl text-ink">
+              A taste of what we make
+            </h2>
+
+            <ul className="mt-heading grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+              {teaser.map((item) => (
+                <li key={item.id}>
+                  <Link
+                    href="/signup"
+                    className="group block rounded-xl focus-visible:outline-offset-4"
+                  >
+                    <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-raised">
+                      {item.image_url ? (
+                        <Image
+                          src={item.image_url}
+                          alt=""
+                          fill
+                          unoptimized={item.image_url.includes("/uploads/")}
+                          sizes="(min-width: 1024px) 264px, 45vw"
+                          className="object-cover transition-transform duration-(--hi-dur-slow) ease-hi-out group-hover:scale-[1.04]"
+                        />
+                      ) : (
+                        <div
+                          aria-hidden="true"
+                          className="flex h-full w-full items-center justify-center"
+                        >
+                          <BeanDoodle className="doodle h-14 w-14" />
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="display mt-snug text-lg text-ink group-hover:underline">
+                      {item.name}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+
+            <p className="mt-stack">
+              <Link
+                href="/signup"
+                className="ui-caps text-2xs text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
+              >
+                Sign up to see the full menu
+              </Link>
+            </p>
+          </section>
+        )
+      ) : (
+      <>
       {/* ======================================================= Menu ======
           The comp's "Best products": a centred display heading over a grid of
           cards. Search and the filter chips sit with it, because they filter
@@ -325,7 +407,7 @@ export default async function HomePage({
           <SearchField query={query} flavor={flavor} />
         </div>
 
-        <div className="mt-block flex flex-col gap-3">
+        <div className="mt-stack flex flex-col gap-3">
           <MenuFilters
             categories={categories}
             flavors={flavors}
@@ -342,7 +424,7 @@ export default async function HomePage({
           )}
         </div>
 
-        <div className="mt-block">
+        <div className="mt-stack">
           {menuFailed ? (
             <EmptyState
               as="h3"
@@ -402,6 +484,8 @@ export default async function HomePage({
 
       {/* =============================================== Featured panel ==== */}
       <FeaturedCarousel featured={featured} />
+      </>
+      )}
 
       {/* ================================================ Loyalty band =====
           The comp's tan break, with the drawings in the margins. Full-bleed:
@@ -423,7 +507,7 @@ export default async function HomePage({
             <span className="display mt-1 block text-5xl">Get 1 free</span>
           </h2>
 
-          <p className="ui-caps mx-auto mt-block max-w-[52ch] text-2xs text-band-muted sm:text-xs">
+          <p className="ui-caps mx-auto mt-stack max-w-[52ch] text-2xs text-band-muted sm:text-xs">
             Every handcrafted drink earns you a bean. Collect ten and your next
             one is free — because loyalty should taste like reward.
           </p>
@@ -498,8 +582,9 @@ export default async function HomePage({
           The prose beside it uses --hi-inverse-fg at 5.10:1, which is why the
           two are separate tokens. */}
       <section
+        id="story"
         aria-labelledby="story-heading"
-        className="full-bleed bg-inverse-bg py-band text-inverse-fg"
+        className="full-bleed scroll-mt-16 bg-inverse-bg py-band text-inverse-fg"
       >
         <div className="mx-auto grid max-w-6xl gap-y-heading gap-x-16 px-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] lg:items-start">
           <h2
@@ -509,7 +594,7 @@ export default async function HomePage({
             A pause worth taking
           </h2>
 
-          <div className="flex flex-col gap-block text-lg leading-relaxed">
+          <div className="flex flex-col gap-stack text-lg leading-relaxed">
             <p className="max-w-[54ch]">
               Hiatus started with a small complaint: the best part of a coffee
               is the few minutes you spend with it, and the worst part is the
@@ -531,7 +616,7 @@ export default async function HomePage({
           of fact repeated, which is exactly what hairlines are for. Today is
           marked in accent ink and carries a dot, so the highlight survives
           without colour (WCAG 1.4.1). */}
-      <section aria-labelledby="hours-heading">
+      <section id="hours" aria-labelledby="hours-heading" className="scroll-mt-20">
         <h2 id="hours-heading" className="display text-5xl text-ink">
           When we are open
         </h2>

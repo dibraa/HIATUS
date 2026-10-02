@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1440">
+<title>Hiatus — item and cart</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&amp;family=JetBrains+Mono:wght@500&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#efe9de;color:#14120f;font-family:Geist,system-ui,sans-serif}
+a{color:#964a1c}a:hover{color:#14120f}
+.d{font-family:Anton,Impact,sans-serif;text-transform:uppercase;letter-spacing:calc(-0.0397em + 1.11px);line-height:0.92;font-weight:400}
+.caps{font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:0.12em;font-weight:500}
+.num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+</style>
+<style>
+.draft-nav{position:sticky;top:0;z-index:10;display:flex;gap:4px;padding:8px 16px;background:#14120f;font-family:'JetBrains Mono',monospace;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.draft-nav a{color:#d9ccb6;text-decoration:none;padding:10px 12px;border-radius:8px}
+.draft-nav a[aria-current]{background:#f5ead8;color:#14120f}
+.draft-stage{display:flex;justify-content:center;background:#d9d0bf;padding:24px 0}
+</style>
+</head>
+<body>
+<nav class="draft-nav" aria-label="Drafts"><a href="1-guest-intro.html">Guest intro</a><a href="2-customer-menu.html">Customer menu</a><a href="3-item-and-cart.html" aria-current="page">Item + cart</a><a href="4-order-tracking.html">Order tracking</a><a href="5-staff-queue-pos.html">Staff queue + POS</a></nav>
+<div class="draft-stage"><div style="width: 1440px; height: 1180px; box-sizing: border-box; background: #efe9de; padding: 48px 80px; display: grid; grid-template-columns: minmax(0, 1fr) 480px; gap: 56px; align-items: start">
+
+<main style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px">
+<div style="background: #fffdf8; padding: 12px; border-radius: 28px">
+<div style="height: 640px; border-radius: 20px; overflow: hidden"><img src="assets/kape.jpg" alt="Iced latte in a clear cup with a hand-drawn note" style="display: block; width: 200%; max-width: none; height: 100%; object-fit: cover; object-position: 50% 58%; transform: translateX(0)"></div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 24px; padding-top: 8px">
+<a href="#" class="caps" style="font-size: 12px; min-height: 44px; display: inline-flex; align-items: center; align-self: flex-start">← Back to the menu</a>
+<div>
+<span class="caps" style="font-size: 12px; color: #6b6152">Coffee · Classic</span>
+<h1 class="d" style="margin: 10px 0 0; font-size: 84px">Iced latte</h1>
+</div>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #3b352c">[One or two lines on the drink: the beans, the milk, how sweet it is.]</p>
+<p style="margin: 0; font-size: 15px; color: #3b352c">★ [avg] from [n] people who collected it</p>
+
+<fieldset style="border: 0; margin: 0; padding: 0">
+<legend class="caps" style="font-size: 12px; color: #3b352c; margin-bottom: 12px">Size</legend>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<label style="border: 1.5px solid #8a7c63; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: #fffdf8"><input type="radio" name="size" style="position: absolute; opacity: 0"><span class="d" style="font-size: 22px">Small</span><span class="num" style="font-size: 13px; color: #3b352c">[PRICE]</span></label>
+<label style="border: 2px solid #14120f; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: #f6e3d2; position: relative"><input type="radio" name="size" checked style="position: absolute; opacity: 0"><span class="d" style="font-size: 22px">Medium</span><span class="num" style="font-size: 13px; color: #3b352c">[PRICE]</span><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#14120f" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; top: 12px; right: 12px"><path d="M5 12l5 5L20 7"></path></svg></label>
+<label style="border: 1.5px solid #8a7c63; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 4px; background: #fffdf8"><input type="radio" name="size" style="position: absolute; opacity: 0"><span class="d" style="font-size: 22px">Large</span><span class="num" style="font-size: 13px; color: #3b352c">[PRICE]</span></label>
+</div>
+</fieldset>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<label for="note" class="caps" style="font-size: 12px; color: #3b352c">Note for the barista <span style="color: #6b6152; text-transform: none; letter-spacing: 0">(optional)</span></label>
+<input id="note" type="text" placeholder="Less ice, oat milk…" style="height: 48px; box-sizing: border-box; border-radius: 10px; border: 1.5px solid #8a7c63; background: #fffdf8; padding: 0 16px; font: inherit; font-size: 16px">
+</div>
+
+<div style="display: flex; gap: 12px; align-items: center">
+<div role="group" aria-label="Quantity" style="display: flex; align-items: center; border: 1.5px solid #8a7c63; border-radius: 12px; height: 56px">
+<button type="button" aria-label="One fewer" style="width: 52px; height: 52px; border: 0; background: transparent; font-size: 22px; color: #14120f">−</button>
+<output aria-live="polite" class="num" style="min-width: 32px; text-align: center; font-size: 17px">1</output>
+<button type="button" aria-label="One more" style="width: 52px; height: 52px; border: 0; background: transparent; font-size: 22px; color: #14120f">+</button>
+</div>
+<button type="button" class="caps" style="flex-grow: 1; height: 56px; border: 0; border-radius: 12px; background: #241d18; color: #f5ead8; font-size: 13px">Add to cart · [PRICE]</button>
+</div>
+</div>
+</main>
+
+<aside aria-labelledby="cart-h" style="background: #fffdf8; border-radius: 24px; padding: 32px; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 24px 50px -22px rgba(59,53,44,0.30)">
+<h2 id="cart-h" class="d" style="margin: 0; font-size: 44px">Your cart</h2>
+<ul style="list-style: none; margin: 0; padding: 0; border-top: 1px solid #ded3bf">
+<li style="display: flex; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid #ded3bf"><div><div style="font-weight: 600">Iced latte</div><div style="font-size: 14px; color: #3b352c; margin-top: 4px">Medium · ×1 · “Less ice”</div></div><span class="num">[PRICE]</span></li>
+<li style="display: flex; justify-content: space-between; gap: 16px; padding: 16px 0; border-bottom: 1px solid #ded3bf"><div><div style="font-weight: 600">Matcha latte</div><div style="font-size: 14px; color: #3b352c; margin-top: 4px">Large · ×1</div></div><span class="num">[PRICE]</span></li>
+</ul>
+
+<fieldset style="border: 0; margin: 0; padding: 0">
+<legend class="caps" style="font-size: 12px; color: #3b352c; margin-bottom: 10px">How are you having it?</legend>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<label class="caps" style="height: 48px; border-radius: 10px; border: 2px solid #14120f; background: #f6e3d2; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 12px"><input type="radio" name="mode" checked style="position: absolute; opacity: 0"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg>Pickup</label>
+<label class="caps" style="height: 48px; border-radius: 10px; border: 1.5px solid #8a7c63; display: flex; align-items: center; justify-content: center; font-size: 12px"><input type="radio" name="mode" style="position: absolute; opacity: 0">Dine in</label>
+</div>
+</fieldset>
+
+<div style="background: #efe9de; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px">
+<span class="caps" style="font-size: 11px; color: #3b352c">Pay at the counter</span>
+<span style="font-size: 15px; line-height: 1.5">Cash, card or e-wallet when you collect. Nothing is charged now.</span>
+</div>
+
+<div style="display: flex; justify-content: space-between; align-items: baseline; padding-top: 8px; border-top: 1px solid #ded3bf">
+<span class="caps" style="font-size: 12px">Total</span><span class="d" style="font-size: 36px">[PRICE]</span>
+</div>
+<p style="margin: -8px 0 0; font-size: 14px; color: #3b352c">Ready about [n] min after you order.</p>
+<button type="button" class="caps" style="height: 56px; border: 0; border-radius: 12px; background: #c87137; color: #14120f; font-size: 13px">Place order</button>
+
+<div style="border: 1.5px dashed #8a7c63; border-radius: 14px; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px">
+<span class="caps" style="font-size: 11px; color: #6b6152">When the shop is closed</span>
+<span style="font-size: 15px; line-height: 1.5">We open tomorrow at 07:00. Your cart is saved — place it then.</span>
+<button type="button" disabled class="caps" style="height: 48px; border: 0; border-radius: 10px; background: #e7dfcf; color: #3b352c; font-size: 12px">Ordering opens at 07:00</button>
+</div>
+</aside>
+</div></div>
+</body>
+</html>

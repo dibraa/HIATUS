@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import type { Profile, Role } from "@/types/database";
@@ -10,7 +11,11 @@ export type CurrentUser = {
   isActive: boolean;
 };
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+/**
+ * Memoised per request: the navbar, the page and the footer all ask who is
+ * signed in, and without `cache` each would make its own `/auth/me` round trip.
+ */
+export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
   const token = await getServerToken();
   if (!token) return null;
 
@@ -44,7 +49,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   } catch {
     return null;
   }
-}
+});
 
 export function accessOf(user: CurrentUser | null) {
   return user ? { role: user.role, isActive: user.isActive } : null;

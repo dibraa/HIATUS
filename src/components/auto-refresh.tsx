@@ -21,12 +21,24 @@ import { useRouter } from "next/navigation";
  *     a returning barista sees is current rather than however stale the last
  *     poll left it.
  */
-export function AutoRefresh({ seconds = 15 }: { seconds?: number }) {
+export function AutoRefresh({
+  seconds = 15,
+  whileHidden = false,
+}: {
+  seconds?: number;
+  /**
+   * Keep polling in a background tab. Off for the staff queue (see above);
+   * on for a customer's own order, where noticing "ready" while they are on
+   * another tab is the whole point. Browsers slow hidden-tab timers to about
+   * once a minute, which bounds the cost.
+   */
+  whileHidden?: boolean;
+}) {
   const router = useRouter();
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (document.visibilityState === "visible") router.refresh();
+      if (whileHidden || document.visibilityState === "visible") router.refresh();
     }, seconds * 1000);
 
     function onVisible() {
@@ -39,7 +51,7 @@ export function AutoRefresh({ seconds = 15 }: { seconds?: number }) {
       clearInterval(interval);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [router, seconds]);
+  }, [router, seconds, whileHidden]);
 
   return null;
 }

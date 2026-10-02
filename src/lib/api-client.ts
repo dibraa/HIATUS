@@ -17,7 +17,14 @@ export async function apiFetch(
   if (!(rest.body instanceof FormData)) headers["Content-Type"] = "application/json";
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  return fetch(`${BASE}${path}`, { ...rest, headers });
+  // A network failure rejects with the runtime's own wording ("fetch failed"),
+  // which every server action would otherwise pass straight to the page.
+  // Errors the API itself returns are left alone — those are written for people.
+  try {
+    return await fetch(`${BASE}${path}`, { ...rest, headers });
+  } catch {
+    throw new Error("We couldn't reach the server. Check your connection and try again.");
+  }
 }
 
 export async function apiJson<T>(
