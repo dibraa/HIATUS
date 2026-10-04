@@ -26,7 +26,9 @@ export async function saveMenuItem(
 
   const token = await getServerToken();
 
-  if (photo instanceof File && photo.size > 0) {
+  // Server actions can receive a File from a different runtime realm, so an
+  // instanceof File check can silently skip a valid uploaded photo.
+  if (photo && typeof photo !== "string" && photo.size > 0) {
     const uploadData = new FormData();
     uploadData.append("photo", photo);
     try {

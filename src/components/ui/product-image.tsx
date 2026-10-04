@@ -1,4 +1,8 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
+import { resolveImageUrl } from "@/lib/image-url";
 
 /**
  * Product imagery with a guaranteed aspect ratio and a real fallback.
@@ -32,6 +36,9 @@ export function ProductImage({
       placeholder does not read as a white slab cut out of the dark card. */
   tone?: "light" | "dark";
 }) {
+  const imageSrc = resolveImageUrl(src);
+  const [failedSrc, setFailedSrc] = useState<string | null>(null);
+  const imageError = imageSrc !== null && failedSrc === imageSrc;
   const placeholderBg = tone === "dark" ? "bg-inverse-line/40" : "bg-raised";
   const placeholderFg = tone === "dark" ? "text-inverse-muted" : "text-muted";
 
@@ -39,14 +46,15 @@ export function ProductImage({
     <div
       className={`relative aspect-square w-full overflow-hidden ${placeholderBg} ${rounded} ${className}`}
     >
-      {src ? (
+      {imageSrc && !imageError ? (
         <Image
-          src={src}
+          src={imageSrc}
           alt={alt}
           fill
-          unoptimized={src.includes("/uploads/")}
+          unoptimized={imageSrc.includes("/uploads/")}
           sizes={sizes}
           priority={priority}
+          onError={() => setFailedSrc(imageSrc)}
           // Everything below the fold defers; the LCP image must not.
           loading={priority ? "eager" : "lazy"}
           className="object-cover transition-transform duration-(--hi-dur-slow) ease-hi-out group-hover:scale-[1.03]"
