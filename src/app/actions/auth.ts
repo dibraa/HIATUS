@@ -19,10 +19,12 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
   let role: Role;
 
   try {
-    ({ token, role } = await apiJson<{ token: string; role: Role }>("/auth/login", {
+    const response = await apiJson<{ token: string; user: { role: Role } }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
-    }));
+    });
+    token = response.token;
+    role = response.user.role;
 
     const store = await cookies();
     store.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax" });

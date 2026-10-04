@@ -24,6 +24,7 @@ import { aggregateRatings } from "@/lib/ratings";
 import { getSettings, isOpenNow } from "@/lib/settings";
 import { formatPrice } from "@/lib/format";
 import { priceForSize } from "@/lib/sizes";
+import { resolveImageUrl } from "@/lib/image-url";
 import type { MenuItem, Rating } from "@/types/database";
 
 /** How many drinks the featured panel rotates through. */
@@ -181,7 +182,7 @@ export default async function HomePage({
             <div className="matte-inner relative aspect-[16/10] bg-raised sm:aspect-[16/8]">
               {heroItem?.image_url ? (
                 <Image
-                  src={heroItem.image_url}
+                  src={resolveImageUrl(heroItem.image_url) ?? heroItem.image_url}
                   alt={heroItem.name}
                   fill
                   unoptimized={heroItem.image_url.includes("/uploads/")}
@@ -347,7 +348,7 @@ export default async function HomePage({
                     <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-raised">
                       {item.image_url ? (
                         <Image
-                          src={item.image_url}
+                          src={resolveImageUrl(item.image_url) ?? item.image_url}
                           alt=""
                           fill
                           unoptimized={item.image_url.includes("/uploads/")}

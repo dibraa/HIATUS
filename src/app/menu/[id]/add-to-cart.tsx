@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
@@ -19,12 +20,23 @@ import type { MenuItem } from "@/types/database";
  */
 export function AddToCart({ item }: { item: MenuItem }) {
   const { addItem } = useCart();
+  const router = useRouter();
   const [size, setSize] = useState<DrinkSize>(DEFAULT_SIZE);
   const [quantity, setQuantity] = useState(1);
 
   const unitPrice = priceForSize(item.price, size);
   const lineTotal = unitPrice * quantity;
   const sizeLabel = getSizeOption(size).label;
+  const cartItem = {
+    menuItemId: item.id,
+    name: item.name,
+    flavor: item.flavor,
+    size,
+    price: unitPrice,
+    imageUrl: item.image_url,
+  };
+
+  const addCurrentItem = () => addItem(cartItem, quantity);
 
   return (
     <div className="rounded-lg border border-line bg-card p-5">
@@ -63,23 +75,25 @@ export function AddToCart({ item }: { item: MenuItem }) {
           className="min-w-[12rem] flex-1"
           disabled={!item.is_available}
           onClick={() => {
-            addItem(
-              {
-                menuItemId: item.id,
-                name: item.name,
-                flavor: item.flavor,
-                size,
-                price: unitPrice,
-                imageUrl: item.image_url,
-              },
-              quantity
-            );
+            addCurrentItem();
             toast.success(
               `${quantity} × ${item.name} (${sizeLabel}) added to cart`
             );
           }}
         >
           {item.is_available ? "Add to cart" : "Sold out"}
+        </Button>
+        <Button
+          size="lg"
+          variant="secondary"
+          className="min-w-[12rem] flex-1"
+          disabled={!item.is_available}
+          onClick={() => {
+            addCurrentItem();
+            router.push("/checkout");
+          }}
+        >
+          Buy now
         </Button>
       </div>
 
