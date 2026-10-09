@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { TextField, FormError } from "@/components/ui/field";
 import { updatePassword } from "@/app/actions/auth";
 
-export function ResetPasswordForm() {
+export function ResetPasswordForm({ token }: { token: string }) {
   const [state, formAction, pending] = useActionState(updatePassword, {
     error: null,
     success: false,
@@ -17,15 +17,14 @@ export function ResetPasswordForm() {
       <div className="rounded-lg border border-line bg-card p-6 text-center">
         <h2 className="display text-xl text-ink">Password changed</h2>
         <p className="mx-auto mt-2 max-w-[42ch] text-sm text-muted">
-          You are signed in with your new password. Anywhere else you were
-          logged in will need it next time.
+          Log in with your new password. The link you used no longer works.
         </p>
 
         <Link
-          href="/"
+          href="/login"
           className="ui-caps mt-6 inline-flex h-12 items-center rounded-md bg-cta px-6 text-sm text-cta-fg transition-colors hover:bg-cta-hover"
         >
-          Back to the menu
+          Log in
         </Link>
       </div>
     );
@@ -33,6 +32,8 @@ export function ResetPasswordForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-5">
+      <input type="hidden" name="token" value={token} />
+
       <TextField
         id="password"
         name="password"
@@ -56,7 +57,19 @@ export function ResetPasswordForm() {
         minLength={8}
       />
 
-      {state.error && <FormError>{state.error}</FormError>}
+      {state.error && (
+        <FormError>
+          {state.error}
+          {state.expired && (
+            <>
+              {" "}
+              <Link href="/forgot-password" className="font-semibold underline underline-offset-4">
+                Send a new link
+              </Link>
+            </>
+          )}
+        </FormError>
+      )}
 
       <Button type="submit" size="lg" disabled={pending}>
         {pending ? "Saving…" : "Set new password"}
