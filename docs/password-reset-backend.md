@@ -1,11 +1,12 @@
-# Password reset: what the Express server needs
+# Password reset: Express implementation
 
 The website side is done: `/forgot-password` asks for an email, and
 `/reset-password?token=…` sets the new password. The Express server has to
 **create a one-time link, email it, and check it when it comes back**.
 
-Until these two routes exist, the website shows "Password reset by email isn't
-available yet. Ask at the counter…" — nothing breaks.
+The Express server now provides both routes. Configure the SMTP variables in
+`server/.env` before using this in production. Without SMTP configuration in
+development, the server prints the one-time reset link to its console.
 
 ## How it works
 

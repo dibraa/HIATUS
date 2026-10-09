@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { TextField, FormError } from "@/components/ui/field";
+import { PasswordField, FormError } from "@/components/ui/field";
 import { updatePassword } from "@/app/actions/auth";
 
 export function ResetPasswordForm({ token }: { token: string }) {
@@ -34,10 +34,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
     <form action={formAction} className="flex flex-col gap-5">
       <input type="hidden" name="token" value={token} />
 
-      <TextField
+      <PasswordField
         id="password"
         name="password"
-        type="password"
         label="New password"
         // "new-password" tells a password manager to offer to generate and
         // save one; "current-password" here would make it autofill the old.
@@ -47,10 +46,9 @@ export function ResetPasswordForm({ token }: { token: string }) {
         hint="At least 8 characters."
       />
 
-      <TextField
+      <PasswordField
         id="confirm_password"
         name="confirm_password"
-        type="password"
         label="Confirm new password"
         autoComplete="new-password"
         required
