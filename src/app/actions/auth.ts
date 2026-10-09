@@ -2,13 +2,13 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
-import { apiJson } from "@/lib/api-client";
+import { apiFetch, apiJson } from "@/lib/api-client";
 import { homePathFor } from "@/lib/roles";
 import type { Role } from "@/types/database";
 
 export type AuthState = { error: string | null; success?: string | null; email?: string };
 export type ResetState = { error: string | null; sent: boolean };
-export type PasswordState = { error: string | null; success: boolean };
+export type PasswordState = { error: string | null; success: boolean; expired?: boolean };
 
 export async function signIn(_prevState: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "");
@@ -82,30 +82,70 @@ export async function signOut() {
   redirect("/login");
 }
 
-// Password reset is not implemented in the Express backend yet — kept as stubs
-// so the existing forgot/reset pages compile without changes.
+/** Told to the customer while the API has no reset routes (it answers 404). */
+const RESET_UNAVAILABLE =
+  "Password reset by email isn't available yet. Ask at the counter and we'll reset it for you.";
+
+/**
+ * Step 1: email a one-time reset link (POST /auth/forgot-password).
+ *
+ * The API answers the same way whether or not the address has an account,
+ * and so does this page — otherwise the form would tell anyone which emails
+ * are registered.
+ */
 export async function requestPasswordReset(
   _prev: ResetState,
   formData: FormData
 ): Promise<ResetState> {
   const email = String(formData.get("email") ?? "").trim();
-  if (!email) return { error: "Enter the email address you signed up with.", sent: false };
-  // TODO: implement reset email via Express + nodemailer. Until then, say so
-  // rather than report an email that was never sent.
-  return {
-    error: "Password reset by email isn't available yet. Ask at the counter and we'll reset it for you.",
-    sent: false,
-  };
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { error: "Enter the email address you signed up with.", sent: false };
+  }
+  try {
+    const res = await apiFetch("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+    if (res.status === 404) return { error: RESET_UNAVAILABLE, sent: false };
+    if (res.status === 429) {
+      return { error: "Too many reset requests. Wait a few minutes and try again.", sent: false };
+    }
+    if (!res.ok) return { error: "We couldn't send the reset email. Try again in a moment.", sent: false };
+    return { error: null, sent: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message, sent: false };
+  }
 }
 
+/**
+ * Step 2: set the new password with the token from the emailed link
+ * (POST /auth/reset-password). The API checks the token is real, unused and
+ * under an hour old, then retires it, so the link works exactly once.
+ */
 export async function updatePassword(
   _prev: PasswordState,
   formData: FormData
 ): Promise<PasswordState> {
+  const token = String(formData.get("token") ?? "");
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm_password") ?? "");
+  if (!token) return { error: "This reset link is incomplete. Request a new one.", success: false };
   if (password.length < 8) return { error: "Password must be at least 8 characters.", success: false };
   if (password !== confirm) return { error: "The two passwords do not match.", success: false };
-  // TODO: implement via Express
-  return { error: "Password reset via email is not yet configured.", success: false };
+
+  try {
+    const res = await apiFetch("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    });
+    if (res.ok) return { error: null, success: true };
+    if (res.status === 404) return { error: RESET_UNAVAILABLE, success: false };
+    if (res.status === 400 || res.status === 410) {
+      return { error: "This reset link has expired or was already used. Request a new one.", success: false, expired: true };
+    }
+    const data = (await res.json().catch(() => ({}))) as { error?: string };
+    return { error: data.error ?? "We couldn't change your password. Try again in a moment.", success: false };
+  } catch (err: unknown) {
+    return { error: (err as Error).message, success: false };
+  }
 }

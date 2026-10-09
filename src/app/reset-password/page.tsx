@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/ui/page-header";
-import { getCurrentUser } from "@/lib/auth";
 import { ResetPasswordForm } from "./reset-form";
 
-export const metadata: Metadata = { title: "Set a new password" };
+export const metadata: Metadata = {
+  title: "Set a new password",
+  // The reset token is in this page's URL. "no-referrer" stops the browser
+  // sending that URL to any other site a link or font request reaches.
+  referrer: "no-referrer",
+};
 
-export default async function ResetPasswordPage() {
-  // Reaching this page means the emailed link was exchanged for a session at
-  // /auth/confirm. Without one there is nothing to update, so anyone arriving
-  // directly is sent to start the flow rather than shown a form that cannot work.
-  const user = await getCurrentUser();
-  if (!user) redirect("/forgot-password");
+export default async function ResetPasswordPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string }>;
+}) {
+  // The emailed link is /reset-password?token=…. Without a token there is
+  // nothing to reset, so anyone arriving directly starts the flow instead of
+  // filling in a form that cannot work.
+  const { token } = await searchParams;
+  if (!token) redirect("/forgot-password");
 
   return (
     <div className="mx-auto w-full max-w-lg py-6 sm:py-12">
@@ -20,7 +28,7 @@ export default async function ResetPasswordPage() {
           title="Set a new password"
           description="Choose something you have not used here before."
         />
-        <ResetPasswordForm />
+        <ResetPasswordForm token={token} />
       </div>
     </div>
   );
