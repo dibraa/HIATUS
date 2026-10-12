@@ -56,9 +56,10 @@ export async function sendOrderPush(
   orderId: string,
   before: PushTargets,
   next: OrderStatus,
-  token: string | undefined
+  token: string | undefined,
+  force = false
 ): Promise<void> {
-  if (!before.subscriptions.length || before.status === next) return;
+  if (!before.subscriptions.length || (!force && before.status === next)) return;
   if (!shouldAlert(before.status, next, before.prefs) || !configureVapid()) return;
 
   const { templates } = await getSettings();
@@ -98,6 +99,16 @@ export async function sendOrderPush(
       body: JSON.stringify({ endpoints: gone }),
     }).catch(() => {});
   }
+
+}
+
+/** Resends the ready-for-pickup notification when staff explicitly asks. */
+export async function sendReadyOrderPush(
+  orderId: string,
+  targets: PushTargets,
+  token: string | undefined
+): Promise<void> {
+  return sendOrderPush(orderId, targets, "ready", token, true);
 }
 
 /** One test push straight to the browser that asked — no stored data involved. */

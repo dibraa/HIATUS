@@ -224,16 +224,28 @@ export function PaymentPanel({ order }: { order: PosOrder }) {
           />
         </div>
       ) : (
-        <p className="mt-3 text-xs text-muted">
-          {PAYMENT_STATUS_LABELS[order.payment_status]} by{" "}
-          {PAYMENT_METHOD_LABELS[order.payment_method].toLowerCase()}
-          {order.paid_at && (
-            <>
-              {" "}
-              at <time dateTime={order.paid_at}>{formatTime(order.paid_at)}</time>
-            </>
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-xs text-muted">
+            {PAYMENT_STATUS_LABELS[order.payment_status]} by{" "}
+            {PAYMENT_METHOD_LABELS[order.payment_method].toLowerCase()}
+            {order.paid_at && (
+              <>
+                {" "}
+                at <time dateTime={order.paid_at}>{formatTime(order.paid_at)}</time>
+              </>
+            )}
+          </p>
+          {order.payment_status === "paid" && (
+            <a
+              href={`/staff/pos/receipt/${order.id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="ui-caps rounded-md border border-line-strong px-3 py-2 text-2xs text-ink-soft transition-colors hover:border-ink hover:text-ink"
+            >
+              Issue receipt
+            </a>
           )}
-        </p>
+        </div>
       )}
 
       {/* ---------- Adjustments (folded away) ---------- */}
