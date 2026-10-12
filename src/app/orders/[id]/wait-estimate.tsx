@@ -23,10 +23,15 @@ import { formatWait } from "@/lib/order-meta";
 export function WaitEstimate({
   createdAt,
   typicalMinutes,
+  tone = "default",
 }: {
   createdAt: string;
   typicalMinutes: number;
+  /** `inverse` for the espresso live-order card on the signed-in home. */
+  tone?: "default" | "inverse";
 }) {
+  const quiet = tone === "inverse" ? "text-inverse-card-muted" : "text-muted";
+  const loud = tone === "inverse" ? "text-inverse-card-fg" : "text-ink-soft";
   const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
@@ -48,11 +53,11 @@ export function WaitEstimate({
   }
 
   return (
-    <p className="mt-2 text-sm text-muted" aria-live="polite">
+    <p className={`mt-2 text-sm ${quiet}`} aria-live="polite">
       {remaining > 0.5 ? (
         <>
           Usually ready in{" "}
-          <span className="font-semibold text-ink-soft">{formatWait(remaining)}</span>{" "}
+          <span className={`font-semibold ${loud}`}>{formatWait(remaining)}</span>{" "}
           from now.
         </>
       ) : (

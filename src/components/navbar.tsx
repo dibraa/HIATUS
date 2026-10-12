@@ -64,6 +64,9 @@ export async function Navbar() {
           {user && !staffOnly && (
             <>
               <Link href="/" className={navLink}>
+                Home
+              </Link>
+              <Link href="/menu" className={navLink}>
                 Menu
               </Link>
               <Link href="/orders" className={navLink}>

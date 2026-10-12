@@ -77,7 +77,7 @@ export function CheckoutForm({
         </h2>
         <p className="mt-2 text-sm text-muted">Your cart is empty.</p>
         <div className="mt-6 flex justify-center">
-          <ButtonLink href="/" size="lg">
+          <ButtonLink href="/menu" size="lg">
             Browse the menu
           </ButtonLink>
         </div>
@@ -96,7 +96,7 @@ export function CheckoutForm({
           back shortly and it will still be here.
         </p>
         <div className="mt-6 flex justify-center">
-          <ButtonLink href="/" variant="outline" size="lg">
+          <ButtonLink href="/menu" variant="outline" size="lg">
             Back to the menu
           </ButtonLink>
         </div>

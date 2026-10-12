@@ -50,7 +50,7 @@ export default async function OrdersPage() {
         <EmptyState
           title="No orders yet"
           body="Once you order ahead, it shows up here with its live pickup status."
-          action={<ButtonLink href="/">Browse the menu</ButtonLink>}
+          action={<ButtonLink href="/menu">Browse the menu</ButtonLink>}
         />
       ) : (
         <div className="flex flex-col gap-8">

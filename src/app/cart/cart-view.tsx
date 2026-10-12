@@ -34,7 +34,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
       <EmptyState
         title="Your cart is empty"
         body="Add a drink from the menu and it will show up here."
-        action={<ButtonLink href="/" size="lg">Browse the menu</ButtonLink>}
+        action={<ButtonLink href="/menu" size="lg">Browse the menu</ButtonLink>}
       />
     );
   }
@@ -121,7 +121,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
         </ButtonLink>
 
         <Link
-          href="/"
+          href="/menu"
           className="mt-3 block text-center text-xs font-medium text-ink-soft underline underline-offset-4 transition-colors hover:text-ink"
         >
           Continue shopping
