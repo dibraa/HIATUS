@@ -45,6 +45,7 @@ export type Order = {
   /** What the customer owes after any manual discount. */
   total_amount: number;
   pickup_note: string | null;
+  special_request_flag?: boolean;
   order_type: OrderType;
   table_label: string | null;
   priority: number;
@@ -180,6 +181,17 @@ export type NotificationPreferences = {
   email_channel: boolean;
   sms_channel: boolean;
   updated_at: string;
+};
+
+export type OrderNotification = {
+  id: string;
+  _id?: string;
+  user_id: string;
+  order_id: string;
+  status: OrderStatus;
+  title: string;
+  body: string;
+  created_at: string;
 };
 
 /* ==========================================================================
