@@ -612,6 +612,15 @@ body:has(.admin-workspace) #main {
     radial-gradient(circle var(--tooth) at 50% 100%, #0000 98%, #000) bottom / var(--tooth-gap) 51% repeat-x;
 }
 
+/* --- Phone tab bar ---------------------------------------------------------
+   Signed-in customers get a bottom tab bar below `md`. Its height is published
+   as --tabbar-h (0 everywhere else) so anything pinned to the bottom — the
+   menu's ticket bar — can sit above it instead of under it. */
+:root { --tabbar-h: 0px; }
+@media (max-width: 767px) {
+  body:has(.customer-tabbar) { --tabbar-h: 4.25rem; }
+}
+
 /* Skip link: off-screen until focused, then pinned top-left. Lets keyboard
    users jump the header nav and land straight on the menu grid. */
 .skip-link {

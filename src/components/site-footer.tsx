@@ -21,7 +21,7 @@ export async function SiteFooter() {
 
   const links = user
     ? [
-        { href: "/", label: "Menu" },
+        { href: "/menu", label: "Menu" },
         { href: "/cart", label: "Cart" },
         { href: "/orders", label: "My orders" },
         { href: "/profile", label: "Profile" },

@@ -21,13 +21,13 @@ export type MenuFilterState = {
   query?: string;
 };
 
-function buildHref(state: MenuFilterState): string {
+export function buildHref(state: MenuFilterState): string {
   const params = new URLSearchParams();
   if (state.query) params.set("q", state.query);
   if (state.category) params.set("category", state.category);
   if (state.flavor) params.set("flavor", state.flavor);
   const qs = params.toString();
-  return `/${qs ? `?${qs}` : ""}#menu`;
+  return `/menu${qs ? `?${qs}` : ""}`;
 }
 
 function chipClass(isActive: boolean, tone: "accent" | "green") {
@@ -99,13 +99,17 @@ export function MenuFilters({
   categories,
   flavors,
   state,
+  categoryRowClassName = "",
 }: {
   categories: string[];
   flavors: string[];
   state: MenuFilterState;
+  /** e.g. `lg:hidden` where a category sidebar takes over (the /menu page). */
+  categoryRowClassName?: string;
 }) {
   return (
     <div className="flex flex-col gap-3">
+      <div className={categoryRowClassName}>
       <ChipRow
         label="Filter drinks by category"
         values={categories}
@@ -117,6 +121,7 @@ export function MenuFilters({
         // would silently return nothing.
         hrefFor={(category) => buildHref({ query: state.query, category })}
       />
+      </div>
 
       <ChipRow
         label="Filter drinks by flavour"

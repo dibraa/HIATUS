@@ -83,9 +83,9 @@ export default async function MenuItemPage({ params }: Params) {
     <div className="flex flex-col gap-12">
       <nav aria-label="Breadcrumb" className="-mb-4">
         <ol className="ui-caps flex flex-wrap items-center gap-1.5 text-2xs text-muted">
-          <li><Link href="/" className="transition-colors hover:text-ink hover:underline underline-offset-4">Menu</Link></li>
+          <li><Link href="/menu" className="transition-colors hover:text-ink hover:underline underline-offset-4">Menu</Link></li>
           <li aria-hidden="true">/</li>
-          <li><Link href={`/?flavor=${encodeURIComponent(item.flavor)}#menu`} className="transition-colors hover:text-ink hover:underline underline-offset-4">{item.flavor}</Link></li>
+          <li><Link href={`/menu?flavor=${encodeURIComponent(item.flavor)}`} className="transition-colors hover:text-ink hover:underline underline-offset-4">{item.flavor}</Link></li>
           <li aria-hidden="true">/</li>
           <li aria-current="page" className="text-ink-soft">{item.name}</li>
         </ol>

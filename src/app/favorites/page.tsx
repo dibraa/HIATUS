@@ -45,7 +45,7 @@ export default async function FavoritesPage() {
         <EmptyState
           title="Nothing saved yet"
           body="Tap the heart on any drink to save it here, or save a whole order from your cart to reorder it in one tap."
-          action={<ButtonLink href="/">Browse the menu</ButtonLink>}
+          action={<ButtonLink href="/menu">Browse the menu</ButtonLink>}
         />
       ) : (
         <div className="flex flex-col gap-10">

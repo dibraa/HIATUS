@@ -5,6 +5,9 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { SiteFooter } from "@/components/site-footer";
+import { CustomerTabBar } from "@/components/customer-tab-bar";
+import { getCurrentUser, accessOf } from "@/lib/auth";
+import { isStaffOnly } from "@/lib/roles";
 
 /**
  * Three type roles, four families — see the "Type roles" block in globals.css
@@ -102,6 +105,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const pathname = (await headers()).get("x-pathname") ?? "";
   const isAdminRoute = pathname.startsWith("/admin");
   const isStaffRoute = pathname.startsWith("/staff");
+  // The phone tab bar is a CUSTOMER's navigation: signed in, not a staff-only
+  // account, and not inside the staff or admin workspaces. getCurrentUser is
+  // cached per request, so the navbar's own call costs nothing extra.
+  const user = await getCurrentUser();
+  const showTabBar = !!user && !isStaffOnly(accessOf(user)) && !isAdminRoute && !isStaffRoute;
 
   return (
     // suppressHydrationWarning: the script above legitimately mutates <html>
@@ -140,6 +148,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
           <div className="site-chrome">
             {!isAdminRoute && !isStaffRoute && <SiteFooter />}
+            {showTabBar && <CustomerTabBar />}
           </div>
         </Providers>
       </body>
