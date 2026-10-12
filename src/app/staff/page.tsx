@@ -56,7 +56,11 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
       })),
       profiles: (o as unknown as { user_id: unknown }).user_id as { full_name: string | null; phone: string | null } | null,
     }))
-    .sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0) || new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+    .sort((a, b) =>
+      Number(Boolean(b.special_request_flag || b.pickup_note)) - Number(Boolean(a.special_request_flag || a.pickup_note)) ||
+      (b.priority ?? 0) - (a.priority ?? 0) ||
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
 
   const newCount = summary?.pending_now ?? 0;
   const readyCount = summary?.ready_now ?? 0;
