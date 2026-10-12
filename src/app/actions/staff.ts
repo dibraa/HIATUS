@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
-import { getPushTargets, sendOrderPush } from "@/lib/push-server";
+import { getPushTargets, sendOrderPush, sendReadyOrderPush } from "@/lib/push-server";
 import type { OrderStatus, PaymentMethod } from "@/types/database";
 
 export type ActionResult = { error: string | null };
@@ -32,6 +32,49 @@ export async function advanceOrderStatus(orderId: string, newStatus: OrderStatus
     if (pushTargets) after(() => sendOrderPush(orderId, pushTargets, newStatus, auth));
     return { error: null };
   } catch (err: unknown) { return { error: (err as Error).message }; }
+}
+
+export async function notifyCustomerReady(orderId: string): Promise<ActionResult> {
+  try {
+    const auth = await token();
+    const pushTargets = await getPushTargets(orderId, auth);
+    await apiJson(`/orders/${orderId}/notify-ready`, {
+      method: "POST",
+      token: auth,
+    });
+    if (pushTargets) after(() => sendReadyOrderPush(orderId, pushTargets, auth));
+    return { error: null };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}
+
+export async function prioritizeOrder(orderId: string, prioritized: boolean): Promise<ActionResult> {
+  try {
+    await apiJson(`/orders/${orderId}/priority`, {
+      method: "POST",
+      token: await token(),
+      body: JSON.stringify({ prioritized }),
+    });
+    revalidateOrderViews(orderId);
+    return { error: null };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
+}
+
+export async function flagSpecialRequest(orderId: string, flagged: boolean): Promise<ActionResult> {
+  try {
+    await apiJson(`/orders/${orderId}/special-request`, {
+      method: "POST",
+      token: await token(),
+      body: JSON.stringify({ flagged }),
+    });
+    revalidateOrderViews(orderId);
+    return { error: null };
+  } catch (err: unknown) {
+    return { error: (err as Error).message };
+  }
 }
 
 export async function setItemAvailability(itemId: string, available: boolean): Promise<ActionResult> {

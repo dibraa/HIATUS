@@ -7,6 +7,30 @@ import type { Role } from "@/types/database";
 
 export type AdminActionState = { error: string | null; success: string | null };
 
+export async function createStaffAccount(
+  _prev: AdminActionState,
+  formData: FormData
+): Promise<AdminActionState> {
+  const token = await getServerToken();
+  try {
+    await apiJson("/admin/team/create", {
+      method: "POST",
+      token: token ?? undefined,
+      body: JSON.stringify({
+        full_name: String(formData.get("full_name") ?? "").trim(),
+        email: String(formData.get("email") ?? "").trim(),
+        phone: String(formData.get("phone") ?? "").trim() || null,
+        password: String(formData.get("password") ?? ""),
+        role: String(formData.get("role") ?? "staff"),
+      }),
+    });
+    revalidatePath("/admin/team");
+    return { error: null, success: "Staff account created." };
+  } catch (err: unknown) {
+    return { error: (err as Error).message, success: null };
+  }
+}
+
 export async function grantRole(
   _prev: AdminActionState,
   formData: FormData
@@ -61,4 +85,19 @@ export async function revokeRole(userId: string): Promise<{ error: string | null
   } catch (err: unknown) {
     return { error: (err as Error).message };
   }
+}
+
+export async function updateStaffCredentials(userId: string, data: {
+  full_name: string; email: string; phone: string; password: string;
+}): Promise<{ error: string | null }> {
+  const token = await getServerToken();
+  try {
+    await apiJson(`/admin/team/${userId}/credentials`, {
+      method: "PUT",
+      token: token ?? undefined,
+      body: JSON.stringify(data),
+    });
+    revalidatePath("/admin/team");
+    return { error: null };
+  } catch (err: unknown) { return { error: (err as Error).message }; }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useActionState, useEffect, useRef, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +9,7 @@ import {
   FormError,
   FormSuccess,
 } from "@/components/ui/field";
-import { grantRole, revokeRole, setAccountActive } from "@/app/actions/admin";
+import { createStaffAccount, grantRole, revokeRole, setAccountActive, updateStaffCredentials } from "@/app/actions/admin";
 import type { TeamMember } from "@/types/database";
 
 /**
@@ -29,8 +29,8 @@ export function GrantRoleForm() {
   });
 
   return (
-    <form action={formAction} className="rounded-lg border border-line bg-card p-5">
-      <h2 className="display text-xl text-ink">Add someone to the team</h2>
+    <form action={formAction} className="rounded-lg border border-line bg-raised p-4 text-left">
+      <h2 className="display text-lg text-ink">Add someone to the team</h2>
       <p className="mt-1.5 text-sm text-muted">
         They need to have signed up through the app first. Enter the email they
         used and choose what they can do.
@@ -56,11 +56,219 @@ export function GrantRoleForm() {
         {state.error && <FormError>{state.error}</FormError>}
         {state.success && <FormSuccess>{state.success}</FormSuccess>}
 
-        <Button type="submit" size="lg" disabled={pending}>
+        <Button type="submit" size="md" disabled={pending}>
           {pending ? "Granting…" : "Grant access"}
         </Button>
       </div>
     </form>
+  );
+}
+
+export function AddToTeamRow({ member }: { member: Pick<TeamMember, "email"> }) {
+  const [state, formAction, pending] = useActionState(grantRole, { error: null, success: null });
+  const [roleValue, setRoleValue] = useState("staff");
+  const [confirmingAdmin, setConfirmingAdmin] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const selectId = `add-role-${member.email.replace(/[^a-zA-Z0-9-_]/g, "-")}`;
+
+  return (
+    <div className="relative flex justify-end">
+      <button
+        type="button"
+        aria-label={`Actions for ${member.email}`}
+        aria-expanded={menuOpen}
+        onClick={() => setMenuOpen((value) => !value)}
+        className="flex h-9 w-9 items-center justify-center rounded-md text-lg text-muted hover:bg-raised hover:text-ink"
+      >
+        <span aria-hidden="true">⋮</span>
+      </button>
+      {menuOpen && (
+        <form
+          action={formAction}
+          className="absolute right-0 top-11 z-20 w-64 rounded-2xl border border-line bg-card p-4 text-left shadow-[0_12px_30px_rgb(44_36_24_/_0.14)]"
+          onSubmit={(event) => {
+            if (roleValue === "admin" && !confirmingAdmin) {
+              event.preventDefault();
+              setConfirmingAdmin(true);
+            }
+          }}
+        >
+          <input type="hidden" name="email" value={member.email} />
+          {!confirmingAdmin ? (
+            <>
+              <SelectField
+                id={selectId}
+                name="role"
+                label={`Role for ${member.email}`}
+                className="h-11 bg-[#fdfbf6] px-3 text-sm"
+                value={roleValue}
+                onChange={(event) => {
+                  setRoleValue(event.target.value);
+                  setConfirmingAdmin(false);
+                }}
+              >
+                <option value="staff">Staff</option>
+                <option value="admin">Admin</option>
+              </SelectField>
+              <Button type="submit" size="md" disabled={pending} className="mt-3 w-full whitespace-nowrap">
+                {pending ? "Adding…" : "Add to team"}
+              </Button>
+            </>
+          ) : (
+            <span className="flex flex-col gap-2">
+              <span className="text-xs font-medium text-ink">
+                Grant Admin — including the books — to {member.email}?
+              </span>
+              <span className="flex gap-2">
+                <Button type="submit" size="sm" disabled={pending} className="whitespace-nowrap">
+                  {pending ? "Adding…" : "Grant admin"}
+                </Button>
+                <Button type="button" size="sm" variant="ghost" onClick={() => setConfirmingAdmin(false)}>
+                  Cancel
+                </Button>
+              </span>
+            </span>
+          )}
+          {state.error && <span role="alert" className="mt-2 block text-xs text-danger">{state.error}</span>}
+          {state.success && <span aria-live="polite" className="mt-2 block text-xs text-success">{state.success}</span>}
+        </form>
+      )}
+    </div>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="1.8">
+      <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function CreateStaffForm() {
+  const [open, setOpen] = useState(false);
+  const [state, formAction, pending] = useActionState(createStaffAccount, { error: null, success: null });
+  const [lastEmail, setLastEmail] = useState<string | null>(null);
+  const openButtonRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useRef<HTMLFormElement>(null);
+  const firstFieldRef = useRef<HTMLInputElement>(null);
+  const [formResetKey, setFormResetKey] = useState(0);
+
+  function close() {
+    setOpen(false);
+    setLastEmail(null);
+    openButtonRef.current?.focus();
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    firstFieldRef.current?.focus();
+  }, [open, formResetKey]);
+
+  useEffect(() => {
+    if (open && state.success) {
+      firstFieldRef.current?.focus();
+    }
+  }, [open, state.success]);
+
+  function handleDialogKeyDown(event: React.KeyboardEvent) {
+    if (event.key === "Escape") {
+      event.stopPropagation();
+      close();
+      return;
+    }
+    if (event.key !== "Tab" || !dialogRef.current) return;
+    const focusable = Array.from(
+      dialogRef.current.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((el) => el.offsetParent !== null);
+    if (focusable.length === 0) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
+
+  return (
+    <>
+      <Button ref={openButtonRef} size="md" onClick={() => setOpen(true)}>Create account</Button>
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" aria-hidden="true" />
+          <form
+            key={formResetKey}
+            action={formAction}
+            ref={dialogRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="create-account-title"
+            className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6 shadow-xl"
+            onKeyDown={handleDialogKeyDown}
+            onSubmit={(event) => {
+              const data = new FormData(event.currentTarget);
+              setLastEmail(String(data.get("email") ?? ""));
+            }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id="create-account-title" className="display text-2xl text-ink">Create staff account</h2>
+                <p className="mt-1.5 text-sm text-muted">Create login credentials for a new staff member or administrator.</p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close create account dialog"
+                onClick={close}
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            {state.success && lastEmail ? (
+              <div className="mt-5 flex flex-col gap-4">
+                <FormSuccess>
+                  Account created for {lastEmail}. Share the temporary password you entered with them securely — they should change it on first login.
+                </FormSuccess>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => {
+                      setFormResetKey((key) => key + 1);
+                      setLastEmail(null);
+                    }}
+                  >
+                    Create another
+                  </Button>
+                  <Button type="button" onClick={close}>Done</Button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-5 flex flex-col gap-4">
+                <TextField ref={firstFieldRef} id="new-staff-name" name="full_name" label="Full name" required autoComplete="off" />
+                <TextField id="new-staff-email" name="email" type="email" label="Email address" required autoComplete="off" />
+                <TextField id="new-staff-phone" name="phone" type="tel" label="Phone" autoComplete="off" />
+                <TextField id="new-staff-password" name="password" type="password" label="Temporary password" minLength={8} required hint="At least 8 characters. Share it with them securely." autoComplete="new-password" />
+                <SelectField id="new-staff-role" name="role" label="Role" defaultValue="staff">
+                  <option value="staff">Staff — queue, payments, availability</option>
+                  <option value="admin">Admin — everything, including the books</option>
+                </SelectField>
+                {state.error && <FormError>{state.error}</FormError>}
+                <div className="flex justify-end gap-2">
+                  <Button type="button" variant="ghost" onClick={close}>Cancel</Button>
+                  <Button type="submit" disabled={pending}>{pending ? "Creating…" : "Create account"}</Button>
+                </div>
+              </div>
+            )}
+          </form>
+        </div>
+      )}
+    </>
   );
 }
 
@@ -74,41 +282,201 @@ export function GrantRoleForm() {
  */
 export function MemberControls({ member }: { member: TeamMember }) {
   const [pending, startTransition] = useTransition();
+  const [confirming, setConfirming] = useState<null | "suspend" | "remove">(null);
+  const [editing, setEditing] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [name, setName] = useState(member.full_name ?? "");
+  const [email, setEmail] = useState(member.email);
+  const [phone, setPhone] = useState(member.phone ?? "");
+  const [password, setPassword] = useState("");
+  const editFirstFieldRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!editing) return;
+    editFirstFieldRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setEditing(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [editing]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
 
   function run(fn: () => Promise<{ error: string | null }>, success: string) {
     startTransition(async () => {
       const { error } = await fn();
       if (error) toast.error(error);
       else toast.success(success);
+      setConfirming(null);
     });
   }
 
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={pending}
-        onClick={() =>
-          run(
-            () => setAccountActive(member.id, !member.is_active),
-            member.is_active ? "Access suspended" : "Access restored"
-          )
-        }
-      >
-        {member.is_active ? "Suspend" : "Restore"}
-      </Button>
+  const displayName = member.full_name?.trim() || member.email;
 
-      <Button
-        size="sm"
-        variant="danger"
-        disabled={pending}
-        onClick={() =>
-          run(() => revokeRole(member.id), `${member.email} is now a customer`)
-        }
-      >
-        Remove from team
-      </Button>
+  return (
+    <div className="relative flex flex-wrap items-center justify-end gap-2">
+      {confirming === null && (
+        <>
+          <button
+            type="button"
+            aria-label={`Actions for ${displayName}`}
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen((value) => !value)}
+            className="flex h-9 w-9 items-center justify-center rounded-md text-lg text-muted hover:bg-raised hover:text-ink"
+          >
+            <span aria-hidden="true">⋮</span>
+          </button>
+          {menuOpen && (
+            <div             className="absolute right-0 top-11 z-20 w-56 rounded-2xl border border-line bg-card p-3 text-left shadow-[0_12px_30px_rgb(44_36_24_/_0.14)]">
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  setMenuOpen(false);
+                  setConfirming("suspend");
+                }}
+                className="w-full rounded-md px-3 py-3 text-left text-sm text-ink hover:bg-raised"
+              >
+                {member.is_active ? "Suspend account" : "Restore account"}
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  setMenuOpen(false);
+                  setEditing(true);
+                }}
+                className="w-full rounded-md px-3 py-3 text-left text-sm text-ink hover:bg-raised"
+              >
+                Edit credentials
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => {
+                  setMenuOpen(false);
+                  setConfirming("remove");
+                }}
+                className="w-full rounded-md px-3 py-3 text-left text-sm text-danger hover:bg-danger-soft-bg"
+              >
+                Remove from team
+              </button>
+            </div>
+          )}
+        </>
+      )}
+      {confirming === "suspend" && (
+        <span className="flex basis-full flex-col gap-1.5 rounded-md border border-warning/40 bg-card p-2.5 text-left" role="alertdialog" aria-label={member.is_active ? "Confirm suspension" : "Confirm restore"}>
+          <span className="text-xs font-medium text-ink">
+            {member.is_active ? (
+              <>Suspend {displayName}? They lose counter access immediately. This is reversible.</>
+            ) : (
+              <>Restore {displayName} to the team?</>
+            )}
+          </span>
+          {member.is_active && member.on_shift && (
+            <span className="text-xs font-medium text-warning-soft-fg">
+              {displayName} is on shift right now — suspending locks them out mid-queue.
+            </span>
+          )}
+          <span className="flex gap-2">
+            <Button
+              size="sm"
+              variant="secondary"
+              disabled={pending}
+              onClick={() =>
+                run(
+                  () => setAccountActive(member.id, !member.is_active),
+                  member.is_active ? "Access suspended" : "Access restored"
+                )
+              }
+            >
+              {pending ? "Working…" : member.is_active ? "Suspend" : "Restore"}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => setConfirming(null)}>
+              Cancel
+            </Button>
+          </span>
+        </span>
+      )}
+      {confirming === "remove" && (
+        <span className="flex basis-full flex-col gap-1.5 rounded-md border border-danger/40 bg-card p-2.5 text-left" role="alertdialog" aria-label="Confirm removal from team">
+          <span className="text-xs font-medium text-ink">
+            Remove {displayName} from the team? They become a customer and keep their history, but lose counter and books access.
+          </span>
+          <span className="flex gap-2">
+            <Button
+              size="sm"
+              variant="danger"
+              disabled={pending}
+              onClick={() => run(() => revokeRole(member.id), `${member.email} is now a customer`)}
+            >
+              {pending ? "Working…" : "Remove"}
+            </Button>
+            <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={() => setConfirming(null)}>
+              Cancel
+            </Button>
+          </span>
+        </span>
+      )}
+      {editing && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="presentation" onClick={() => setEditing(false)}>
+          <div className="absolute inset-0 bg-ink/50 backdrop-blur-sm" aria-hidden="true" />
+          <form
+            className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-6 text-left shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby={`edit-credentials-title-${member.id}`}
+            onClick={(event) => event.stopPropagation()}
+            onSubmit={(event) => {
+              event.preventDefault();
+              run(
+                () => updateStaffCredentials(member.id, { full_name: name, email, phone, password }),
+                "Credentials updated"
+              );
+              setPassword("");
+              setEditing(false);
+            }}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 id={`edit-credentials-title-${member.id}`} className="display text-2xl text-ink">
+                  Edit credentials
+                </h2>
+                <p className="mt-1.5 text-sm text-muted">
+                  Update account details for {displayName}.
+                </p>
+              </div>
+              <button
+                type="button"
+                aria-label="Close edit credentials dialog"
+                onClick={() => setEditing(false)}
+                className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink"
+              >
+                <CloseIcon />
+              </button>
+            </div>
+            <div className="mt-5 grid gap-4 sm:grid-cols-2">
+              <TextField ref={editFirstFieldRef} id={`edit-name-${member.id}`} label="Name" value={name} onChange={(event) => setName(event.target.value)} required autoComplete="off" />
+              <TextField id={`edit-email-${member.id}`} label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="off" />
+              <TextField id={`edit-phone-${member.id}`} label="Phone" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="off" />
+              <TextField id={`edit-password-${member.id}`} label="New password" type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Leave blank to keep current" hint="At least 8 characters when changing." autoComplete="new-password" />
+              <div className="flex justify-end gap-2 sm:col-span-2">
+                <Button type="button" variant="ghost" onClick={() => setEditing(false)}>Cancel</Button>
+                <Button type="submit" disabled={pending}>{pending ? "Saving…" : "Save credentials"}</Button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
