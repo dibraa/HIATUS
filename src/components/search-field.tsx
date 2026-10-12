@@ -22,7 +22,7 @@ export function SearchField({
   id?: string;
 }) {
   return (
-    <Form action="/" scroll={false} className={`relative ${className}`}>
+    <Form action="/menu" scroll={false} className={`relative ${className}`}>
       <label htmlFor={id} className="sr-only">
         Search the menu
       </label>

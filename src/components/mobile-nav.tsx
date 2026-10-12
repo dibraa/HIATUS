@@ -119,9 +119,14 @@ export function MobileNav({
             }`}
           >
             {isLoggedIn && !staffOnly && (
-              <Link href="/" className={linkClass}>
-                Menu
-              </Link>
+              <>
+                <Link href="/" className={linkClass}>
+                  Home
+                </Link>
+                <Link href="/menu" className={linkClass}>
+                  Menu
+                </Link>
+              </>
             )}
 
             {isLoggedIn ? (

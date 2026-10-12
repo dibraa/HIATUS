@@ -19,7 +19,27 @@ const STEPS: { status: OrderStatus; label: string; detail: string }[] = [
   { status: "completed", label: "Collected", detail: "All done" },
 ];
 
-export function OrderProgress({ status }: { status: OrderStatus }) {
+/** `inverse` is for the espresso card (the signed-in home's live order):
+ *  the same steps, with the text roles of `--hi-inverse-card`. */
+const TONES = {
+  default: { idle: "bg-line", now: "text-ink", done: "text-ink-soft", todo: "text-muted", detail: "text-muted" },
+  inverse: {
+    idle: "bg-inverse-card-muted/25",
+    now: "text-inverse-card-fg",
+    done: "text-inverse-card-muted",
+    todo: "text-inverse-card-muted",
+    detail: "text-inverse-card-muted",
+  },
+};
+
+export function OrderProgress({
+  status,
+  tone = "default",
+}: {
+  status: OrderStatus;
+  tone?: keyof typeof TONES;
+}) {
+  const t = TONES[tone];
   if (status === "cancelled") return null;
 
   const currentIndex = STEPS.findIndex((s) => s.status === status);
@@ -41,14 +61,14 @@ export function OrderProgress({ status }: { status: OrderStatus }) {
             <span
               aria-hidden="true"
               className={`h-1.5 w-full rounded-full ${
-                done || current ? "bg-accent" : "bg-line"
+                done || current ? "bg-accent" : t.idle
               }`}
             />
 
             <span className="flex min-w-0 flex-col">
               <span
                 className={`truncate text-xs font-semibold ${
-                  current ? "text-ink" : done ? "text-ink-soft" : "text-muted"
+                  current ? t.now : done ? t.done : t.todo
                 }`}
               >
                 {step.label}
@@ -58,7 +78,7 @@ export function OrderProgress({ status }: { status: OrderStatus }) {
               {/* The detail line only appears for the step you are on; four of
                   them at once is a paragraph, not a tracker. */}
               {current && (
-                <span className="mt-0.5 truncate text-2xs text-muted">
+                <span className={`mt-0.5 truncate text-2xs ${t.detail}`}>
                   {step.detail}
                 </span>
               )}
