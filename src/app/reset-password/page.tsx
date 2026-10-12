@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PageHeader } from "@/components/ui/page-header";
+import { AuthTicket } from "@/components/auth-ticket";
 import { ResetPasswordForm } from "./reset-form";
 
 export const metadata: Metadata = {
@@ -22,14 +22,12 @@ export default async function ResetPasswordPage({
   if (!token) redirect("/forgot-password");
 
   return (
-    <div className="mx-auto w-full max-w-lg py-6 sm:py-12">
-      <div className="rounded-2xl border border-line bg-card p-5 shadow-lg sm:p-8">
-        <PageHeader
-          title="Set a new password"
-          description="Choose something you have not used here before."
-        />
-        <ResetPasswordForm token={token} />
-      </div>
-    </div>
+    <AuthTicket
+      label="New password"
+      title="Set a new password"
+      description="Choose something you have not used here before."
+    >
+      <ResetPasswordForm token={token} />
+    </AuthTicket>
   );
 }
