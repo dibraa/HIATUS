@@ -1,11 +1,15 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getCurrentUser, accessOf } from "@/lib/auth";
+import { apiJson } from "@/lib/api-client";
+import { getServerToken } from "@/lib/server-token";
 import { isAdmin, isStaff, isStaffOnly } from "@/lib/roles";
 import { CartBadge } from "@/components/cart-badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { MobileNav } from "@/components/mobile-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { NotificationBell } from "@/components/notification-bell";
+import type { OrderNotification } from "@/types/database";
 
 /**
  * Sticky site header.
@@ -30,6 +34,10 @@ export async function Navbar() {
   const staff = isStaff(access);
   const admin = isAdmin(access);
   const staffOnly = isStaffOnly(access);
+  const token = user && !staffOnly ? await getServerToken() : null;
+  const notifications = user && !staffOnly
+    ? await apiJson<OrderNotification[]>("/account/notification-feed", { token: token ?? undefined }).catch(() => [])
+    : [];
 
   const navLink =
     "ui-caps text-2xs text-ink-soft transition-colors hover:text-ink";
@@ -120,6 +128,7 @@ export async function Navbar() {
             <ThemeToggle />
           </span>
 
+          {user && !staffOnly && <NotificationBell notifications={notifications} />}
           {user && !staffOnly && <CartBadge />}
           <MobileNav isLoggedIn={!!user} isStaff={staff} isAdmin={admin} staffOnly={staffOnly} />
         </div>
