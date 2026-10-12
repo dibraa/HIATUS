@@ -8,11 +8,12 @@ import { FeaturedCarousel, type FeaturedItem } from "@/components/featured-carou
 import { MenuFilters } from "@/components/menu-filters";
 import { SearchField } from "@/components/search-field";
 import { Wordmark } from "@/components/brand";
+import { GuestWelcome } from "@/components/welcome/guest-welcome";
+import { pickMenuPeek } from "@/lib/menu-peek";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Badge } from "@/components/ui/badge";
 import {
-  BeanDoodle,
   BeansGlyph,
   CroissantDoodle,
   CupGlyph,
@@ -24,11 +25,20 @@ import { aggregateRatings } from "@/lib/ratings";
 import { getSettings, isOpenNow } from "@/lib/settings";
 import { formatPrice } from "@/lib/format";
 import { priceForSize } from "@/lib/sizes";
-import { resolveImageUrl } from "@/lib/image-url";
+import heroCups from "@/assets/hero-ube-cups.jpg";
 import type { MenuItem, Rating } from "@/types/database";
 
 /** How many drinks the featured panel rotates through. */
 const FEATURED_COUNT = 5;
+
+/**
+ * The hero's type scale, shared by the headline's rows and the fourth row
+ * under the arch so all four stay one size. From `lg` it is capped by the
+ * viewport's HEIGHT as well as its width: a 1366x768 laptop is wide but short,
+ * and width alone pushed the sign-up button below the fold there.
+ */
+const HERO_TYPE =
+  "text-[clamp(3.75rem,21vw,8.75rem)] leading-[0.88] sm:text-[12vw] lg:text-[clamp(4.25rem,min(10.6vw,16vh),9.25rem)]";
 
 /** The glyphs the hero's category tiles cycle through, in order. */
 const CATEGORY_GLYPHS = [CupGlyph, BeansGlyph, FilterGlyph, PotGlyph];
@@ -85,11 +95,22 @@ export default async function HomePage({
 
   const menuFailed = allItemsRaw === null;
   const allItems = (allItemsRaw ?? []).map((m) => ({ ...m, id: m._id ?? m.id }));
+
+  // Signed out — no token, or one that no longer resolves to a user — the home
+  // page is the shop's welcome (components/welcome). getCurrentUser() returns
+  // null without a request when there is no token, so guests wait only on the
+  // menu, ratings and settings the welcome page actually uses.
+  if (!user) {
+    return (
+      <GuestWelcome
+        settings={settings}
+        peek={pickMenuPeek(allItems, allRatingsRaw ?? [])}
+      />
+    );
+  }
   const allRatings = (allRatingsRaw ?? []).map((r) => ({ ...r, id: r._id ?? r.id, menu_item_id: (r.menu_item_id as unknown as { _id?: string } | string) }));
 
-  const favoriteRows = user
-    ? await apiJson<{ menu_item_id: string }[]>("/account/favorites", { token: token ?? undefined }).catch(() => [])
-    : [];
+  const favoriteRows = await apiJson<{ menu_item_id: string }[]>("/account/favorites", { token: token ?? undefined }).catch(() => []);
 
   const favoriteIds = new Set(favoriteRows.map((f) => {
     const mid = f.menu_item_id as unknown;
@@ -143,75 +164,130 @@ export default async function HomePage({
     .sort((a, b) => (b.averageRating ?? 0) - (a.averageRating ?? 0))
     .slice(0, FEATURED_COUNT);
 
-  const heroItem = featured[0]?.item ?? items[0] ?? null;
   const isFiltered = Boolean(flavor) || Boolean(category) || query.length > 0;
 
-  // Guests get an introduction to the shop, not the shop itself: the menu,
-  // prices and ordering all sit behind sign-in (see AUTH_REQUIRED_PREFIXES).
-  // What they do see of the drinks is a photo teaser — names and pictures,
-  // nothing they could act on.
-  const isGuest = !user;
-  const teaser = featured.slice(0, 4).map(({ item }) => item);
 
   return (
     <div className="flex flex-col gap-section">
       {/* ======================================================= Hero ======
-          Eyebrow, one enormous line, then the matted photograph with things
-          laid over it — the comp's opening, beat for beat. */}
-      <section>
-        {/* No label above the headline. A kicker only tells the reader that a
-            heading is coming, which they can already see; the line below is
-            strong enough to open the page unaccompanied. The old eyebrow copy
-            now sits under it, where it reads as a promise rather than a tag. */}
+          The stacked break: one line of type repeated three times on the pine
+          panel — sage, cream, outline — with the cup photograph standing in
+          the middle of it, and a cream card carrying the way in laps over the panel's
+          bottom edge. The lines and the arch share ONE grid cell
+          (`[grid-area:1/1]`) so the photo sits between the letters without any
+          absolute positioning to drift out of place as the type scales.
 
-        {/* One class, not `text-5xl sm:text-6xl lg:text-7xl`: the size is fluid
-            now, so it reads 48px on a phone and 96px at 1280 with nothing
-            flat in between. */}
-        <h1 className="display rise text-center text-7xl text-ink [--rise:1]">
-          Elevate your everyday brew
-        </h1>
-
-        <p className="rise mx-auto mt-stack max-w-[38ch] text-center text-lg text-ink-soft [--rise:2]">
-          Redefining rituals, one sip at a time.
-        </p>
-
-        {/* The photograph is the LCP element and is deliberately NOT part of
-            the entrance — see the `.rise` note in globals.css. */}
-        <div className="relative mt-heading">
-          <div className="matte">
-            <div className="matte-inner relative aspect-[16/10] bg-raised sm:aspect-[16/8]">
-              {heroItem?.image_url ? (
-                <Image
-                  src={resolveImageUrl(heroItem.image_url) ?? heroItem.image_url}
-                  alt={heroItem.name}
-                  fill
-                  unoptimized={heroItem.image_url.includes("/uploads/")}
-                  // The hero is the LCP element: it must not lazy-load, and the
-                  // sizes hint has to describe the full-width container or the
-                  // browser downloads a thumbnail and upscales it.
-                  priority
-                  sizes="(min-width: 1152px) 1128px, 100vw"
-                  className="object-cover"
-                />
-              ) : (
-                <div
-                  aria-hidden="true"
-                  className="flex h-full w-full items-center justify-center"
-                >
-                  <BeanDoodle className="doodle h-32 w-32" />
-                </div>
-              )}
-            </div>
+          The visible lines are decoration. A screen reader gets the real
+          headline once, from the sr-only span, instead of "take a, take a
+          break, take a break". */}
+      <section aria-labelledby="hero-heading">
+        {/* No bottom padding: the last row of type runs to the panel's edge
+            and the cream card overlaps it, so the green is filled with the
+            phrase from the badge row down. `overflow-hidden` is what clips the
+            rows' outer copies at the panel's sides. */}
+        <div className="relative overflow-hidden rounded-2xl bg-inverse-bg px-4 pt-5 sm:px-8 sm:pt-8 lg:px-10">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Badge tone={open ? "success" : "neutral"}>
+              {open ? "Open now" : "Closed"}
+            </Badge>
+            <span className="ui-caps text-2xs text-inverse-muted">
+              A taste of home · Bukidnon
+            </span>
           </div>
 
+          {/* Phone: a column — the headline reads in full, then the arch rises
+              over the outline line only. From `sm` up there is room for the
+              whole phrase on one line, so the stack collapses into one grid
+              cell and the arch moves to the centre of it. */}
+          <div className="mt-6 flex flex-col items-center sm:mt-8 sm:grid sm:grid-cols-[minmax(0,1fr)] sm:place-items-center">
+            <h1
+              id="hero-heading"
+              // min-w-0: a grid item will not shrink below its content by default,
+              // and these rows are wider than the panel on purpose.
+              className={`display w-full min-w-0 ${HERO_TYPE} sm:[grid-area:1/1]`}
+            >
+              <span className="sr-only">Take that much needed break</span>
+              {/* The sage line is display-only at 3.11:1 — fine at this size
+                  (AA large text is 3:1), which is the one use the
+                  --hi-inverse-display token allows. */}
+              <BreakRow phone="Take a" wide="Take a break" className="rise text-inverse-display [--rise:1]" />
+              <BreakRow phone="Break" wide="Take a break" className="rise text-inverse-fg [--rise:2]" />
+              <BreakRow
+                phone="Break"
+                wide="Take a break"
+                className="rise text-transparent [-webkit-text-stroke:1.5px_var(--hi-inverse-display)] [--rise:3]"
+              />
+            </h1>
+
+            {/* The photograph can be the LCP element on phones, so it is
+                deliberately NOT part of the `.rise` entrance — see the note in
+                globals.css. The pine ring is a cut-out, not a shadow: it clears
+                the letters around the arch so the photo reads as standing among
+                them. */}
+            <figure className="relative z-10 -mt-[17vw] aspect-[3/4] w-[46vw] max-w-56 overflow-hidden rounded-b-2xl rounded-t-full bg-inverse-bg shadow-[0_0_0_10px_var(--hi-inverse-bg)] sm:mt-0 sm:w-[17vw] sm:[grid-area:1/1] lg:w-[clamp(9.5rem,min(17vw,26vh),15rem)]">
+              <Image
+                src={heroCups}
+                alt="Two ube lattes on the counter, each cup with a handwritten note"
+                fill
+                // Eager + high priority rather than `preload`: the Next 16 docs
+                // reserve a <head> preload for an image that is certainly the
+                // LCP, and on wide screens the headline is.
+                loading="eager"
+                fetchPriority="high"
+                placeholder="blur"
+                sizes="(min-width: 1024px) 240px, (min-width: 640px) 17vw, 46vw"
+                className="object-cover"
+              />
+            </figure>
+          </div>
+
+          {/* The fourth row: outside the arch's grid cell, so it fills the
+              strip under the type instead of being centred with the photo.
+              The cream card laps over most of it. */}
+          <p aria-hidden="true" className={`display ${HERO_TYPE}`}>
+            <BreakRow phone="Take a" wide="Take a break" className="rise text-inverse-display [--rise:4]" />
+          </p>
         </div>
 
-        {/* Category tiles — visible on all viewports. On desktop they sit
-            below the photo as a horizontal row; on mobile they scroll. */}
-        {!isGuest && categories.length > 0 && (
+        {/* The promise and the way in, on a solid card over the panel's edge,
+            exactly as wide as the panel so the two read as one block. On
+            cream, the words never depend on the picture for contrast. Hours
+            first — whether the shop is open today is the fact a shopper wants
+            before anything. From `lg` the card is wide enough to put the words
+            on the left and the buttons on the right, instead of a stack that
+            would leave most of it empty. */}
+        <div className="rise relative z-30 -mt-10 grid gap-3.5 rounded-2xl bg-card p-5 ring-1 ring-line [--rise:4] sm:-mt-11 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-x-10 lg:px-10 lg:py-8 xl:-mt-[72px]">
+          <div className="grid gap-3.5">
+            <p className="ui-caps text-2xs text-muted">
+              {today && !today.closed
+                ? `${today.label} · ${today.open}–${today.close} · Pickup only`
+                : "Pickup only"}
+            </p>
+            <p className="max-w-[52ch] text-lg text-ink-soft">
+              Order from wherever you are, walk in when it&apos;s ready, and keep
+              the minutes you&apos;d have spent in line.
+            </p>
+          </div>
+          {/* Stacked full-width on phones: side by side, two mono-caps labels
+              in a 300px card wrap onto two lines each. */}
+          <div className="flex flex-wrap items-center gap-3 max-sm:flex-col max-sm:items-stretch">
+            <ButtonLink href="#menu" size="lg">
+              Browse the menu
+            </ButtonLink>
+            <Link
+              href="/orders"
+              className="ui-caps inline-flex min-h-11 items-center px-2 text-2xs text-ink-soft underline-offset-4 transition-colors hover:text-ink hover:underline"
+            >
+              Track an order
+            </Link>
+          </div>
+        </div>
+
+        {/* Category tiles. On mobile they scroll. */}
+        {categories.length > 0 && (
           <nav
             aria-label="Browse by category"
-            className="no-scrollbar rise mt-4 flex gap-2 overflow-x-auto [--rise:3]"
+            className="no-scrollbar rise mt-4 flex gap-2 overflow-x-auto [--rise:5]"
           >
             {categories.slice(0, 4).map((name, i) => {
               const Glyph = CATEGORY_GLYPHS[i % CATEGORY_GLYPHS.length];
@@ -228,46 +304,6 @@ export default async function HomePage({
             })}
           </nav>
         )}
-
-        {/* The two facts a shopper needs before they start: whether the shop is
-            open, and where the menu is. */}
-        <div className="rise mt-stack flex flex-wrap items-center justify-between gap-x-6 gap-y-4 [--rise:4]">
-          <div className="flex flex-wrap items-center gap-3">
-            <Badge tone={open ? "success" : "neutral"}>
-              {open ? "Open now" : "Closed"}
-            </Badge>
-            {today && !today.closed && (
-              <span className="ui-caps text-2xs text-muted">
-                {today.label} {today.open}–{today.close}
-              </span>
-            )}
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4">
-            {isGuest ? (
-              <>
-                <ButtonLink href="/signup" size="lg">
-                  Sign up to order
-                </ButtonLink>
-                <ButtonLink href="/login" variant="outline" size="lg">
-                  Log in
-                </ButtonLink>
-              </>
-            ) : (
-              <>
-                <ButtonLink href="#menu" size="lg">
-                  Browse the menu
-                </ButtonLink>
-                <Link
-                  href="/orders"
-                  className="ui-caps text-2xs text-ink-soft underline-offset-4 transition-colors hover:text-ink hover:underline"
-                >
-                  Track an order
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
       </section>
 
       {/* ================================================ Facts strip ======
@@ -298,7 +334,7 @@ export default async function HomePage({
       {/* ====================================== Power-user: favorites ======
           For logged-in returning customers, surface their favorites above the
           full menu so a repeat order is one click away. */}
-      {user && favoriteIds.size > 0 && (
+      {favoriteIds.size > 0 && (
         <section aria-labelledby="favorites-heading" className="mt-heading">
           <h2 id="favorites-heading" className="display text-2xl text-ink">
             Your favorites
@@ -325,65 +361,6 @@ export default async function HomePage({
         </section>
       )}
 
-      {isGuest ? (
-        /* ================================================ Guest teaser ====
-           What a guest sees in place of the menu: the four best-rated drinks
-           as photographs and names. No prices, no ratings, no product pages —
-           every tile leads to sign-up, which is the only next step a guest
-           has. Skipped entirely while the menu is empty rather than showing
-           four placeholder doodles. */
-        teaser.length > 0 && (
-          <section aria-labelledby="teaser-heading">
-            <h2 id="teaser-heading" className="display text-5xl text-ink">
-              A taste of what we make
-            </h2>
-
-            <ul className="mt-heading grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-              {teaser.map((item) => (
-                <li key={item.id}>
-                  <Link
-                    href="/signup"
-                    className="group block rounded-xl focus-visible:outline-offset-4"
-                  >
-                    <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-raised">
-                      {item.image_url ? (
-                        <Image
-                          src={resolveImageUrl(item.image_url) ?? item.image_url}
-                          alt=""
-                          fill
-                          unoptimized={item.image_url.includes("/uploads/")}
-                          sizes="(min-width: 1024px) 264px, 45vw"
-                          className="object-cover transition-transform duration-(--hi-dur-slow) ease-hi-out group-hover:scale-[1.04]"
-                        />
-                      ) : (
-                        <div
-                          aria-hidden="true"
-                          className="flex h-full w-full items-center justify-center"
-                        >
-                          <BeanDoodle className="doodle h-14 w-14" />
-                        </div>
-                      )}
-                    </div>
-
-                    <p className="display mt-snug text-lg text-ink group-hover:underline">
-                      {item.name}
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <p className="mt-stack">
-              <Link
-                href="/signup"
-                className="ui-caps text-2xs text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
-              >
-                Sign up to see the full menu
-              </Link>
-            </p>
-          </section>
-        )
-      ) : (
       <>
       {/* ======================================================= Menu ======
           The comp's "Best products": a centred display heading over a grid of
@@ -473,7 +450,7 @@ export default async function HomePage({
                       averageRating={stat?.average ?? null}
                       ratingCount={stat?.count ?? 0}
                       isFavorite={favoriteIds.has(item.id)}
-                      isLoggedIn={!!user}
+                      isLoggedIn={true}
                     />
                   </li>
                 );
@@ -486,7 +463,6 @@ export default async function HomePage({
       {/* =============================================== Featured panel ==== */}
       <FeaturedCarousel featured={featured} />
       </>
-      )}
 
       {/* ================================================ Loyalty band =====
           The comp's tan break, with the drawings in the margins. Full-bleed:
@@ -514,8 +490,8 @@ export default async function HomePage({
           </p>
 
           <div className="mt-heading flex justify-center">
-            <ButtonLink href={user ? "/#menu" : "/signup"} size="lg">
-              {user ? "Start an order" : "Join the club"}
+            <ButtonLink href="/#menu" size="lg">
+              Start an order
             </ButtonLink>
           </div>
         </div>
@@ -702,5 +678,31 @@ function StarIcon() {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+/* One row of the hero's lettering: the phrase three times over, centred, so
+   the middle copy sits under the arch and the outer two run off the panel's
+   sides (the panel clips them). A centred flex row overflows evenly to BOTH
+   sides; centred text would only overflow to the right. Decorative — the real
+   headline is the sr-only line. */
+function BreakRow({
+  phone,
+  wide,
+  className,
+}: {
+  phone: string;
+  wide: string;
+  className: string;
+}) {
+  return (
+    <span aria-hidden="true" className={`flex justify-center gap-[0.28em] whitespace-nowrap ${className}`}>
+      {[0, 1, 2].map((i) => (
+        <span key={i} className="shrink-0">
+          <span className="sm:hidden">{phone}</span>
+          <span className="max-sm:hidden">{wide}</span>
+        </span>
+      ))}
+    </span>
   );
 }

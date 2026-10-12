@@ -94,6 +94,9 @@
      Cream on it: 13.96:1. Sage on it: 8.51:1. */
   --hi-inverse-card: #241d18;
   --hi-inverse-card-fg: #f5ead8;
+  /* The same card at PANEL size — the guest page's "Look around" row — needs
+     a quieter voice than cream for its captions. */
+  --hi-inverse-card-muted: #cdbfa8; /*  9.19:1 on --hi-inverse-card          */
 
   /* --- CTA: espresso ----------------------------------------------------
      The comp's primary action is near-black, not orange: `ADD TO CART` fills
@@ -235,6 +238,7 @@
   --color-inverse-display: var(--hi-inverse-display);
   --color-inverse-card: var(--hi-inverse-card);
   --color-inverse-card-fg: var(--hi-inverse-card-fg);
+  --color-inverse-card-muted: var(--hi-inverse-card-muted);
 
   --color-cta: var(--hi-cta);
   --color-cta-hover: var(--hi-cta-hover);
@@ -382,6 +386,17 @@ html {
      horizontal scrollbar. `clip` rather than `hidden` because `hidden` on the
      root silently breaks position: sticky in the header. */
   overflow-x: clip;
+
+  /* Hide the vertical scrollbar chrome so the right edge stays flush across
+     every page and browser. The page still scrolls normally — wheel, keyboard,
+     touch and the scrollbar-less anchor jumps all keep working; only the
+     visual gutter is dropped. Mirrors the .no-scrollbar utility below. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar {
+  display: none;
 }
 
 body {
@@ -580,6 +595,23 @@ body:has(.admin-workspace) #main {
   opacity: 0.55;
 }
 
+/* --- Ticket edges --------------------------------------------------------
+   The auth pages' form card is cut like an order ticket: a row of half-moon
+   bites along the top and bottom edge, drawn as two masks that each cover a
+   little over half the card. Masking (not pseudo-element "holes" painted in
+   the page colour) keeps the bites truly transparent, so they stay right on
+   any ground and in both themes. */
+.ticket-edges {
+  --tooth: 7px;
+  --tooth-gap: 22px;
+  -webkit-mask:
+    radial-gradient(circle var(--tooth) at 50% 0, #0000 98%, #000) top / var(--tooth-gap) 51% repeat-x,
+    radial-gradient(circle var(--tooth) at 50% 100%, #0000 98%, #000) bottom / var(--tooth-gap) 51% repeat-x;
+  mask:
+    radial-gradient(circle var(--tooth) at 50% 0, #0000 98%, #000) top / var(--tooth-gap) 51% repeat-x,
+    radial-gradient(circle var(--tooth) at 50% 100%, #0000 98%, #000) bottom / var(--tooth-gap) 51% repeat-x;
+}
+
 /* Skip link: off-screen until focused, then pinned top-left. Lets keyboard
    users jump the header nav and land straight on the menu grid. */
 .skip-link {
@@ -640,6 +672,15 @@ body:has(.admin-workspace) #main {
 .rise {
   animation: hi-rise var(--hi-dur-slow) var(--hi-ease-out) backwards;
   animation-delay: calc(var(--rise, 0) * 90ms);
+}
+
+/* The guest page's stamp: a slow, continuous turn of its ring of text. The
+   reduced-motion block below collapses it to a single 0.01ms run, so a reader
+   who asked for less motion sees a still stamp. */
+@keyframes hi-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Skeleton shimmer for loading states. */
@@ -736,6 +777,7 @@ body:has(.admin-workspace) #main {
      a separate plane. Cream on it: 15.83:1. Sage on it: 9.65:1. */
   --d-inverse-card: #16130f;
   --d-inverse-card-fg: #f5ead8;
+  --d-inverse-card-muted: #cdbfa8; /* 10.24:1 on --d-inverse-card            */
 
   --d-inverse-display: #9cc4a8; /*  4.64:1 — comfortably AA even at body size
                                    on this lighter panel, though it stays a
@@ -811,6 +853,7 @@ body:has(.admin-workspace) #main {
     --hi-inverse-display: var(--d-inverse-display);
     --hi-inverse-card: var(--d-inverse-card);
     --hi-inverse-card-fg: var(--d-inverse-card-fg);
+    --hi-inverse-card-muted: var(--d-inverse-card-muted);
 
     --hi-cta: var(--d-cta);
     --hi-cta-hover: var(--d-cta-hover);
@@ -869,6 +912,7 @@ body:has(.admin-workspace) #main {
   --hi-inverse-display: var(--d-inverse-display);
   --hi-inverse-card: var(--d-inverse-card);
   --hi-inverse-card-fg: var(--d-inverse-card-fg);
+  --hi-inverse-card-muted: var(--d-inverse-card-muted);
 
   --hi-cta: var(--d-cta);
   --hi-cta-hover: var(--d-cta-hover);

@@ -3,136 +3,67 @@ import { Wordmark } from "@/components/brand";
 import { getCurrentUser } from "@/lib/auth";
 
 /**
- * Site footer.
+ * Site footer: a slim two-row bar on the pine panel.
  *
- * Carries the operational facts a pickup-only shop gets asked for repeatedly
- * (how payment works, that there is no delivery) rather than filler links —
- * answering those here removes a reason to abandon the cart.
+ * Row one is the brand and ONE inline row of links — no column headings,
+ * because four links do not need categorising, and headings over two-item
+ * lists were most of what made the old four-column footer read as clutter.
+ * Row two keeps the operational facts a pickup-only shop gets asked about
+ * (no delivery, cash, cancelling), set as a single quiet line beside the
+ * copyright rather than as a fourth column of sentences.
  *
- * Set on the pine panel: the comp closes its page on the brand's darkest
- * surface, and it gives the footer a job other than being the pale strip
- * everything runs out into. Every colour in here is therefore an `inverse-*`
- * token — `muted` and `line` are unreadable on this ground.
- *
- * Guests get the shop's own pages in place of the menu and cart, which sit
- * behind sign-in; the column swaps rather than disappears so the grid keeps
- * its shape.
+ * Every colour is an `inverse-*` token — `muted` and `line` are unreadable on
+ * this ground. Guests get the welcome page's sections and the way in; signed-in
+ * customers get the places they return to.
  */
 export async function SiteFooter() {
   const user = await getCurrentUser();
 
-  const linkClass =
-    "ui-caps text-2xs text-inverse-muted transition-colors hover:text-inverse-fg";
-
-  const headingClass = "eyebrow text-inverse-display";
+  const links = user
+    ? [
+        { href: "/", label: "Menu" },
+        { href: "/cart", label: "Cart" },
+        { href: "/orders", label: "My orders" },
+        { href: "/profile", label: "Profile" },
+      ]
+    : [
+        // The guest welcome's own sections (components/welcome).
+        { href: "/#inside", label: "Look around" },
+        { href: "/#visit", label: "Hours" },
+        { href: "/login", label: "Log in" },
+        { href: "/signup", label: "Sign up" },
+      ];
 
   return (
     <footer className="mt-16 bg-inverse-bg text-inverse-fg">
-      <div className="mx-auto max-w-6xl px-4 py-10">
-        {/* Two columns from the smallest screen, not one. Four stacked blocks
-            made the footer taller on a phone than the section above it, which
-            is a lot of page for five links and three facts. The brand column
-            spans the full width; the three short lists pair up beneath it. */}
-        <div className="grid grid-cols-2 gap-x-6 gap-y-8 lg:grid-cols-4 lg:gap-x-10">
-          <div className="col-span-2 lg:col-span-1">
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div>
             <Wordmark size="md" className="text-inverse-fg" />
-
-            {/* ~55 characters per line keeps this comfortably readable */}
-            <p className="mt-3 max-w-[38ch] text-sm text-inverse-muted">
-              Order ahead, skip the queue, and pick your drink up when it is
-              ready.
-            </p>
+            <p className="mt-2 text-sm text-inverse-muted">Take that much needed break.</p>
           </div>
 
-          {user ? (
-            <nav aria-labelledby="footer-shop">
-              <h2 id="footer-shop" className={headingClass}>
-                Shop
-              </h2>
-              <ul className="mt-3 flex flex-col gap-2">
-                <li>
-                  <Link href="/" className={linkClass}>
-                    Full menu
+          <nav aria-label="Footer">
+            <ul className="flex flex-wrap gap-x-6 gap-y-2">
+              {links.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="ui-caps inline-flex min-h-11 items-center text-2xs text-inverse-muted transition-colors hover:text-inverse-fg sm:min-h-0"
+                  >
+                    {link.label}
                   </Link>
                 </li>
-                <li>
-                  <Link href="/cart" className={linkClass}>
-                    Your cart
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          ) : (
-            <nav aria-labelledby="footer-about">
-              <h2 id="footer-about" className={headingClass}>
-                About
-              </h2>
-              <ul className="mt-3 flex flex-col gap-2">
-                <li>
-                  <Link href="/#story" className={linkClass}>
-                    Our story
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/#hours" className={linkClass}>
-                    Opening hours
-                  </Link>
-                </li>
-              </ul>
-            </nav>
-          )}
-
-          <nav aria-labelledby="footer-account">
-            <h2 id="footer-account" className={headingClass}>
-              Account
-            </h2>
-            <ul className="mt-3 flex flex-col gap-2">
-              {user ? (
-                <>
-                  <li>
-                    <Link href="/orders" className={linkClass}>
-                      My orders
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/profile" className={linkClass}>
-                      Profile
-                    </Link>
-                  </li>
-                </>
-              ) : (
-                <>
-                  <li>
-                    <Link href="/login" className={linkClass}>
-                      Log in
-                    </Link>
-                  </li>
-                  <li>
-                    <Link href="/signup" className={linkClass}>
-                      Create account
-                    </Link>
-                  </li>
-                </>
-              )}
+              ))}
             </ul>
           </nav>
-
-          {/* Spans both columns on a phone: these are sentences, not links,
-              and at half width every one of them wrapped. */}
-          <div className="col-span-2 lg:col-span-1">
-            <h2 className={headingClass}>Good to know</h2>
-            <ul className="mt-3 flex flex-col gap-2 text-sm text-inverse-muted">
-              <li>Pickup only — no delivery yet</li>
-              <li>Cash on pickup</li>
-              <li>Orders can be cancelled while pending</li>
-            </ul>
-          </div>
         </div>
 
-        <div className="mt-8 border-t border-inverse-line/40 pt-5">
-          <p className="ui-caps text-2xs text-inverse-muted">
-            &copy; {new Date().getFullYear()} Hiatus Coffee
-          </p>
+        <div className="mt-6 flex flex-col gap-2 border-t border-inverse-line/40 pt-5 text-inverse-muted sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
+          <p className="ui-caps text-2xs">&copy; {new Date().getFullYear()} Hiatus Coffee</p>
+          {/* Body face, so a step up from the caps beside it: the 2xs size is
+              tuned for tracked mono caps and is too small for a sentence. */}
+          <p className="text-sm">Pickup only &middot; Cash on pickup &middot; Orders can be cancelled while pending</p>
         </div>
       </div>
     </footer>

@@ -1,26 +1,25 @@
-/** Signup skeleton — header, then the form layout. */
+import { AuthTicket } from "@/components/auth-ticket";
+
+/** Signup skeleton — the real ticket with placeholder fields, so nothing
+ *  shifts when the form arrives. */
 export default function Loading() {
   return (
-    <div aria-busy="true" className="mx-auto max-w-sm py-6 sm:py-10">
+    <div aria-busy="true">
       <p className="sr-only" role="status">
         Loading…
       </p>
-
-      <div aria-hidden="true">
-        {/* Page header */}
-        <div className="mb-6 space-y-2">
-          <div className="skeleton h-9 w-48 rounded-md" />
-          <div className="skeleton h-4 w-64 max-w-full rounded" />
-        </div>
-
-        {/* Form fields */}
-        <div className="flex flex-col gap-4">
+      <AuthTicket
+        label="Sign up"
+        title="Create your account"
+        description="Ordering ahead needs a name and a way to reach you at pickup. Nothing else."
+      >
+        <div className="flex flex-col gap-4" aria-hidden="true">
           <div className="skeleton h-[70px] rounded-md" />
           <div className="skeleton h-[70px] rounded-md" />
           <div className="skeleton h-[70px] rounded-md" />
           <div className="skeleton h-11 rounded-md" />
         </div>
-      </div>
+      </AuthTicket>
     </div>
   );
 }
