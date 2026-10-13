@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useActionState, useState } from "react";
+import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
@@ -15,20 +15,12 @@ export function SignupForm() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
-  const [successVisible, setSuccessVisible] = useState(false);
   const emailError = emailTouched && !EMAIL_PATTERN.test(email.trim())
-    ? "Please enter email address"
+    ? "Enter a valid email address, such as name@example.com."
     : null;
 
-  useEffect(() => {
-    if (state.success) {
-      const raf = requestAnimationFrame(() => setSuccessVisible(true));
-      return () => cancelAnimationFrame(raf);
-    }
-  }, [state.success]);
-
   return (
-    <form action={formAction} className="flex flex-col gap-3">
+    <form action={formAction} className="flex flex-col gap-4">
       <TextField
         id="full_name"
         name="full_name"
@@ -69,6 +61,7 @@ export function SignupForm() {
         pattern="[0-9]*"
         title="Enter numbers only."
         autoComplete="tel"
+        hint="Optional. Only used if something goes wrong with an order."
         value={phone}
         onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))}
       />
@@ -82,39 +75,53 @@ export function SignupForm() {
         label="Password"
         required
         minLength={8}
+        hint="At least 8 characters."
         autoComplete="new-password"
       />
 
       <FormError>{state.error}</FormError>
 
-      <Button type="submit" size="md" disabled={pending || Boolean(state.success)} className="mt-1 w-full">
+      <Button
+        type="submit"
+        size="md"
+        loading={pending}
+        disabled={Boolean(state.success)}
+        className="mt-1 w-full"
+      >
         {pending ? "Creating account…" : "Sign up"}
       </Button>
 
+      {/* Entrance is the stylesheet's `.scrim-in` / `.dialog-in` keyframes,
+          so there is no visibility state to flip after mount. The one button
+          takes focus on open: it is the only thing to do here. */}
       {state.success && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
+          className="scrim-in fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
           role="presentation"
         >
           <section
             role="dialog"
             aria-modal="true"
             aria-labelledby="signup-success-title"
-            className={`w-full max-w-sm rounded-2xl border border-line bg-card p-6 text-center shadow-lg transition-[opacity,transform] duration-(--hi-dur-slow) ease-hi-out ${
-              successVisible ? "opacity-100 scale-100" : "opacity-0 scale-[0.95]"
-            }`}
+            className="dialog-in w-full max-w-sm rounded-2xl border border-line bg-card p-6 text-center shadow-lg"
           >
-            <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft-bg text-xl text-success-soft-fg">
-              ✓
+            <div
+              aria-hidden="true"
+              className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft-bg text-success-soft-fg"
+            >
+              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="m5 12.5 4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </div>
-            <h2 id="signup-success-title" className="mt-4 text-xl font-semibold text-ink">
+            <h2 id="signup-success-title" className="display mt-4 text-2xl text-ink">
               Account created
             </h2>
-            <p className="mt-2 text-sm text-muted">{state.success}</p>
+            <p className="mt-tight text-sm text-muted">{state.success}</p>
             <Button
               type="button"
               size="md"
-              className="mt-5 w-full"
+              autoFocus
+              className="mt-stack w-full"
               onClick={() => router.push("/login")}
             >
               Proceed to login

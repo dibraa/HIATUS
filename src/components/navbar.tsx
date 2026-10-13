@@ -1,9 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { apiJson } from "@/lib/api-client";
 import { getServerToken } from "@/lib/server-token";
 import { isAdmin, isStaff, isStaffOnly } from "@/lib/roles";
+import { BrandMark } from "@/components/brand";
 import { CartBadge } from "@/components/cart-badge";
 import { SignOutButton } from "@/components/sign-out-button";
 import { MobileNav } from "@/components/mobile-nav";
@@ -16,7 +16,7 @@ import type { OrderNotification } from "@/types/database";
  *
  * Identity (the logo mark) sits left, primary nav follows it from `lg` up,
  * account/cart sit right — small tracked mono caps on the bare cream, no
- * card, no shadow, just a hairline underneath.
+ * card, no shadow, no rule underneath: the blur alone lifts it off the page.
  *
  * Search deliberately does NOT live here. It filters the menu, so it sits with
  * the menu (see `app/page.tsx`); putting it in the header cost the row the
@@ -43,7 +43,7 @@ export async function Navbar() {
     "ui-caps text-2xs text-ink-soft transition-colors hover:text-ink";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-line bg-surface/90 backdrop-blur">
+    <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         {/* Identity */}
         <Link
@@ -55,16 +55,11 @@ export async function Navbar() {
                 ? "Hiatus Coffee, go to menu"
                 : "Hiatus Coffee, go to home page"
           }
-          className="flex shrink-0 items-center gap-2.5 text-ink"
+          className="group flex shrink-0 items-center text-ink"
         >
-          <Image
-            src="/logo.png"
-            alt=""
-            width={40}
-            height={40}
-            className="h-9 w-9 rounded-md bg-white object-contain ring-1 ring-line"
-          />
-          <span className="ui-caps hidden text-xs sm:inline">Hiatus</span>
+          {/* The mark IS the word, so no text sits beside it; the label above
+              names the destination for assistive tech. */}
+          <BrandMark className="h-7" />
         </Link>
 
         {/* Primary nav — collapses into MobileNav below lg */}

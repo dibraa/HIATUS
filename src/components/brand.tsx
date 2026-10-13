@@ -1,36 +1,52 @@
-/**
- * The wordmark.
- *
- * A condensed-caps word with a thin ring overlapping its last letters — the
- * comp's identity mark, where the circle sits ON the word rather than beside
- * it. That overlap is the whole idea, so the ring is absolutely positioned and
- * the word carries right padding to make room for it, instead of the two being
- * laid out as siblings that would drift apart at different sizes.
- *
- * The ring is `border-current`, so the mark inherits whatever colour it is
- * dropped into — cream on the pine panel, ink on the header — and never needs
- * a second variant.
- */
-export function Wordmark({
-  size = "md",
-  className = "",
-}: {
-  size?: "sm" | "md" | "lg";
-  className?: string;
-}) {
-  const { text, ring, pad } = {
-    sm: { text: "text-base", ring: "h-6 w-6 -right-1", pad: "pr-4" },
-    md: { text: "text-xl", ring: "h-8 w-8 -right-1.5", pad: "pr-5" },
-    lg: { text: "text-3xl", ring: "h-11 w-11 -right-2", pad: "pr-7" },
-  }[size];
+import { BRAND_MARK_PATH, BRAND_MARK_VIEWBOX } from "./brand-path";
 
+/**
+ * The wordmark, semi-3D.
+ *
+ * One traced path, drawn five times: four copies stepped down and to the
+ * right in the accent colour make an extruded side, and the ink copy on top
+ * is the face. Depth from STACKING, not from a shadow — the same rule the
+ * rest of the system's surfaces follow — so it stays flat-looking in the
+ * comp's sense while reading as a printed, slightly raised mark.
+ *
+ * Colours are tokens: ink and accent invert together in dark mode (cream face,
+ * caramel side), so the mark never needs a second variant. On hover the face
+ * lifts one step off its side on the spring curve, the system's "a tap was
+ * answered" move. Decorative: every link that wraps it carries its own label.
+ */
+const DEPTH = 8; // viewBox units; ~1.6px at header size
+const STEPS = 4;
+
+export function BrandMark({ className = "" }: { className?: string }) {
   return (
-    <span className={`relative inline-flex items-center ${className}`}>
-      <span className={`display ${text} ${pad} tracking-[0.02em]`}>Hiatus</span>
-      <span
-        aria-hidden="true"
-        className={`pointer-events-none absolute top-1/2 -translate-y-1/2 rounded-full border border-current ${ring}`}
+    <svg
+      viewBox={BRAND_MARK_VIEWBOX}
+      aria-hidden="true"
+      focusable="false"
+      className={`group w-auto overflow-visible ${className}`}
+    >
+      <defs>
+        <path id="hiatus-mark" fillRule="evenodd" d={BRAND_MARK_PATH} />
+      </defs>
+
+      {/* The side: deepest step first so each shallower copy overlaps it. */}
+      {Array.from({ length: STEPS }, (_, i) => {
+        const offset = DEPTH - (i * DEPTH) / STEPS;
+        return (
+          <use
+            key={offset}
+            href="#hiatus-mark"
+            transform={`translate(${offset} ${offset})`}
+            className="fill-accent"
+          />
+        );
+      })}
+
+      {/* The face. Lifts up-left on hover of any `group` ancestor (the nav link). */}
+      <use
+        href="#hiatus-mark"
+        className="fill-ink transition-transform duration-(--hi-dur-base) ease-hi-spring group-hover:-translate-x-0.5 group-hover:-translate-y-0.5"
       />
-    </span>
+    </svg>
   );
 }

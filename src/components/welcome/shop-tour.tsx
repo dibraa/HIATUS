@@ -26,7 +26,7 @@ export function ShopTour() {
     >
       <div className="rounded-2xl bg-inverse-card py-band text-inverse-card-fg ring-1 ring-line">
         <div className="mx-auto max-w-6xl px-4">
-          <h2 id="tour-heading" className="display text-5xl sm:text-6xl lg:text-7xl">
+          <h2 id="tour-heading" className="display text-6xl">
             Look around
           </h2>
 

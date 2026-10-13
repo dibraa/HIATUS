@@ -38,12 +38,12 @@ export function WelcomeHero({
   return (
     <section
       aria-labelledby="welcome-heading"
-      className="grid items-end gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-12"
+      className="grid items-end gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
     >
       <div>
         <h1
           id="welcome-heading"
-          className="display rise text-[clamp(3.5rem,15vw,5.5rem)] leading-[0.88] text-ink [--rise:1] lg:text-[clamp(3.5rem,min(6.4vw,12.5vh),7rem)]"
+          className="display rise text-7xl text-ink [--rise:1]"
         >
           A taste
           <br />
@@ -51,14 +51,14 @@ export function WelcomeHero({
           <br />
           <span className="text-accent-ink">of Bukidnon.</span>
         </h1>
-        {/* More room under the headline (40px) than under the pitch (28px):
+        {/* More room under the headline (the fluid `heading` step, 28 -> 40px)
+            than under the pitch (one fixed `stack`, 24px):
             at this type size an equal gap fuses headline, pitch and buttons
             into one block, and the headline stops reading as the lead. */}
-        <p className="rise mt-8 max-w-[34ch] text-lg text-ink-soft [--rise:2] lg:mt-10">
-
+        <p className="rise mt-heading max-w-[34ch] text-lg text-ink-soft [--rise:2]">
           Breathe, slow down, and sip. Welcome to your daily hiatus in the heart of Malaybalay.
         </p>
-        <div className="rise mt-7 flex flex-wrap gap-3 [--rise:3] max-sm:flex-col max-sm:items-stretch">
+        <div className="rise mt-stack flex flex-wrap gap-3 [--rise:3] max-sm:flex-col max-sm:items-stretch">
           {/* Ordering is the page's goal, so it carries the fill. The second
               button answers a guest's next question — what is there, and for
               how much — by jumping to the menu peek; with no peek on the page

@@ -52,7 +52,7 @@ export const SHOP_TOUR: TourSpot[] = [
 /** The line written on the cups, set as the tour's pull-quote. `lang` is
  *  Cebuano (ceb), so a screen reader pronounces it rather than spelling it. */
 export const SHOP_QUOTE = {
-  text: "Salamat sa inyong pag-apit.",
+  text: "Salamat sa pag-hapit.",
   lang: "ceb",
   translation: "Thank you for dropping by.",
 };
