@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>N · Menu + ticket rail</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="home.css"><script src="sample.js"></script>
+<style>
+/* Order like at the counter: the menu on the left, and on the right the
+   ticket you are filling in — the same torn-edge ticket as the log-in page,
+   so the app has one object for "an order". Desktop: a sticky rail. Tablet
+   and phone: the ticket collapses into a bottom bar. */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:28px;align-items:start}
+.layout>*{min-width:0} /* a grid item will not shrink below its widest child (the tab row) otherwise */
+.layout h1{font-size:clamp(2.25rem,5vw,3.25rem);margin-bottom:16px}
+.rail{position:sticky;top:84px;display:grid;gap:14px}
+.ticket{background:var(--card);padding:26px 22px 22px;
+  -webkit-mask:radial-gradient(circle 7px at 50% 0,#0000 98%,#000) top/22px 51% repeat-x,radial-gradient(circle 7px at 50% 100%,#0000 98%,#000) bottom/22px 51% repeat-x;
+  mask:radial-gradient(circle 7px at 50% 0,#0000 98%,#000) top/22px 51% repeat-x,radial-gradient(circle 7px at 50% 100%,#0000 98%,#000) bottom/22px 51% repeat-x}
+.ticket .head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;border-bottom:1.5px dashed var(--line-strong)}
+.ticket .head b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:22px}
+.ticket ul{list-style:none;margin:0;padding:0}
+.ticket li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ticket li small{display:block;color:var(--muted)}
+.ticket .total{display:flex;justify-content:space-between;padding:14px 0;font-weight:600}
+.ticket .btn{width:100%}
+.live{background:var(--esp);color:var(--esp-fg);border-radius:18px;padding:14px 16px}
+.live .state{color:#9cc4a8}
+.bar{display:none}
+@media (max-width:999px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .rail{display:none}
+  .bar{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:40;justify-content:space-between;align-items:center;background:var(--cta);color:var(--cta-fg);border-radius:16px;padding:12px 12px 12px 18px}
+  .bar .btn{min-height:38px;padding:0 14px;font-size:11px}
+  .live.mob{display:block;margin-bottom:16px}
+}
+@media (min-width:1000px){.live.mob{display:none}}
+</style></head>
+<body>
+<script>document.write(topbar(2))</script>
+<main class="page">
+  <div class="layout">
+    <div>
+      <h1 class="display">Order ahead, Jai.</h1>
+      <div class="live mob caps"><span class="state">● #042 Preparing</span> · ~6 min · <a href="#" style="color:var(--esp-fg)">Track</a></div>
+      <script>document.write(tabs("All"))</script>
+      <div class="grid" style="margin-top:14px"><script>document.write(MENU.map(menuCard).join(""))</script></div>
+    </div>
+    <aside class="rail">
+      <div class="live caps"><span class="state">● #042 Preparing</span><div class="steps"><span class="on"></span><span class="on"></span><span></span></div></div>
+      <div class="ticket">
+        <div class="head"><span class="caps muted">Your ticket</span><b>2 ITEMS</b></div>
+        <ul>
+          <li><span>1×</span><span>Spanish Latte<small>Large · iced</small></span><span class="price">₱175</span></li>
+          <li><span>1×</span><span>Ensaymada<small>Warmed</small></span><span class="price">₱75</span></li>
+        </ul>
+        <div class="total"><span>Total</span><span class="price">₱250</span></div>
+        <span class="btn btn-cta">Checkout</span>
+      </div>
+    </aside>
+  </div>
+</main>
+<div class="bar"><span class="caps">Your ticket · 2 items · ₱250</span><span class="btn btn-inverse">Checkout</span></div>
+</body></html>

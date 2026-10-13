@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>V · Ticket rail + pickup shelf</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500;600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="staff.css"><script src="data.js"></script>
+<style>
+/* The bar's own furniture: tickets hang on a rail above the machine, in the
+   order they came in (oldest left), with torn edges like the customer's
+   ticket. Finished drinks go to the PICKUP SHELF below, where the customer
+   is met, paid and handed their order. Two zones = two jobs: make, then
+   hand over. The rail scrolls sideways inside itself, never the page. */
+.zone{padding:12px 16px}
+.zone h2{display:flex;align-items:baseline;gap:10px;margin:0 0 10px;font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.14em}
+.zone h2 b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:24px;letter-spacing:0}
+.rail{display:flex;gap:12px;overflow-x:auto;padding:14px 4px 16px;border-top:6px solid var(--line-strong);scroll-snap-type:x proximity}
+.rail .tk{flex:none;width:280px;scroll-snap-align:start;border-radius:4px;border-top:6px solid var(--c);
+  -webkit-mask:radial-gradient(circle 6px at 50% 100%,#0000 98%,#000) bottom/18px 51% repeat-x,linear-gradient(#000,#000) top/100% 51% no-repeat;
+  mask:radial-gradient(circle 6px at 50% 100%,#0000 98%,#000) bottom/18px 51% repeat-x,linear-gradient(#000,#000) top/100% 51% no-repeat}
+.rail .stagelbl{padding:6px 14px 0;font:500 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.14em;color:var(--c)}
+.shelf{display:grid;gap:10px}
+.shelfrow{display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:16px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:10px 10px 10px 16px}
+.shelfrow .code{font-family:Anton,Impact,sans-serif;font-size:26px}
+.shelfrow small{display:block;color:var(--muted)}
+.shelfrow .go{min-height:var(--tap);padding:0 20px;border:0;border-radius:12px;font:500 13px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em}
+@media (max-width:767px){.shelfrow{grid-template-columns:1fr auto}.shelfrow .chip{grid-column:1}.shelfrow .go{grid-column:1/-1}.sbar .shift{display:none}.sbar nav a{padding:0 10px}}
+</style></head>
+<body>
+<script>
+  if (new URLSearchParams(location.search).has("dark")) document.body.classList.add("dark");
+  document.write(staffBar("Queue") + kpis());
+  const C = { new: "var(--new)", make: "var(--make)" };
+  const making = ORDERS.filter(o => o.status !== "ready").sort((a,b)=>b.min-a.min);
+  const ready = ORDERS.filter(o => o.status === "ready");
+  document.write(`<main>
+    <section class="zone" aria-label="On the rail"><h2>On the rail <b>${making.length}</b> <span class="muted">oldest first</span></h2>
+      <div class="rail">${making.map(o => ticket(o).replace('<article class="tk', `<article style="--c:${C[o.status]}" class="tk`).replace('<div class="top">', `<div class="stagelbl">${o.status === "new" ? "New" : "Making"}</div><div class="top">`)).join("")}</div></section>
+    <section class="zone" aria-label="Pickup shelf"><h2>Pickup shelf <b>${ready.length}</b> <span class="muted">ready · waiting for the customer</span></h2>
+      <div class="shelf">${ready.map(o => `<div class="shelfrow"><span class="code">${o.code}</span><span>${o.who}<small>${o.items.map(i=>i[0]+"× "+i[1]).join(", ")} · ready ${o.min}m</small></span><span class="chip ${o.paid?"paid":"unpaid"}">${o.paid?"Paid":"Unpaid ₱"+o.total}</span><button class="go hand">${o.paid?"Hand over":"Take ₱"+o.total+" · hand over"}</button></div>`).join("")}</div></section>
+  </main>`);
+</script>
+</body></html>

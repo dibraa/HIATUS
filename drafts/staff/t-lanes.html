@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>T · Three lanes</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500;600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="staff.css"><script src="data.js"></script>
+<style>
+/* The kitchen-display pattern: New → Making → Ready as three lanes, so the
+   state of the counter reads in one glance. Each ticket has ONE big action
+   that moves it to the next lane. Ready tickets carry the payment state, and
+   "Hand over" opens the payment panel on the right (?sheet). Phones: the
+   lanes become a segmented control, one lane at a time. */
+.board{flex:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;padding:14px 16px;align-items:start}
+.board.with-sheet{grid-template-columns:repeat(3,minmax(0,1fr)) 360px}
+.lane{display:grid;gap:10px;align-content:start}
+.lane h2{display:flex;justify-content:space-between;align-items:center;margin:0;padding:8px 4px;font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.14em;border-bottom:3px solid var(--c)}
+.lane h2 b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:24px;letter-spacing:0}
+.seglanes{display:none}
+@media (max-width:767px){
+  .board,.board.with-sheet{grid-template-columns:1fr}
+  .lane:not(.on){display:none}
+  .seglanes{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:10px 16px 0}
+  .seglanes a{min-height:var(--tap);display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:12px;border:1.5px solid var(--line-strong);text-decoration:none;font:500 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em}
+  .seglanes a b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:20px}
+  .seglanes a[aria-current]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+  .sbar .shift{display:none}
+  .sbar nav a{padding:0 10px}
+  /* Hand-over on a phone: the payment panel rises as a bottom sheet over a
+     scrim, not a hidden column. */
+  .sheetcol{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;background:rgb(20 18 15/.45)}
+  .sheetcol .pay{width:100%;border-radius:22px 22px 0 0;max-height:88vh;overflow:auto;padding-bottom:28px}
+  .sheetcol .pay::before{content:"";justify-self:center;width:44px;height:5px;border-radius:9px;background:var(--line-strong)}
+}
+@media (min-width:768px) and (max-width:1199px){.board.with-sheet{grid-template-columns:repeat(2,minmax(0,1fr)) 340px}.board.with-sheet .lane.l1{display:none}}
+</style></head>
+<body>
+<script>
+  const q = new URLSearchParams(location.search);
+  if (q.has("dark")) document.body.classList.add("dark");
+  const sheet = q.has("sheet");
+  document.write(staffBar("Queue") + kpis());
+  const L = [["new","New","var(--new)","l1"],["make","Making","var(--make)","l2"],["ready","Ready","var(--ink)","l3"]];
+  document.write(`<nav class="seglanes" aria-label="Lanes">${L.map(([s,n],i)=>`<a href="#"${i===0?' aria-current="page"':""}><b>${ORDERS.filter(o=>o.status===s).length}</b>${n}</a>`).join("")}</nav>`);
+  document.write(`<main class="board${sheet ? " with-sheet" : ""}">` +
+    L.map(([s,n,c,cls],i) => `<section class="lane ${cls}${i===0?" on":""}" style="--c:${c}" aria-label="${n}"><h2>${n} <b>${ORDERS.filter(o=>o.status===s).length}</b></h2>${ORDERS.filter(o=>o.status===s).map(o=>ticket(o)).join("")}</section>`).join("") +
+    (sheet ? `<div class="sheetcol">${payPanel(ORDERS.find(o=>o.code==="#C2F871"))}</div>` : "") + `</main>`);
+</script>
+</body></html>
