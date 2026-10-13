@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>W · Unified table</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500;600&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="staff.css"><script src="data.js"></script>
+<style>
+/* Every open order in ONE table: what it is, where it stands, how long it has
+   waited, whether it's paid, and the one button that moves it on. Sorted by
+   what needs doing first (ready to hand over → new → making, oldest first),
+   filtered by stage chips. "Hand over" on an unpaid order opens the payment
+   panel beside the table (?sheet), or as a bottom sheet on phones.
+
+   Type is the only column that folds away on smaller screens — payment never
+   does, because "unpaid" changes what the barista says at hand-over.
+
+   A real <table>: the counter screen reads it as rows and columns, and a
+   screen reader gets headers for free. Below 900px the same rows restack as
+   cards, each cell labelled from its column header. */
+.wrapT{flex:1;display:grid;grid-template-columns:minmax(0,1fr);gap:16px;padding:14px 16px;align-items:start}
+.wrapT.with-sheet{grid-template-columns:minmax(0,1fr) 360px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.filters a{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 16px;border-radius:12px;border:1.5px solid var(--line-strong);text-decoration:none;font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;background:var(--card);color:var(--ink)}
+.filters a b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:18px;letter-spacing:0}
+.filters a[aria-current]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+table{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+thead th{position:sticky;top:0;background:var(--raised);text-align:left;font:500 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.14em;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--line)}
+tbody td{padding:12px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:14px}
+tbody tr:last-child td{border-bottom:0}
+tbody tr.fresh td:first-child{box-shadow:inset 4px 0 0 var(--new)}
+tbody tr[aria-selected="true"] td{background:var(--raised)}
+.code{font-family:Anton,Impact,sans-serif;font-size:22px;line-height:1}
+.items{display:grid;gap:2px}
+.items small{color:var(--muted);font-size:12px}
+.who{font-weight:600}
+.stage{display:inline-flex;align-items:center;gap:7px;font:500 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em}
+.stage::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c)}
+.flags{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+td .go{min-height:var(--tap);padding:0 16px;border:0;border-radius:12px;font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;width:100%}
+td.actcol{width:210px}
+.notecell{color:var(--late-ink);font-size:12px;margin-top:4px;display:flex;gap:6px}
+.notecell .ico{width:16px;height:16px}
+@media (max-width:1199px){.wrapT.with-sheet{grid-template-columns:minmax(0,1fr) 330px}.hide-md{display:none}}
+@media (max-width:899px){
+  .wrapT.with-sheet{grid-template-columns:minmax(0,1fr)}
+  table,thead,tbody,tr,td{display:block}
+  thead{display:none}
+  table{background:none;border:0;border-radius:0}
+  tbody{display:grid;gap:10px}
+  tbody tr{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:grid;grid-template-columns:1fr auto}
+  tbody td{border:0;padding:8px 14px}
+  tbody td[data-col="Order"]{padding-top:14px}
+  tbody td[data-col="Wait"]{text-align:right;padding-top:14px}
+  tbody td[data-col="Items"],tbody td.actcol{grid-column:1/-1;width:auto}
+  tbody td.hide-md{display:none}
+  tbody td.actcol{padding-bottom:14px}
+  .sheetcol{position:fixed;inset:0;z-index:50;display:flex;align-items:flex-end;background:rgb(20 18 15/.45)}
+  .sheetcol .pay{width:100%;border-radius:22px 22px 0 0;max-height:88vh;overflow:auto;padding-bottom:28px}
+}
+@media (max-width:767px){.sbar .shift{display:none}}
+</style></head>
+<body>
+<script>
+  const q = new URLSearchParams(location.search);
+  if (q.has("dark")) document.body.classList.add("dark");
+  const sheet = q.has("sheet");
+  document.write(staffBar("Queue") + kpis());
+  const C = { new: "var(--new)", make: "var(--make)", ready: "var(--ink)" };
+  const N = { new: "New", make: "Making", ready: "Ready" };
+  const rank = { ready: 0, new: 1, make: 2 };
+  const rows = [...ORDERS].sort((a, b) => rank[a.status] - rank[b.status] || b.min - a.min);
+  const sel = "#C2F871";
+  const late = (o) => o.status === "ready" ? "" : o.min >= 12 ? '<span class="chip over">Over 12m</span>' : o.min >= 8 ? '<span class="chip late">Late</span>' : "";
+  const btn = (o) => o.status === "new" ? '<button class="go start">Start</button>'
+    : o.status === "make" ? '<button class="go ready">Mark ready</button>'
+    : `<button class="go hand">${o.paid ? "Hand over" : "Take ₱" + o.total + " · hand over"}</button>`;
+  const count = (s) => ORDERS.filter(o => !s || o.status === s).length;
+  document.write(`<main class="wrapT${sheet ? " with-sheet" : ""}"><div>
+    <nav class="filters" aria-label="Filter by stage">
+      <a href="#" aria-current="page">All <b>${count()}</b></a><a href="#">New <b>${count("new")}</b></a><a href="#">Making <b>${count("make")}</b></a><a href="#">Ready <b>${count("ready")}</b></a>
+    </nav>
+    <table><thead><tr><th>Order</th><th>Items</th><th class="hide-md">Type</th><th>Status</th><th>Wait</th><th>Payment</th><th><span class="sr-only">Next step</span></th></tr></thead><tbody>
+    ${rows.map(o => `<tr class="${o.fresh ? "fresh" : ""}"${sheet && o.code === sel ? ' aria-selected="true"' : ""}>
+      <td data-col="Order"><div class="code">${o.code}</div><div class="who">${o.who}</div></td>
+      <td data-col="Items"><div class="items">${o.items.map(([n, name, d]) => `<span>${n}× ${name}${d ? ` <small>· ${d}</small>` : ""}</span>`).join("")}</div>${o.note ? `<div class="notecell">${icon("note")}${o.note}</div>` : ""}</td>
+      <td data-col="Type" class="hide-md"><span class="chip type">${o.type}</span></td>
+      <td data-col="Status"><span class="stage" style="--c:${C[o.status]}">${N[o.status]}</span><div class="flags">${o.fresh ? '<span class="chip new">New</span>' : ""}${late(o)}</div></td>
+      <td data-col="Wait"><span class="time">${o.min}m</span></td>
+      <td data-col="Payment"><span class="chip ${o.paid ? "paid" : "unpaid"}">${o.paid ? "Paid" : "Unpaid ₱" + o.total}</span></td>
+      <td class="actcol">${btn(o)}</td></tr>`).join("")}
+    </tbody></table></div>
+    ${sheet ? `<div class="sheetcol">${payPanel(ORDERS.find(o => o.code === sel))}</div>` : ""}</main>`);
+</script>
+</body></html>

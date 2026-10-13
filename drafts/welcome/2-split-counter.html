@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome B: Split counter</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Pattern: split screen (No Coffee, Contra split-hero concept). Pine panel = the subject. */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px;padding:0 16px 16px;height:calc(100vh - 150px);min-height:560px}
+.panel{background:var(--pine);color:var(--pine-fg);border-radius:var(--r-lg);padding:56px;display:flex;flex-direction:column}
+.panel .caps{color:var(--pine-muted)}
+.panel h1{font-size:clamp(3.5rem,7.5vw,7.5rem);margin:auto 0 24px}
+.panel h1 span{color:var(--pine-display)}
+.panel p{font-size:19px;max-width:32ch;margin:0 0 32px}
+.panel .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.panel .row a.link{color:var(--pine-fg);font-family:'JetBrains Mono',monospace;font-size:13px;text-transform:uppercase;letter-spacing:.12em;margin-left:12px}
+.photo{border-radius:var(--r-lg);overflow:hidden;position:relative;background:var(--raised)}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.panel .open::before{background:var(--pine-display)}
+.photo .tag{position:absolute;left:20px;bottom:20px;background:var(--card);border-radius:var(--r-md);padding:14px 18px}
+.photo .tag strong{display:block;font-size:17px}
+
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin:96px auto;border-top:1.5px solid var(--ink)}
+.steps li{list-style:none;padding:28px 28px 0 0}
+.steps li+li{padding-left:28px;border-left:1px solid var(--line)}
+.steps .n{font-family:Anton,Impact,sans-serif;font-size:56px;line-height:1;color:var(--accent-ink)}
+.steps h3{font-size:20px;margin:12px 0 6px}
+.steps p{margin:0;color:var(--ink-soft)}
+.foot{border-top:1px solid var(--line);padding-block:28px;display:flex;justify-content:space-between}
+@media (max-width:860px){.split{grid-template-columns:1fr}.split{height:auto}.photo{aspect-ratio:4/3}.panel{padding:32px}.steps{grid-template-columns:1fr}.steps li+li{border-left:0;padding-left:0;border-top:1px solid var(--line)}}
+</style>
+</head>
+<body>
+<nav class="switch" aria-label="Drafts"><a href="index.html">All</a><a href="1-storefront.html">A Storefront</a><a href="2-split-counter.html" aria-current="page">B Split</a><a href="3-menu-first.html">C Menu-first</a><a href="4-editorial.html">D Editorial</a><a href="5-ticket.html">E Ticket</a><a href="6-espresso.html">F Espresso</a><a href="7-the-shop.html">G The shop</a></nav>
+
+<nav class="nav" aria-label="Main">
+  <a class="mark" href="#">Hiatus</a>
+  <ul><li><a class="caps" href="#">Menu</a></li><li><a class="caps" href="#how">How it works</a></li><li><a class="btn btn-ghost" href="#">Sign in</a></li></ul>
+</nav>
+
+<header class="split">
+  <div class="panel">
+    <span class="caps open">Open now · until 10 PM</span>
+    <h1 class="display">Take that<br><span>much needed</span><br>break.</h1>
+    <p>Your usual, made when you're on your way. Order ahead and pick it up at the counter.</p>
+    <div class="row">
+      <a class="btn btn-inverse" href="#">Start an order</a>
+      <a class="link" href="#">Browse menu →</a>
+    </div>
+  </div>
+  <figure class="photo" style="margin:0">
+    <img src="assets/hero-ube-cups.jpg" alt="Two ube lattes on the counter, each cup with a handwritten note">
+    <figcaption class="tag"><span class="caps muted">Most ordered</span><strong>Ube Latte · ₱165</strong></figcaption>
+  </figure>
+</header>
+
+<main class="wrap">
+  <ol class="steps" id="how" aria-label="How ordering works" style="padding:0">
+    <li><div class="n">01</div><h3>Pick your drink</h3><p>Choose size and add-ons from the full menu.</p></li>
+    <li><div class="n">02</div><h3>Pay ahead</h3><p>Card, e-wallet, or cash at pickup.</p></li>
+    <li><div class="n">03</div><h3>Grab it</h3><p>We'll tell you the moment it's ready.</p></li>
+  </ol>
+</main>
+<footer class="wrap foot caps muted"><span>Hiatus Coffee</span><span>Mon–Sun · 7 AM – 10 PM</span></footer>
+</body>
+</html>

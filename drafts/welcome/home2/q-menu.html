@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Q · Menu-first</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="home.css"><script src="ui.js"></script>
+<style>
+/* Menu-first, redone. The live order is an inline banner in the page flow
+   (the old floating pill covered cards), tabs stick under the top bar, and
+   the cart's count lives in the top bar on every size. */
+.slim{display:flex;justify-content:space-between;align-items:end;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.slim h1{font-size:clamp(2.2rem,5vw,3.25rem)}
+.banner{display:flex;align-items:center;gap:14px;flex-wrap:wrap;background:var(--esp);color:var(--esp-fg);border-radius:16px;padding:10px 10px 10px 18px;margin-bottom:16px}
+.banner .st{font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:#9cc4a8}
+.banner .what{color:var(--esp-muted);font-size:14px;flex:1;min-width:160px}
+.banner a{margin-left:auto}
+.stick{position:sticky;top:65px;z-index:20;background:var(--surface);padding:8px 0;margin:0 -2px}
+</style></head>
+<body>
+<script>document.write(topbar("Menu"))</script>
+<main class="page">
+  <div class="slim"><h1 class="display">What'll it be, Jai?</h1><span class="caps open">Open · until 8 PM</span></div>
+  <div class="banner" role="status"><span class="st">● #042 Preparing · ~6 min</span><span class="what">Ube Latte (M) · Butter Croissant</span><a class="btn btn-inverse" href="#">Track</a></div>
+  <div class="stick"><script>document.write(tabs("All"))</script></div>
+  <div class="grid" style="margin-top:8px"><script>document.write(MENU.map(menuCard).join(""))</script></div>
+</main>
+<script>document.write(tabbar("Menu"))</script>
+</body></html>

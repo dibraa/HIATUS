@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome E: Ticket</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Pattern: one dominant device (Treme's single illustration). Here the device is the
+   order ticket staff already use, so the welcome page previews the product itself. */
+.stage{display:grid;grid-template-columns:1fr 440px;gap:64px;align-items:center;padding:48px 0 96px;min-height:calc(100vh - 140px)}
+.stage h1{font-size:clamp(3.5rem,8vw,8rem)}
+.stage p{font-size:19px;color:var(--ink-soft);max-width:34ch;margin:24px 0 32px}
+.stage .row{display:flex;gap:12px;flex-wrap:wrap}
+.ticket{background:var(--card);border-radius:var(--r-md);padding:28px 28px 20px;transform:rotate(2deg);position:relative;
+  -webkit-mask:radial-gradient(circle 10px at 50% 0,#0000 98%,#000) 0 0/28px 100% repeat-x;font-family:'JetBrains Mono',monospace}
+.ticket::after{content:"";position:absolute;inset:auto 0 -1px 0;height:10px;background:radial-gradient(circle 8px at 50% 100%,var(--surface) 98%,#0000) 0 0/24px 10px repeat-x}
+.ticket header{display:flex;justify-content:space-between;padding-bottom:14px;border-bottom:1.5px dashed var(--line-strong)}
+.ticket .no{font-family:Anton,Impact,sans-serif;font-size:44px;line-height:1}
+.ticket ul{list-style:none;padding:0;margin:0}
+.ticket li{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ticket li small{display:block;color:var(--muted);font-family:Geist,sans-serif;font-size:13px;text-transform:none;letter-spacing:0}
+.ticket .total{display:flex;justify-content:space-between;padding:16px 0 4px;font-size:15px}
+.ticket .state{margin-top:16px;padding:12px 14px;border-radius:var(--r-sm);background:#dceccb;color:#22400f;display:flex;justify-content:space-between;font-size:12px;text-transform:uppercase;letter-spacing:.12em}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);background:var(--band);border-radius:var(--r-lg);margin-bottom:48px}
+.facts div{padding:28px 32px}
+.facts div+div{border-left:1px solid #6b5f4a}
+.facts .caps{color:var(--band-muted)}
+.facts strong{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:32px;text-transform:uppercase;margin-top:6px}
+@media (max-width:900px){.stage{grid-template-columns:1fr}.ticket{transform:none}.facts{grid-template-columns:1fr}.facts div+div{border-left:0;border-top:1px solid #6b5f4a}}
+</style>
+</head>
+<body>
+<nav class="switch" aria-label="Drafts"><a href="index.html">All</a><a href="1-storefront.html">A Storefront</a><a href="2-split-counter.html">B Split</a><a href="3-menu-first.html">C Menu-first</a><a href="4-editorial.html">D Editorial</a><a href="5-ticket.html" aria-current="page">E Ticket</a><a href="6-espresso.html">F Espresso</a><a href="7-the-shop.html">G The shop</a></nav>
+
+<nav class="nav" aria-label="Main">
+  <a class="mark" href="#">Hiatus</a>
+  <ul><li><a class="caps" href="#">Menu</a></li><li><a class="btn btn-ghost" href="#">Sign in</a></li></ul>
+</nav>
+
+<main class="wrap">
+  <section class="stage" aria-labelledby="h">
+    <div>
+      <span class="caps open">Open now · until 10 PM</span>
+      <h1 class="display" id="h" style="margin-top:20px">Your order,<br>ready when<br>you are.</h1>
+      <p>Build it on your phone, pay ahead, and watch it go from the queue to the counter.</p>
+      <div class="row"><a class="btn btn-cta" href="#">Start an order</a><a class="btn btn-ghost" href="#">See the menu</a></div>
+    </div>
+
+    <figure class="ticket" style="margin:0" aria-label="Example order ticket">
+      <header><div><span class="caps muted">Order</span><div class="no">#042</div></div><div class="caps muted" style="text-align:right">Pickup<br>2:41 PM</div></header>
+      <ul>
+        <li><span>1×</span><span>Ube Latte<small>Iced · oat milk</small></span><span>₱165</span></li>
+        <li><span>1×</span><span>Spanish Latte<small>Hot · less sweet</small></span><span>₱150</span></li>
+        <li><span>1×</span><span>Butter Croissant<small>Warmed</small></span><span>₱85</span></li>
+      </ul>
+      <div class="total"><span>Total</span><strong>₱400</strong></div>
+      <div class="state"><span>● Ready for pickup</span><span>8 min</span></div>
+    </figure>
+  </section>
+
+  <section class="facts" aria-label="At a glance">
+    <div><span class="caps">Average wait</span><strong>8 minutes</strong></div>
+    <div><span class="caps">Pay with</span><strong>Card · GCash · Cash</strong></div>
+    <div><span class="caps">Hours</span><strong>7 AM – 10 PM</strong></div>
+  </section>
+</main>
+</body>
+</html>

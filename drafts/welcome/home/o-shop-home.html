@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>O · Shop home</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="home.css"><script src="sample.js"></script>
+<style>
+/* Continuity with the guest page: the same room photo and door sign greet
+   you after logging in, now with your name and your order on it. Then the
+   usual, then the menu as a calm list grouped by category. */
+.hero{position:relative;border-radius:26px;overflow:hidden;height:clamp(220px,34vh,320px);background:var(--card);padding:8px}
+.hero img{width:100%;height:100%;object-fit:cover;object-position:50% 35%;border-radius:20px}
+/* The wall is bright: a dark wash rising from the bottom keeps the cream headline readable. */
+.hero::after{content:"";position:absolute;inset:8px;border-radius:20px;background:linear-gradient(0deg,rgb(20 18 15/.72),rgb(20 18 15/.15) 60%,transparent)}
+.hero .over{z-index:1}
+.hero .over{position:absolute;left:28px;bottom:26px;right:28px;display:flex;justify-content:space-between;align-items:end;gap:16px;flex-wrap:wrap}
+.hero h1{font-size:clamp(2.5rem,6vw,4.25rem);color:var(--card);}
+.hero .sign{background:var(--pine);color:var(--pine-fg);border-radius:12px;padding:10px 14px;display:grid;gap:3px}
+.hero .sign small{color:var(--pine-muted)}
+.list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 32px}
+.cat{margin-top:28px}
+.cat h3{margin:0 0 6px}
+.li{display:grid;grid-template-columns:64px 1fr auto;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.li .ph{width:64px;height:64px;border-radius:12px;overflow:hidden;background:var(--raised);display:grid;place-items:center}
+.li .ph img{width:100%;height:100%;object-fit:cover}.li .ph svg{width:30px;opacity:.4}
+.li .add{width:36px;height:36px;border-radius:11px;background:var(--cta);color:var(--cta-fg);display:grid;place-items:center;font-size:19px}
+@media (max-width:760px){.list{grid-template-columns:1fr}.hero .over{left:18px;right:18px;bottom:18px}}
+</style></head>
+<body>
+<script>document.write(topbar(2))</script>
+<main class="page">
+  <section class="hero">
+    <img src="../assets/shop-room.jpg" alt="">
+    <div class="over">
+      <h1 class="display">Welcome back,<br>Jai.</h1>
+      <div class="sign caps"><span>● #042 Preparing · ~6 min</span><small>Open · until 8 PM</small></div>
+    </div>
+  </section>
+
+  <section class="sec">
+    <div class="sechead"><h2 class="display h2">Your usual</h2><a class="link" href="#">Saved orders</a></div>
+    <script>document.write(usual())</script>
+  </section>
+
+  <section class="sec">
+    <div class="sechead"><h2 class="display h2">The menu</h2></div>
+    <div class="list">
+      <script>
+        const groups = {};
+        MENU.forEach((m) => (groups[m.cat] ??= []).push(m));
+        document.write(Object.entries(groups).map(([cat, items]) => `
+          <div class="cat"><h3 class="caps">${cat}</h3>${items.map((m) => `
+            <div class="li"><div class="ph">${m.img ? `<img src="${m.img}" alt="">` : BEAN}</div>
+              <div><span class="name" style="font-weight:600">${m.name}</span><br><span class="price muted">₱${m.price} · from ₱${m.price - 15}</span></div>
+              <span class="add" aria-hidden="true">+</span></div>`).join("")}</div>`).join(""));
+      </script>
+    </div>
+  </section>
+</main>
+</body></html>

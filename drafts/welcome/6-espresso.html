@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome F: Espresso</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Inspired by the SIPIO comp's ideas (product layered over giant type, dark warm
+   ground with a glow, stamp badge, floating beans) but not its layout: this one
+   is left-aligned and asymmetric, with the drink in an arch bleeding off the
+   bottom edge instead of a centred cut-out. */
+.hero{position:relative;overflow:hidden;margin:0 16px;border-radius:var(--r-lg);
+  background:radial-gradient(55% 65% at 76% 80%,rgb(200 113 55/.42),transparent 70%),var(--cta);color:var(--cta-fg);
+  min-height:calc(100vh - 64px);display:grid;grid-template-columns:minmax(0,1fr) min(30vw,400px);grid-template-rows:auto 1fr;padding-right:9%}
+.hero .nav{grid-column:1/-1;width:100%;max-width:none;padding:22px 0 22px 64px;position:relative;z-index:4}
+.hero .nav .mark,.hero .nav ul a{color:var(--cta-fg)}
+.hero .nav .btn-ghost{border-color:rgb(245 234 216/.55)}
+.hero .nav .btn-ghost:hover{background:rgb(245 234 216/.1)}
+
+/* Copy column. The headline is allowed to overflow into the arch's column, and
+   the arch is stacked above it (z 2 vs 1), so the cup overlaps line two. */
+.copy{position:relative;z-index:1;padding:8px 0 48px 64px;display:flex;flex-direction:column;gap:32px}
+.hero h1{font-size:clamp(4rem,min(9.2vw,15.5vh),9.5rem);line-height:.86;white-space:nowrap;color:var(--cta-fg)}
+.hero h1 .indent{display:block;padding-left:1.1em;color:#e9b48c} /* 9.0:1 on espresso, display only */
+.lede{margin-top:auto;max-width:420px}
+.lede p{font-size:18px;margin:0 0 24px;color:#e6d9c4}
+.lede .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.lede .row a.link{color:var(--cta-fg);margin-left:8px}
+.facts{display:flex;flex-wrap:wrap;gap:14px 28px;margin-top:32px;padding-top:18px;border-top:1px solid rgb(245 234 216/.25)}
+.facts span{display:block;color:#bfae95}
+.facts strong{font-weight:500}
+.open::before{background:#8fd19e}
+
+.arch-wrap{grid-column:2;grid-row:2;align-self:end;position:relative;z-index:2;height:min(100%,calc(100vh - 170px));min-height:420px}
+.arch{margin:0;height:100%;border-radius:999px 999px 0 0;overflow:hidden;border:10px solid var(--card);border-bottom:0}
+.arch img{width:100%;height:100%;object-fit:cover;object-position:35% 50%}
+
+.stamp{position:absolute;z-index:3;left:-66px;top:34%;width:132px;height:132px;border-radius:50%;
+  background:var(--accent);color:var(--ink);display:grid;place-items:center}
+.stamp svg{position:absolute;inset:0;animation:spin 24s linear infinite}
+.stamp b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:28px;line-height:.9;text-align:center;text-transform:uppercase}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.stamp svg{animation:none}}
+
+.bean{position:absolute;z-index:1;width:52px;stroke:#e9b48c;fill:none;stroke-width:3.5;stroke-linecap:round;opacity:.75}
+
+/* Below the fold: one row, then out. */
+.picks{display:grid;grid-template-columns:minmax(0,1.1fr) repeat(3,minmax(0,1fr));gap:16px;align-items:end;padding:72px 0 40px}
+.picks h2{font-size:52px}
+.pick{background:var(--card);border-radius:var(--r-lg);padding:10px 10px 16px;text-decoration:none}
+.pick img{aspect-ratio:1;object-fit:cover;border-radius:var(--r-md);width:100%}
+.pick p{display:flex;justify-content:space-between;margin:12px 6px 0}
+.foot{border-top:1px solid var(--line);padding-block:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;padding-right:0;min-height:0}
+  .hero .nav{padding:16px 20px}
+  .copy{padding:0 20px 28px}
+  .hero h1{font-size:13vw;line-height:.9}.hero h1 .indent{padding-left:.6em}
+  .arch-wrap{grid-column:1;grid-row:auto;justify-self:center;width:78%;height:auto;min-height:0;aspect-ratio:3/4}
+  .stamp{left:-36px;width:100px;height:100px}.stamp b{font-size:21px}
+  .bean{display:none}
+  .picks{grid-template-columns:repeat(2,minmax(0,1fr))}.picks>div{grid-column:1/-1}.picks h2 br{display:none}
+}
+</style>
+</head>
+<body>
+<nav class="switch" aria-label="Drafts"><a href="index.html">All</a><a href="1-storefront.html">A Storefront</a><a href="2-split-counter.html">B Split</a><a href="3-menu-first.html">C Menu-first</a><a href="4-editorial.html">D Editorial</a><a href="5-ticket.html">E Ticket</a><a href="6-espresso.html" aria-current="page">F Espresso</a><a href="7-the-shop.html">G The shop</a></nav>
+
+<div style="height:16px"></div>
+<header class="hero">
+  <nav class="nav" aria-label="Main">
+    <a class="mark" href="#">Hiatus</a>
+    <ul><li><a class="caps" href="#picks">Menu</a></li><li><a class="caps" href="#visit">Visit</a></li><li><a class="btn btn-ghost" href="#">Sign in</a></li></ul>
+  </nav>
+
+
+  <svg class="bean" style="left:46%;top:16%;transform:rotate(18deg)" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="50" rx="32" ry="23" transform="rotate(-28 50 50)"/><path d="M28 61c9-5 11-14 15-20 4-7 12-11 20-13"/></svg>
+  <svg class="bean" style="right:5%;top:30%;width:40px;transform:rotate(-40deg)" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="50" rx="32" ry="23" transform="rotate(-28 50 50)"/><path d="M28 61c9-5 11-14 15-20 4-7 12-11 20-13"/></svg>
+  <svg class="bean" style="left:40%;bottom:12%;width:34px;transform:rotate(70deg)" viewBox="0 0 100 100" aria-hidden="true"><ellipse cx="50" cy="50" rx="32" ry="23" transform="rotate(-28 50 50)"/><path d="M28 61c9-5 11-14 15-20 4-7 12-11 20-13"/></svg>
+
+
+
+  <div class="copy">
+    <h1 class="display">Take that<span class="indent">much needed</span>break.</h1>
+    <div class="lede">
+      <p>Order on your phone, pay ahead, and we'll call you up the moment it's on the counter.</p>
+      <div class="row"><a class="btn btn-accent" href="#">Start an order →</a><a class="caps link" href="#picks">See the menu</a></div>
+      <div class="facts caps">
+        <div><span>Status</span><strong class="open">Open · until 10 PM</strong></div>
+        <div><span>Wait</span><strong>~8 min</strong></div>
+        <div><span>Service</span><strong>Pickup only</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arch-wrap">
+    <figure class="arch"><img src="assets/hero-ube-cup.jpg" alt="An iced ube latte with a handwritten note on the cup"></figure>
+    <div class="stamp" aria-hidden="true">
+    <svg viewBox="0 0 140 140"><defs><path id="c" d="M70 70m-52 0a52 52 0 1 1 104 0a52 52 0 1 1-104 0"/></defs>
+      <text font-family="JetBrains Mono" font-size="10.5" letter-spacing="3.2" fill="#14120f"><textPath href="#c">SLOW MOMENTS · SERVED WARM · </textPath></text></svg>
+    <b>Ube<br>₱165</b>
+  </div>
+
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="picks" id="picks" aria-labelledby="ph">
+    <div><h2 class="display" id="ph">This week <br>on the bar</h2><a class="caps" href="#" style="display:inline-block;margin-top:16px">Full menu →</a></div>
+    <a class="pick" href="#"><img src="assets/hero-ube-cups.jpg" alt=""><p><strong>Ube Latte</strong><span class="caps">₱165</span></p></a>
+    <a class="pick" href="#"><img src="assets/hero-mirror.jpg" alt=""><p><strong>Spanish Latte</strong><span class="caps">₱150</span></p></a>
+    <a class="pick" href="#"><img src="assets/hero-shelf.jpg" alt=""><p><strong>Sea Salt Mocha</strong><span class="caps">₱170</span></p></a>
+  </section>
+</main>
+<footer class="wrap foot caps muted" id="visit"><span>Hiatus Coffee</span><span>Mon–Fri 7 AM – 10 PM · Sat–Sun 8 AM – 10 PM</span></footer>
+</body>
+</html>

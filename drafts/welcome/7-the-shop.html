@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome G: The shop</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* The shop is the subject. Three sections: arrive (hero), look around (the tour),
+   come by (visit). Keeps F's layering and stamp, but on the cream ground, because
+   the room itself is bright: white walls, raw wood, tin. */
+
+/* --- Arrive ------------------------------------------------------------ */
+.hero{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:48px;align-items:end;padding-block:24px 72px}
+.hero .copy{position:relative;z-index:2;padding-bottom:12px}
+.kicker{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+.hero h1{font-size:clamp(3.5rem,min(6.4vw,12.5vh),7rem);line-height:.88;white-space:nowrap}
+.hero h1 .tint{color:var(--accent-ink)}
+.hero p{font-size:19px;color:var(--ink-soft);max-width:34ch;margin:24px 0 28px}
+.hero .row{display:flex;gap:12px;flex-wrap:wrap}
+.room{position:relative;margin:0}
+.room img{width:100%;height:min(68vh,620px);object-fit:cover;object-position:50% 30%;border-radius:var(--r-lg);border:12px solid var(--card)}
+.room figcaption{position:absolute;right:28px;bottom:28px;background:var(--card);border-radius:var(--r-md);padding:12px 16px}
+
+.stamp{position:absolute;z-index:3;left:-58px;top:-40px;width:128px;height:128px;border-radius:50%;background:var(--pine);display:grid;place-items:center}
+.stamp svg{position:absolute;inset:0;animation:spin 28s linear infinite}
+.stamp b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:17px;line-height:1;text-align:center;text-transform:uppercase;color:var(--pine-fg)}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.stamp svg{animation:none}}
+
+/* --- Look around: the tour, on the espresso panel ----------------------- */
+.tour{background:var(--cta);color:var(--cta-fg);border-radius:var(--r-lg);margin:0 16px;padding:88px 0}
+.tour header{display:flex;justify-content:space-between;align-items:end;gap:32px;margin-bottom:48px}
+.tour h2{font-size:clamp(3rem,6vw,5.5rem)}
+.tour header p{max-width:38ch;color:#e6d9c4;margin:0}
+.spots{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:20px}
+.spot{margin:0}
+.spot img{width:100%;object-fit:cover;border-radius:var(--r-md)}
+.spot figcaption{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin-top:16px}
+.spot .no{grid-row:span 2;font-family:Anton,Impact,sans-serif;font-size:40px;line-height:.9;color:#e9b48c}
+.spot strong{font-weight:500}
+.spot span.d{color:#cdbfa8;font-size:15px}
+.s1{grid-column:1/8}.s2{grid-column:8/13}.s1 img,.s2 img{height:clamp(240px,27vw,380px)}
+.s3{grid-column:1/7;margin-top:40px}.s3 img{aspect-ratio:4/3}
+.note{grid-column:8/13;align-self:center;margin-top:40px;font-family:Anton,Impact,sans-serif;text-transform:uppercase;font-size:clamp(2.5rem,4.6vw,4.25rem);line-height:.92;color:var(--cta-fg);margin:0}
+.note small{display:block;margin-top:14px;font:15px/1.5 Geist,sans-serif;text-transform:none;color:#cdbfa8;max-width:44ch}
+
+/* --- Come by -------------------------------------------------------------- */
+.visit{display:grid;grid-template-columns:minmax(0,1.2fr) repeat(2,minmax(0,1fr));gap:40px;padding-block:88px 64px;align-items:start}
+.visit h2{font-size:clamp(3rem,5vw,4.5rem)}
+.visit h3{margin:0 0 12px}
+.visit dl{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:0}
+.visit dt{color:var(--muted)}
+.visit dd{margin:0}
+.visit ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.foot{border-top:1px solid var(--line);padding-block:24px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+
+@media (max-width:900px){
+  .hero{grid-template-columns:1fr;gap:40px;padding-bottom:48px}
+  .hero h1{white-space:normal;margin-right:0;font-size:15vw}
+  .room img{height:auto;aspect-ratio:4/3.4}
+  .stamp{left:auto;right:10px;top:-44px;width:104px;height:104px}.stamp b{font-size:14px}
+  .tour{padding:56px 0}.tour header{flex-direction:column;align-items:start}
+  .spots{grid-template-columns:1fr}.s1,.s2,.s3,.note{grid-column:1}.s1 img,.s2 img{height:auto;aspect-ratio:4/3}.s3{margin-top:0}
+  .visit{grid-template-columns:1fr;gap:28px}
+}
+</style>
+</head>
+<body>
+<nav class="switch" aria-label="Drafts"><a href="index.html">All</a><a href="1-storefront.html">A Storefront</a><a href="2-split-counter.html">B Split</a><a href="3-menu-first.html">C Menu-first</a><a href="4-editorial.html">D Editorial</a><a href="5-ticket.html">E Ticket</a><a href="6-espresso.html">F Espresso</a><a href="7-the-shop.html" aria-current="page">G The shop</a></nav>
+
+<nav class="nav" aria-label="Main">
+  <a class="mark" href="#">Hiatus</a>
+  <ul><li><a class="caps" href="#inside">Inside</a></li><li><a class="caps" href="#visit">Visit</a></li><li><a class="caps" href="#">Menu</a></li><li><a class="btn btn-ghost" href="#">Sign in</a></li></ul>
+</nav>
+
+<main>
+  <!-- Arrive -->
+  <section class="hero wrap" aria-labelledby="h">
+    <div class="copy">
+      <div class="kicker caps"><span class="open">Open now · until 10 PM</span><span class="muted">Bukidnon</span></div>
+      <h1 class="display" id="h">A taste<br>of home,<br><span class="tint">of Bukidnon.</span></h1>
+      <p>A small coffee shop with handwritten cups, a wall of curios, and a seat for as long as you need it.</p>
+      <div class="row"><a class="btn btn-cta" href="#visit">Plan a visit</a><a class="btn btn-ghost" href="#">Order ahead</a></div>
+    </div>
+    <figure class="room">
+      <img src="assets/shop-room.jpg" alt="Inside Hiatus: a wavy arched mirror, warm lamps, a potted plant and woven baskets on wooden shelves">
+      <figcaption class="caps">Hiatus Headquarters</figcaption>
+      <div class="stamp" aria-hidden="true">
+        <svg viewBox="0 0 128 128"><defs><path id="c" d="M64 64m-48 0a48 48 0 1 1 96 0a48 48 0 1 1-96 0"/></defs>
+          <text font-family="JetBrains Mono" font-size="9.6" letter-spacing="2.6" fill="#f5ead8"><textPath href="#c">TAKE THAT MUCH NEEDED BREAK · </textPath></text></svg>
+        <b>Come<br>in</b>
+      </div>
+    </figure>
+  </section>
+
+  <!-- Look around -->
+  <section class="tour" id="inside" aria-labelledby="tour-h">
+    <div class="wrap">
+      <header>
+        <h2 class="display" id="tour-h">Look around</h2>
+        <p>A few of the corners you'll find when you walk in.</p>
+      </header>
+      <div class="spots">
+        <figure class="spot s1"><img src="assets/shop-mirror.jpg" alt="A long wood-framed mirror on a corrugated tin wall, reflecting plants and shelves">
+          <figcaption><span class="no">01</span><strong class="caps">The tin wall</strong><span class="d">A long mirror on corrugated tin, reflecting the plants back into the room.</span></figcaption></figure>
+        <figure class="spot s2"><img src="assets/shop-shelf.jpg" alt="A wooden curio shelf with a framed print, Filipino books, a woven owl, figurines and illustrated cups">
+          <figcaption><span class="no">02</span><strong class="caps">The curio shelf</strong><span class="d">Rizal, Tagu-taguan, a woven owl, and a row of illustrated cups.</span></figcaption></figure>
+        <figure class="spot s3"><img src="assets/shop-cups.jpg" alt="Four iced drinks on the counter, each cup handwritten with a name and a note">
+          <figcaption><span class="no">03</span><strong class="caps">The counter</strong><span class="d">Your name and a little note, handwritten on the cup.</span></figcaption></figure>
+        <p class="note">“Salamat sa inyong pag-apit.”<small>Thank you for dropping by. You'll find it written on the cups.</small></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Come by -->
+  <section class="visit wrap" id="visit" aria-labelledby="visit-h">
+    <div>
+      <h2 class="display" id="visit-h">Come by</h2>
+      <p class="muted" style="max-width:34ch">Stay a while, or order ahead and grab it on your way.</p>
+      <div class="row" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:20px"><a class="btn btn-cta" href="#">Order ahead</a><a class="btn btn-ghost" href="#">See the menu</a></div>
+    </div>
+    <div>
+      <h3 class="caps">Hours</h3>
+      <dl><dt>Mon–Fri</dt><dd>7 AM – 10 PM</dd><dt>Sat–Sun</dt><dd>8 AM – 10 PM</dd></dl>
+    </div>
+    <div>
+      <h3 class="caps">Find us</h3>
+      <ul><li>Address from shop settings</li><li><a href="#">@hiatuscoffee_ph</a></li><li><a href="#">Hiatus Coffee on Facebook</a></li></ul>
+    </div>
+  </section>
+</main>
+<footer class="wrap foot caps muted"><span>Hiatus Coffee</span><span>Take that much needed break.</span></footer>
+</body>
+</html>
