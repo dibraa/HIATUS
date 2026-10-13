@@ -10,6 +10,13 @@ import type { ReactNode } from "react";
  * `as` exists because a heading's LEVEL is about document structure and its
  * SIZE is about visual weight; these must be settable apart or headings get
  * skipped to get a smaller size.
+ *
+ * The sizes are single fluid steps from the type scale, not breakpoint
+ * chains: `text-6xl` already runs 41 -> 74px with the viewport, and `.display`
+ * already computes the optical tracking and line-height for whatever size it
+ * lands on. Earlier versions re-applied `tracking-[-0.02em] leading-[0.95]`
+ * here, which overrode that calc with one fixed value for every size — the
+ * exact drift the stylesheet's "Type roles" block was written to prevent.
  */
 export function PageHeader({
   title,
@@ -26,21 +33,21 @@ export function PageHeader({
    *  vertical space is at a premium — staff queue, POS, dashboards. */
   size?: "hero" | "utility";
 }) {
-  const sizeClasses =
-    size === "hero"
-      ? "text-5xl sm:text-6xl"
-      : "text-2xl sm:text-3xl";
+  const hero = size === "hero";
 
   return (
-    <div className={size === "hero" ? "mb-8" : "mb-6"}>
+    // `mb-heading` (28 -> 40px) is the named heading-to-content gutter; a
+    // utility header is a chrome element and sits one fixed `stack` (24px)
+    // above its content instead.
+    <div className={hero ? "mb-heading" : "mb-stack"}>
       <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="min-w-0">
-          <Tag className={`display ${sizeClasses} leading-[0.95] tracking-[-0.02em] text-ink`}>
+          <Tag className={`display text-ink ${hero ? "text-6xl" : "text-3xl"}`}>
             {title}
           </Tag>
 
           {description && (
-            <p className="mt-2 max-w-[50ch] text-sm text-muted">{description}</p>
+            <p className="mt-tight max-w-[50ch] text-sm text-muted">{description}</p>
           )}
         </div>
 

@@ -1,11 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { signIn, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { TextLink } from "@/components/ui/text-link";
 
 const initialState: AuthState = { error: null };
 
@@ -51,19 +51,18 @@ export function LoginForm() {
         autoComplete="current-password"
       />
 
-      <Link
-        href="/forgot-password"
-        className="-mt-1 self-start text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
-      >
+      {/* A 44px target with negative margins, so the link takes a 28px slot
+          in the stack while still being easy to hit. */}
+      <TextLink href="/forgot-password" block className="-my-2 self-start text-sm">
         Forgot your password?
-      </Link>
+      </TextLink>
 
       {/* Sign-in failures are deliberately not attached to a single field:
           saying which of the two was wrong tells an attacker whether the
           address is registered. */}
       <FormError>{state.error}</FormError>
 
-      <Button type="submit" size="md" disabled={pending} className="mt-1 w-full">
+      <Button type="submit" size="md" loading={pending} className="mt-1 w-full">
         {pending ? "Signing in…" : "Log in"}
       </Button>
     </form>

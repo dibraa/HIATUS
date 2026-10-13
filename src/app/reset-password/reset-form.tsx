@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonLink } from "@/components/ui/button";
 import { PasswordField, FormError } from "@/components/ui/field";
 import { updatePassword } from "@/app/actions/auth";
 
@@ -14,24 +14,25 @@ export function ResetPasswordForm({ token }: { token: string }) {
 
   if (state.success) {
     return (
-      <div className="rounded-lg border border-line bg-card p-6 text-center">
-        <h2 className="display text-xl text-ink">Password changed</h2>
-        <p className="mx-auto mt-2 max-w-[42ch] text-sm text-muted">
+      <div
+        role="status"
+        aria-live="polite"
+        className="rounded-lg border border-line bg-raised p-6 text-center"
+      >
+        <h2 className="display text-2xl text-ink">Password changed</h2>
+        <p className="mx-auto mt-tight max-w-[42ch] text-sm text-muted">
           Log in with your new password. The link you used no longer works.
         </p>
 
-        <Link
-          href="/login"
-          className="ui-caps mt-6 inline-flex h-12 items-center rounded-md bg-cta px-6 text-sm text-cta-fg transition-colors hover:bg-cta-hover"
-        >
+        <ButtonLink href="/login" size="md" className="mt-stack w-full">
           Log in
-        </Link>
+        </ButtonLink>
       </div>
     );
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="token" value={token} />
 
       <PasswordField
@@ -61,6 +62,8 @@ export function ResetPasswordForm({ token }: { token: string }) {
           {state.expired && (
             <>
               {" "}
+              {/* Plain Link, not TextLink: it inherits the banner's danger
+                  colour, which is the measured pair on this tint. */}
               <Link href="/forgot-password" className="font-semibold underline underline-offset-4">
                 Send a new link
               </Link>
@@ -69,7 +72,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         </FormError>
       )}
 
-      <Button type="submit" size="lg" disabled={pending}>
+      <Button type="submit" size="md" loading={pending} className="mt-1 w-full">
         {pending ? "Saving…" : "Set new password"}
       </Button>
     </form>

@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { TextField, FormError } from "@/components/ui/field";
+import { TextLink } from "@/components/ui/text-link";
 import { requestPasswordReset } from "@/app/actions/auth";
 
 export function ForgotPasswordForm() {
@@ -26,7 +26,7 @@ export function ForgotPasswordForm() {
       <div
         role="status"
         aria-live="polite"
-        className="rounded-lg border border-line bg-card p-6 text-center"
+        className="rounded-lg border border-line bg-raised p-6 text-center"
       >
         <div
           aria-hidden="true"
@@ -38,24 +38,21 @@ export function ForgotPasswordForm() {
           </svg>
         </div>
 
-        <h2 className="display mt-4 text-xl text-ink">Check your email</h2>
-        <p className="mx-auto mt-2 max-w-[42ch] text-sm text-muted">
+        <h2 className="display mt-4 text-2xl text-ink">Check your email</h2>
+        <p className="mx-auto mt-tight max-w-[42ch] text-sm text-muted">
           If that address has an account with us, a link to set a new password
           is on its way. It expires in an hour.
         </p>
 
-        <Link
-          href="/login"
-          className="mt-6 inline-block text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
-        >
+        <TextLink href="/login" block className="mt-4 text-sm">
           Back to log in
-        </Link>
+        </TextLink>
       </div>
     );
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form action={formAction} className="flex flex-col gap-4">
       <TextField
         id="email"
         name="email"
@@ -69,18 +66,12 @@ export function ForgotPasswordForm() {
 
       {state.error && <FormError>{state.error}</FormError>}
 
-      <Button type="submit" size="lg" disabled={pending}>
+      <Button type="submit" size="md" loading={pending} className="mt-1 w-full">
         {pending ? "Sending…" : "Send reset link"}
       </Button>
 
       <p className="text-center text-sm text-muted">
-        Remembered it?{" "}
-        <Link
-          href="/login"
-          className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
-        >
-          Log in
-        </Link>
+        Remembered it? <TextLink href="/login">Log in</TextLink>
       </p>
     </form>
   );
