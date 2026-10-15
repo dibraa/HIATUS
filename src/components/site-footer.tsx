@@ -1,70 +1,78 @@
-import Link from "next/link";
-import { Wordmark } from "@/components/brand";
-import { getCurrentUser } from "@/lib/auth";
+import { SHOP_SOCIALS } from "@/content/shop";
+import { groupBusinessHours } from "@/lib/hours";
+import { getSettings } from "@/lib/settings";
 
 /**
- * Site footer: a slim two-row bar on the pine panel.
+ * Site footer: "Come by" — the hours and how to reach the shop, in one short
+ * band closing every customer page on the pine panel.
  *
- * Row one is the brand and ONE inline row of links — no column headings,
- * because four links do not need categorising, and headings over two-item
- * lists were most of what made the old four-column footer read as clutter.
- * Row two keeps the operational facts a pickup-only shop gets asked about
- * (no delivery, cash, cancelling), set as a single quiet line beside the
- * copyright rather than as a fourth column of sentences.
+ * Hours and contact come from Settings, so the footer never states hours the
+ * admin has since changed. Empty settings are omitted rather than filled with
+ * placeholders; with nothing known at all, the "Find us" column disappears.
  *
- * Every colour is an `inverse-*` token — `muted` and `line` are unreadable on
- * this ground. Guests get the welcome page's sections and the way in; signed-in
- * customers get the places they return to.
+ * Information only — no actions: the way in lives in the page and the top
+ * bar. Every colour is an `inverse-*` token — `muted` and `line` are
+ * unreadable on this ground.
+ * `id="visit"` keeps older `/#visit` links landing here.
  */
 export async function SiteFooter() {
-  const user = await getCurrentUser();
+  const settings = await getSettings();
 
-  const links = user
-    ? [
-        { href: "/menu", label: "Menu" },
-        { href: "/cart", label: "Cart" },
-        { href: "/orders", label: "My orders" },
-        { href: "/profile", label: "Profile" },
-      ]
-    : [
-        // The guest welcome's own sections (components/welcome).
-        { href: "/#inside", label: "Look around" },
-        { href: "/#visit", label: "Hours" },
-        { href: "/login", label: "Log in" },
-        { href: "/signup", label: "Sign up" },
-      ];
+  const groups = groupBusinessHours(settings.businessHours);
+  // `?? ""`: getSettings() fills MISSING keys from defaults, but a key the
+  // API returns as null passes through untouched.
+  const address = (settings.shopInfo.address ?? "").trim();
+  const phone = (settings.shopInfo.phone ?? "").trim();
+  const hasContact = Boolean(address || phone || SHOP_SOCIALS.length);
+
+  const contactLink = "underline underline-offset-4 transition-colors hover:text-inverse-muted";
 
   return (
-    <footer className="mt-16 bg-inverse-bg text-inverse-fg">
-      <div className="mx-auto max-w-6xl px-4 py-8">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <Wordmark size="md" className="text-inverse-fg" />
-            <p className="mt-2 text-sm text-inverse-muted">Take that much needed break.</p>
-          </div>
+    <footer id="visit" aria-labelledby="visit-heading" className="mt-section scroll-mt-20 bg-inverse-bg text-inverse-fg">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)_minmax(0,1fr)]">
+        <div>
+          <h2 id="visit-heading" className="display text-5xl">
+            Come by
+          </h2>
+          <p className="mt-snug max-w-[34ch] text-inverse-muted">
+            Stay a while, or order ahead and grab it on your way.
+          </p>
+        </div>
 
-          <nav aria-label="Footer">
-            <ul className="flex flex-wrap gap-x-6 gap-y-2">
-              {links.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="ui-caps inline-flex min-h-11 items-center text-2xs text-inverse-muted transition-colors hover:text-inverse-fg sm:min-h-0"
-                  >
-                    {link.label}
-                  </Link>
+        <div>
+          <h3 className="ui-caps text-2xs text-inverse-muted">Hours</h3>
+          <dl className="mt-snug grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-1.5">
+            {groups.map((group) => (
+              <div key={group.days} className="contents">
+                <dt className="ui-caps text-2xs leading-6 text-inverse-muted">{group.days}</dt>
+                <dd className="numeric text-sm leading-6">{group.hours}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        {hasContact && (
+          <div>
+            <h3 className="ui-caps text-2xs text-inverse-muted">Find us</h3>
+            <ul className="mt-snug grid gap-1.5">
+              {address && <li>{address}</li>}
+              {phone && (
+                <li>
+                  <a href={`tel:${phone}`} className={contactLink}>
+                    {phone}
+                  </a>
+                </li>
+              )}
+              {SHOP_SOCIALS.map((social) => (
+                <li key={social.href}>
+                  <a href={social.href} target="_blank" rel="noopener noreferrer" className={contactLink}>
+                    {social.label}
+                  </a>
                 </li>
               ))}
             </ul>
-          </nav>
-        </div>
-
-        <div className="mt-6 flex flex-col gap-2 border-t border-inverse-line/40 pt-5 text-inverse-muted sm:flex-row sm:items-baseline sm:justify-between sm:gap-6">
-          <p className="ui-caps text-2xs">&copy; {new Date().getFullYear()} Hiatus Coffee</p>
-          {/* Body face, so a step up from the caps beside it: the 2xs size is
-              tuned for tracked mono caps and is too small for a sentence. */}
-          <p className="text-sm">Pickup only &middot; Cash on pickup &middot; Orders can be cancelled while pending</p>
-        </div>
+          </div>
+        )}
       </div>
     </footer>
   );

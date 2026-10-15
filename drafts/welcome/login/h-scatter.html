@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>H · Counter spread</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ticket.css">
+<style>
+/* Snapshots left on the counter: six framed photos at slight angles, three a
+   side, tucked partly behind the ticket. Tablet keeps two (one a side); a
+   phone gets a short fanned row of three above the ticket instead. */
+main{position:relative;display:grid;place-items:center;padding:clamp(24px,4vw,48px) 16px;overflow:hidden}
+.spread{position:absolute;inset:0;pointer-events:none}
+.spread .snap{position:absolute}
+.s1{width:260px;aspect-ratio:4/3;left:calc(50% - 540px);top:6%;transform:rotate(-7deg)}
+.s2{width:210px;aspect-ratio:3/4;left:calc(50% - 470px);top:38%;transform:rotate(4deg)}
+.s3{width:240px;aspect-ratio:4/3;left:calc(50% - 560px);bottom:4%;transform:rotate(-3deg)}
+.s4{width:230px;aspect-ratio:4/3;right:calc(50% - 540px);top:4%;transform:rotate(6deg)}
+.s5{width:250px;aspect-ratio:4/3;right:calc(50% - 560px);top:36%;transform:rotate(-5deg)}
+.s6{width:200px;aspect-ratio:3/4;right:calc(50% - 470px);bottom:3%;transform:rotate(3deg)}
+.stamp{--s:104px;right:calc(50% - 345px);bottom:5%;z-index:6}
+.fan{display:none}
+@media (max-width:1099px){
+  .s2,.s3,.s5,.s6{display:none}
+  .s1{left:calc(50% - 400px);top:10%;width:200px}
+  .s4{right:calc(50% - 400px);top:auto;bottom:10%;width:200px}
+  .stamp{display:none}
+}
+@media (max-width:820px){
+  .spread{display:none}
+  main{place-items:start center}
+  .fan{display:flex;justify-content:center;margin:4px 0 22px;height:112px;position:relative;width:100%;max-width:420px}
+  .fan .snap{width:132px;aspect-ratio:4/3;position:absolute;top:8px}
+  .fan .snap:nth-child(1){left:6%;transform:rotate(-8deg)}
+  .fan .snap:nth-child(2){left:calc(50% - 66px);top:0;z-index:2}
+  .fan .snap:nth-child(3){right:6%;transform:rotate(7deg)}
+}
+</style></head>
+<body>
+<header class="topbar"><b>Hiatus</b><span class="caps">Log in <span class="btn btn-cta">Sign up</span></span></header>
+<main>
+  <div class="spread" aria-hidden="true">
+    <figure class="snap s1"><img src="../assets/shop-room.jpg" alt=""></figure>
+    <figure class="snap s2"><img src="../assets/hero-ube-cup.jpg" alt=""></figure>
+    <figure class="snap s3"><img src="../assets/shop-shelf.jpg" alt=""></figure>
+    <figure class="snap s4"><img src="../assets/shop-notes.jpg" alt=""></figure>
+    <figure class="snap s5"><img src="../assets/shop-mirror.jpg" alt=""></figure>
+    <figure class="snap s6"><img src="../assets/hero-ube-cups.jpg" alt=""></figure>
+    <div class="stamp" aria-hidden="true"><svg viewBox="0 0 128 128"><defs><path id="r" d="M64 64m-48 0a48 48 0 1 1 96 0a48 48 0 1 1-96 0"/></defs><text font-family="JetBrains Mono" font-size="9.6" letter-spacing="2.6" fill="#f5ead8"><textPath href="#r">TAKE THAT MUCH NEEDED BREAK · </textPath></text></svg><b>Come<br>in</b></div>
+  </div>
+  <div class="fan" aria-hidden="true">
+    <figure class="snap"><img src="../assets/shop-room.jpg" alt=""></figure>
+    <figure class="snap"><img src="../assets/shop-notes.jpg" alt=""></figure>
+    <figure class="snap"><img src="../assets/shop-shelf.jpg" alt=""></figure>
+  </div>
+  <div class="ticket form">
+    <div class="head"><span class="caps muted">Hiatus · counter</span><span class="no">LOG IN</span></div>
+    <h1 class="display">Welcome back.</h1>
+    <p class="lede">Log in to order ahead and keep track of your cups.</p>
+    <label class="field"><span class="caps">Email</span><i></i></label>
+    <label class="field"><span class="caps">Password</span><i></i></label>
+    <a class="forgot" href="#">Forgot your password?</a>
+    <div class="submit caps">Log in</div>
+    <div class="tear">No account yet? <a href="#">Create one</a></div>
+  </div>
+</main>
+</body></html>

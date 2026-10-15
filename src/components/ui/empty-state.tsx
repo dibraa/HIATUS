@@ -10,6 +10,10 @@ import type { ReactNode } from "react";
  * `as` sets the heading LEVEL independently of the styling, because an empty
  * state can appear under an h1 or nested inside an h2 section, and neither
  * should be forced to skip a level to look right.
+ *
+ * Rhythm inside the card is the named spacing scale: `snug` from the heading
+ * to its body, `stack` from the body to the action — the same two distances
+ * every other heading block in the system uses.
  */
 export function EmptyState({
   title,
@@ -35,9 +39,9 @@ export function EmptyState({
       <Tag className="display text-2xl text-ink">{title}</Tag>
 
       {/* ~44 characters keeps the measure short enough to read as one thought */}
-      <p className="mx-auto mt-3 max-w-[44ch] text-sm text-muted">{body}</p>
+      <p className="mx-auto mt-snug max-w-[44ch] text-sm text-muted">{body}</p>
 
-      {action && <div className="mt-7 flex justify-center">{action}</div>}
+      {action && <div className="mt-stack flex justify-center">{action}</div>}
     </div>
   );
 }

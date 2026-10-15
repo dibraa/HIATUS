@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M · Menu-first</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="home.css"><script src="sample.js"></script>
+<style>
+/* The fastest path to ordering: the menu is the page. One slim greeting
+   line, sticky category tabs (Favorites is just a tab), and the live order
+   as a small pill floating at the bottom instead of a section. */
+.slim{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.slim h1{font-size:clamp(2.25rem,5vw,3.25rem)}
+.stick{position:sticky;top:62px;z-index:20;background:var(--surface);padding:10px 0}
+.pill{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:40;display:flex;align-items:center;gap:14px;background:var(--esp);color:var(--esp-fg);border-radius:99px;padding:10px 12px 10px 20px;white-space:nowrap;max-width:calc(100% - 24px)}
+.pill .state{color:#9cc4a8}
+.pill .btn{min-height:34px;padding:0 14px;font-size:11px}
+</style></head>
+<body>
+<script>document.write(topbar(2))</script>
+<main class="page">
+  <div class="slim"><h1 class="display">What'll it be, Jai?</h1><span class="caps open">Open · until 8 PM</span></div>
+  <div class="stick"><script>document.write(tabs("All"))</script></div>
+  <div class="grid" style="margin-top:12px"><script>document.write(MENU.concat(MENU.slice(0,4)).map(menuCard).join(""))</script></div>
+</main>
+<div class="pill caps" role="status"><span class="state">● #042 Preparing</span><span class="muted" style="color:var(--esp-muted)">~6 min</span><span class="btn btn-inverse">Track</span></div>
+</body></html>

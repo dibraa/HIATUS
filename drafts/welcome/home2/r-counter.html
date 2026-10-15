@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>R · Counter</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="home.css"><script src="ui.js"></script>
+<style>
+/* Menu + ticket, redone with adaptive navigation: from 1024px a category
+   sidebar on the left, the menu centre, your ticket on the right. Below,
+   tabs replace the sidebar and the ticket becomes a bar that sits ABOVE the
+   phone tab bar, with matching page padding so nothing hides under either. */
+.layout{display:grid;grid-template-columns:180px minmax(0,1fr) 320px;gap:28px;align-items:start}
+.layout>*{min-width:0}
+.side{position:sticky;top:84px;display:grid;gap:4px}
+.side a{display:flex;align-items:center;justify-content:space-between;min-height:var(--tap);padding:0 14px;border-radius:12px;text-decoration:none;font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em}
+.side a[aria-current]{background:var(--ink);color:var(--card)}
+.side small{color:inherit;opacity:.6}
+.mob-tabs{display:none}
+.rail{position:sticky;top:84px;display:grid;gap:12px}
+.live{background:var(--esp);color:var(--esp-fg);border-radius:18px;padding:14px 16px}
+.live .st{font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em}
+.ticket{background:var(--card);padding:26px 20px 20px;
+  -webkit-mask:radial-gradient(circle 7px at 50% 0,#0000 98%,#000) top/22px 51% repeat-x,radial-gradient(circle 7px at 50% 100%,#0000 98%,#000) bottom/22px 51% repeat-x;
+  mask:radial-gradient(circle 7px at 50% 0,#0000 98%,#000) top/22px 51% repeat-x,radial-gradient(circle 7px at 50% 100%,#0000 98%,#000) bottom/22px 51% repeat-x}
+.ticket .head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px;border-bottom:1.5px dashed var(--line-strong)}
+.ticket .head b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:22px}
+.ticket ul{list-style:none;margin:0;padding:0}
+.ticket li{display:grid;grid-template-columns:24px 1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid var(--line);font-size:14px}
+.ticket li small{display:block;color:var(--muted)}
+.ticket .total{display:flex;justify-content:space-between;padding:14px 0;font-weight:600}
+.ticket .btn{width:100%}
+.bar{display:none}
+@media (max-width:1023px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .side,.rail{display:none}
+  .mob-tabs{display:block;margin-bottom:12px}
+  .bar{display:flex;position:fixed;left:12px;right:12px;bottom:12px;z-index:35;justify-content:space-between;align-items:center;gap:10px;background:var(--cta);color:var(--cta-fg);border-radius:16px;padding:8px 8px 8px 18px}
+  body{padding-bottom:84px}
+  .live.mob{display:block;margin-bottom:14px}
+}
+@media (max-width:767px){.bar{bottom:calc(var(--tabbar) + 10px)}body{padding-bottom:calc(var(--tabbar) + 84px)}}
+@media (min-width:1024px){.live.mob{display:none}}
+</style></head>
+<body>
+<script>document.write(topbar("Menu"))</script>
+<main class="page">
+  <h1 class="display" style="font-size:clamp(2.2rem,5vw,3.25rem);margin-bottom:18px">Order ahead, Jai.</h1>
+  <div class="layout">
+    <nav class="side" aria-label="Menu categories">
+      <a href="#" aria-current="page">All <small>32</small></a><a href="#">Favorites <small>3</small></a><a href="#">Espresso <small>12</small></a><a href="#">Iced <small>8</small></a><a href="#">Non-coffee <small>6</small></a><a href="#">Pastries <small>6</small></a>
+    </nav>
+    <div>
+      <div class="live mob" role="status"><span class="st">● #042 Preparing · ~6 min</span></div>
+      <div class="mob-tabs"><script>document.write(tabs("All"))</script></div>
+      <div class="grid"><script>document.write(MENU.map(menuCard).join(""))</script></div>
+    </div>
+    <aside class="rail" aria-label="Your order">
+      <div class="live" role="status"><span class="st">● #042 Preparing · ~6 min</span><ol class="track"><li class="done">Placed</li><li class="now">Preparing</li><li>Ready</li></ol></div>
+      <div class="ticket">
+        <div class="head"><span class="caps muted">Your ticket</span><b>2 ITEMS</b></div>
+        <ul>
+          <li><span>1×</span><span>Spanish Latte<small>Large · iced</small></span><span class="price">₱175</span></li>
+          <li><span>1×</span><span>Ensaymada<small>Warmed</small></span><span class="price">₱75</span></li>
+        </ul>
+        <div class="total"><span>Total</span><span class="price">₱250</span></div>
+        <a class="btn btn-cta" href="#">Checkout</a>
+      </div>
+    </aside>
+  </div>
+</main>
+<div class="bar"><span class="caps">Ticket · 2 items · <span class="price">₱250</span></span><a class="btn btn-inverse" href="#">Checkout</a></div>
+<script>document.write(tabbar("Menu"))</script>
+</body></html>

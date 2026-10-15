@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>I · Photo columns</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="ticket.css">
+<style>
+/* Two straight photo columns flanking the ticket, staggered so they do not
+   read as a table. A grid, so nothing is positioned by hand. Tablet: one row
+   of photos above the ticket. Phone: a single wide photo. */
+main{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:clamp(20px,3vw,36px);align-items:center;padding:clamp(24px,4vw,40px) clamp(16px,3vw,40px)}
+.col{display:grid;gap:16px;align-content:center;max-width:300px;width:100%}
+.col.left{justify-self:end;margin-top:-60px}
+.col.right{justify-self:start;margin-top:60px}
+.col .snap{aspect-ratio:4/3;padding:0;background:none}
+.col .snap.tall{aspect-ratio:4/5}
+.col .snap img{border-radius:16px}
+.strip{display:none}
+@media (max-width:999px){
+  main{grid-template-columns:1fr;justify-items:center}
+  .col{display:none}
+  .strip{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%;max-width:560px}
+  .strip img{aspect-ratio:1;object-fit:cover;border-radius:14px;width:100%}
+}
+@media (max-width:560px){
+  .strip{grid-template-columns:1fr;max-width:420px}
+  .strip img{aspect-ratio:16/7}
+  .strip img:nth-child(n+2){display:none}
+}
+</style></head>
+<body>
+<header class="topbar"><b>Hiatus</b><span class="caps">Log in <span class="btn btn-cta">Sign up</span></span></header>
+<main>
+  <div class="col left" aria-hidden="true">
+    <figure class="snap"><img src="../assets/shop-room.jpg" alt=""></figure>
+    <figure class="snap tall"><img src="../assets/hero-ube-cup.jpg" alt=""></figure>
+  </div>
+  <div class="strip" aria-hidden="true">
+    <img src="../assets/shop-room.jpg" alt=""><img src="../assets/shop-notes.jpg" alt=""><img src="../assets/shop-shelf.jpg" alt="">
+  </div>
+  <div class="ticket form">
+    <div class="head"><span class="caps muted">Hiatus · counter</span><span class="no">LOG IN</span></div>
+    <h1 class="display">Welcome back.</h1>
+    <p class="lede">Log in to order ahead and keep track of your cups.</p>
+    <label class="field"><span class="caps">Email</span><i></i></label>
+    <label class="field"><span class="caps">Password</span><i></i></label>
+    <a class="forgot" href="#">Forgot your password?</a>
+    <div class="submit caps">Log in</div>
+    <div class="tear">No account yet? <a href="#">Create one</a></div>
+  </div>
+  <div class="col right" aria-hidden="true">
+    <figure class="snap tall"><img src="../assets/shop-notes.jpg" alt=""></figure>
+    <figure class="snap"><img src="../assets/shop-shelf.jpg" alt=""></figure>
+  </div>
+</main>
+</body></html>

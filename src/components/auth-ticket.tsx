@@ -40,14 +40,15 @@ export function AuthTicket({
   return (
     <div className="mx-auto grid max-w-6xl justify-items-center py-4 sm:py-8 xl:grid-cols-[minmax(0,1fr)_420px_minmax(0,1fr)] xl:gap-x-12">
       {/* Left side, from `xl` (1280px) — at `lg` the tilted corners crowd the
-          screen edges, so smaller screens get the fan instead. Offset inward then outward, so the pair reads as
-          set down by hand rather than stacked. */}
+          screen edges, so smaller screens get the fan instead. Offset inward
+          then outward, so the pair reads as set down by hand rather than
+          stacked. */}
       <div aria-hidden="true" className="hidden w-full max-w-72 flex-col justify-center gap-12 self-stretch justify-self-end xl:flex">
-        <Snapshot image={room} className="-rotate-[4deg] self-end" aspect="aspect-[4/3]" />
-        <Snapshot image={curioShelf} className="w-[88%] rotate-3 self-start" aspect="aspect-[4/3]" />
+        <Snapshot image={room} className="-rotate-4 self-end" aspect="aspect-[4/3]" />
+        <Snapshot image={curioShelf} className="w-7/8 rotate-3 self-start" aspect="aspect-[4/3]" />
       </div>
 
-      <div className="w-full max-w-[420px]">
+      <div className="w-full max-w-105">
         {/* Below `xl`: a short fan of three above the ticket. */}
         <div aria-hidden="true" className="mb-8 flex justify-center xl:hidden">
           <Snapshot image={room} className="w-32 translate-y-2 -rotate-6 sm:w-36" aspect="aspect-[4/3]" sizes="144px" />
@@ -55,29 +56,37 @@ export function AuthTicket({
           <Snapshot image={curioShelf} className="w-32 translate-y-2 rotate-6 sm:w-36" aspect="aspect-[4/3]" sizes="144px" />
         </div>
 
-        <div className="ticket-edges relative w-full bg-card px-5 pb-6 pt-8 sm:px-8">
-          <div className="mb-6 flex items-baseline justify-between gap-4 border-b-[1.5px] border-dashed border-line-strong pb-3.5">
+        {/* The ticket is the page's one piece of content, so it is the
+            landmark a screen reader can jump to, named by its own heading. */}
+        <section
+          aria-labelledby="auth-title"
+          className="ticket-edges relative w-full bg-card px-5 pb-6 pt-8 sm:px-8"
+        >
+          <div className="mb-6 flex items-baseline justify-between gap-4 border-b-2 border-dashed border-line-strong pb-4">
             <span className="ui-caps text-2xs text-muted">Hiatus · counter</span>
             <span className="display text-2xl text-ink">{label}</span>
           </div>
 
-          <h1 className="display text-[clamp(2.75rem,10vw,3.75rem)] leading-[0.9] text-ink">{title}</h1>
-          <p className="mb-6 mt-3 max-w-[38ch] text-ink-soft">{description}</p>
+          {/* One fluid step (35 -> 58px): the ticket is a fixed 420px column,
+              so the headline needs to track the viewport only on phones, and
+              `.display` already carries the sub-1 line-height. */}
+          <h1 id="auth-title" className="display text-5xl text-ink">{title}</h1>
+          <p className="mb-stack mt-snug max-w-[38ch] text-ink-soft">{description}</p>
 
           {children}
 
           {footer && (
-            <div className="mt-6 border-t-[1.5px] border-dashed border-line-strong pt-4 text-sm text-muted">
+            <div className="mt-6 border-t-2 border-dashed border-line-strong pt-4 text-sm text-muted">
               {footer}
             </div>
           )}
-        </div>
+        </section>
       </div>
 
       {/* Right side, from `xl`: the mirror image of the left's rhythm. */}
       <div aria-hidden="true" className="hidden w-full max-w-72 flex-col justify-center gap-12 self-stretch justify-self-start xl:flex">
-        <Snapshot image={counterNotes} className="w-[92%] rotate-[4deg] self-start" aspect="aspect-[4/3]" />
-        <Snapshot image={ubeCup} className="w-[78%] -rotate-3 self-end" aspect="aspect-[3/4]" />
+        <Snapshot image={counterNotes} className="w-11/12 rotate-4 self-start" aspect="aspect-[4/3]" />
+        <Snapshot image={ubeCup} className="w-4/5 -rotate-3 self-end" aspect="aspect-[3/4]" />
       </div>
     </div>
   );

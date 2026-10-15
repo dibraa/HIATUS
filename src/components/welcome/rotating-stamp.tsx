@@ -14,7 +14,7 @@ export function RotatingStamp({ className = "" }: { className?: string }) {
     >
       <svg
         viewBox="0 0 128 128"
-        className="absolute inset-0 h-full w-full animate-[hi-spin_28s_linear_infinite]"
+        className="stamp-spin absolute inset-0 h-full w-full"
       >
         <defs>
           <path id="stamp-ring" d="M64 64m-48 0a48 48 0 1 1 96 0a48 48 0 1 1-96 0" />
