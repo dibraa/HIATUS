@@ -346,6 +346,10 @@
   --shadow-sm: var(--hi-shadow-sm);
   --shadow-md: var(--hi-shadow-md);
   --shadow-lg: var(--hi-shadow-lg);
+  /* Tailwind ships its own `shadow-xl`, and every dialog in the app reached
+     for it. Mapping it onto the house float shadow means a stray `shadow-xl`
+     renders in-brand instead of as a 2010 drop shadow. */
+  --shadow-xl: var(--hi-shadow-lg);
 
   /* --- Spacing rhythm -> utilities --------------------------------------
      `gap-section`, `py-band`, `mt-heading`, `mt-stack`, `mt-tight`. The
@@ -356,6 +360,11 @@
      `inline-*` sizing utilities, so a `--spacing-block` key turns the class
      `inline-block` into `display: inline-block` PLUS `inline-size: 1.5rem`,
      and any element given it collapses to 24px wide. */
+  /* One control height for the whole system — buttons, inputs, selects and
+     filter chips all stand 44px (the WCAG 2.5.5 target size), so a form row
+     of mixed controls lines up and the skeleton for one is `h-control`. */
+  --spacing-control: 2.75rem;
+
   --spacing-tight: var(--hi-space-tight);
   --spacing-snug: var(--hi-space-snug);
   --spacing-stack: var(--hi-space-block);
@@ -690,6 +699,34 @@ body:has(.admin-workspace) #main {
   to {
     transform: rotate(360deg);
   }
+}
+.stamp-spin {
+  /* One lap every 28s: slow enough to read as a breathing mark, not a loader. */
+  animation: hi-spin 28s linear infinite;
+}
+
+/* --- Dialog entrance ------------------------------------------------------
+   The modal and the sheets that float over the page arrive on these: the
+   scrim fades, the dialog fades and settles from 97%. `backwards` fill (not
+   `both`) so that once the animation ends the element is back on its base
+   style and the exit TRANSITION can take over — a forwards fill would hold
+   the animated value and swallow the transition. */
+@keyframes hi-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes hi-dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+.scrim-in {
+  animation: hi-fade-in var(--hi-dur-base) var(--hi-ease-out) backwards;
+}
+.dialog-in {
+  animation: hi-dialog-in var(--hi-dur-base) var(--hi-ease-out) backwards;
 }
 
 /* Skeleton shimmer for loading states. */

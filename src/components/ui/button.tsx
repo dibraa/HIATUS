@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentProps } from "react";
+import { Spinner } from "./spinner";
 
 /**
  * The storefront's one button API.
@@ -18,6 +19,13 @@ import type { ComponentProps } from "react";
  *   2. THE CORNER IS A RECTANGLE'S, not a pill's. `rounded-md` is 10px in this
  *      system; the comp's buttons are soft rectangles, and a full pill reads
  *      as a different, chattier brand.
+ *
+ * States, in the order a user meets them: rest, hover (colour only), focus
+ * (the global focus-visible ring), active (a one-pixel press), disabled
+ * (dimmed, no press), and loading (`loading` prop — a spinner in front of the
+ * label, the control disabled and marked `aria-busy`). The label STAYS while
+ * loading, so the button does not change width and a screen reader still
+ * knows what is being waited on.
  */
 
 export type ButtonVariant =
@@ -41,6 +49,9 @@ const BASE =
   "transition-[background-color,border-color,color,translate] " +
   "active:translate-y-px active:duration-(--hi-dur-base) active:ease-hi-spring " +
   "disabled:cursor-not-allowed disabled:opacity-45 disabled:active:translate-y-0 " +
+  // A loading button is disabled but should not look broken — it is busy, not
+  // unavailable — so it keeps full opacity and only loses the cursor.
+  "aria-busy:cursor-progress aria-busy:opacity-100 " +
   // Pointer-events off on the icon keeps click targets on the control itself
   "[&_svg]:pointer-events-none [&_svg]:shrink-0";
 
@@ -73,9 +84,13 @@ const VARIANTS: Record<ButtonVariant, string> = {
     "border border-danger/50 bg-card text-danger hover:border-danger hover:bg-danger-soft-bg",
 };
 
+/* `md` is the system control height (`--spacing-control`, 44px), shared with
+ * every text input and filter chip so mixed rows line up. `sm` is for dense
+ * secondary actions inside a row that already has a primary one; on a touch
+ * screen the global coarse-pointer rule lifts it back to 44px. */
 const SIZES: Record<ButtonSize, string> = {
   sm: "h-9 px-3.5 text-2xs",
-  md: "h-11 px-5 text-xs",
+  md: "h-control px-5 text-xs",
   lg: "h-12 px-6 text-sm",
 };
 
@@ -86,6 +101,9 @@ function classesFor(variant: ButtonVariant, size: ButtonSize, className?: string
 type ButtonProps = ComponentProps<"button"> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
+  /** Shows a spinner before the label and disables the control. Pass the
+   *  transition's `pending` flag straight in. */
+  loading?: boolean;
 };
 
 export function Button({
@@ -93,10 +111,22 @@ export function Button({
   size = "md",
   className,
   type = "button",
+  loading = false,
+  disabled,
+  children,
   ...props
 }: ButtonProps) {
   return (
-    <button type={type} className={classesFor(variant, size, className)} {...props} />
+    <button
+      type={type}
+      className={classesFor(variant, size, className)}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading && <Spinner size="sm" />}
+      {children}
+    </button>
   );
 }
 

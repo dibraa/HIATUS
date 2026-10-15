@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>G · Collapsing side panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* B, fixed for small screens. Desktop: form beside a tall espresso panel with
+   the cup photo and its note. Tablet and phone: the panel collapses to a
+   compact strip ABOVE the form — a thumbnail and the quote on one line —
+   instead of a full-height block the reader has to scroll past. */
+main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0}
+.formcol{display:grid;place-items:center;padding:40px 24px}
+.panel{background:var(--esp);color:var(--esp-fg);margin:16px;border-radius:24px;display:flex;flex-direction:column;justify-content:center;gap:24px;padding:clamp(28px,4vw,56px)}
+.panel img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:14px;transform:rotate(-2deg)}
+.panel q{font-family:Anton,Impact,sans-serif;text-transform:uppercase;font-size:clamp(2rem,4vw,3.25rem);line-height:.92;quotes:"\201C" "\201D"}
+.panel small{display:block;color:var(--esp-muted);font-size:15px;margin-top:8px}
+@media (max-width:899px){
+  main{grid-template-columns:1fr}
+  .panel{order:-1;flex-direction:row;align-items:center;gap:16px;margin:12px;padding:12px 16px 12px 12px;border-radius:18px}
+  .panel img{width:84px;height:84px;aspect-ratio:auto;transform:none;border-radius:12px;flex:none}
+  .panel q{font-size:26px}
+  .panel small{font-size:13px;margin-top:4px}
+  .formcol{place-items:start center;padding:24px 20px 48px}
+}
+</style></head>
+<body>
+<header class="topbar"><b>Hiatus</b><span class="caps">Log in <span class="btn btn-cta">Sign up</span></span></header>
+<main>
+  <div class="formcol"><div class="form">
+    <h1 class="display">Welcome<br>back.</h1>
+    <p class="lede">Log in to order ahead and keep track of your cups.</p>
+    <label class="field"><span class="caps">Email</span><i></i></label>
+    <label class="field"><span class="caps">Password</span><i></i></label>
+    <a class="forgot" href="#">Forgot your password?</a>
+    <div class="submit caps">Log in</div>
+    <p class="alt">No account yet? <a href="#">Create one</a></p>
+  </div></div>
+  <aside class="panel">
+    <img src="../assets/shop-notes.jpg" alt="">
+    <div><q>Have a noice day.</q><small>Written on a cup at the counter.</small></div>
+  </aside>
+</main>
+</body></html>

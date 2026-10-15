@@ -22,7 +22,7 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
     <section aria-labelledby="peek-heading" className="scroll-mt-20" id="menu-peek">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h2 id="peek-heading" className="display text-5xl text-ink sm:text-6xl">
+          <h2 id="peek-heading" className="display text-6xl text-ink">
             On the menu
           </h2>
           {peek.categories.length > 0 && (
@@ -33,7 +33,9 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
         </div>
         <Link
           href="/signup"
-          className="ui-caps text-2xs text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
+          // Inline text ignores the global 44px coarse-pointer rule, so the hit
+          // area is set here: the link sits alone on its row and is easy to miss.
+          className="ui-caps inline-flex min-h-11 items-center text-2xs text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
         >
           See the full menu
         </Link>
@@ -45,7 +47,10 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
             <Link
               href="/signup"
               aria-label={`${item.name}, from ${formatPrice(priceForSize(item.price, "S"))}. Sign up to order.`}
-              className="group flex w-full flex-col rounded-2xl bg-card p-2 transition-colors hover:bg-raised focus-visible:outline-offset-4 sm:p-2.5"
+              // The same matte as the hero photograph: card ground, 10px gutter, 2xl
+              // corner around an xl image. Spelled out rather than `.matte` so the
+              // hover tint can still win (that class is unlayered).
+              className="group flex w-full flex-col rounded-2xl bg-card p-2.5 transition-colors hover:bg-raised focus-visible:outline-offset-4"
             >
               <ProductImage
                 src={item.image_url}
@@ -55,7 +60,7 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
               />
               <div className="flex flex-1 flex-col gap-1 px-1.5 pb-1.5 pt-3">
                 <p className="eyebrow text-muted">{item.flavor}</p>
-                <p className="font-medium leading-snug text-ink group-hover:underline group-hover:underline-offset-4">
+                <p className="display text-lg text-ink group-hover:underline group-hover:underline-offset-4">
                   {item.name}
                 </p>
                 <p className="numeric mt-auto pt-1 text-sm text-ink-soft">

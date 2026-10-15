@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Welcome A: Storefront</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+/* Pattern: full-bleed storefront photo (Elementary Coffee, Notes Coffee). */
+.hero{position:relative;min-height:calc(100vh - 40px);display:flex;flex-direction:column;color:var(--pine-fg);
+  background:linear-gradient(180deg,rgb(20 18 15/.55),rgb(20 18 15/.15) 35%,rgb(20 18 15/.75)),url(assets/hero-shelf.jpg) center/cover}
+.hero .nav{width:100%}
+.hero .nav .mark,.hero .nav ul a{color:var(--pine-fg)}
+.hero-body{margin-top:auto;padding:0 32px 56px;max-width:1264px;width:100%;margin-left:auto;margin-right:auto}
+.hero h1{font-size:clamp(4rem,11vw,10rem)}
+.hero p{font-size:20px;max-width:30ch;margin:20px 0 32px;color:var(--pine-fg)}
+.actions{display:flex;gap:12px;flex-wrap:wrap}
+.hero .btn-ghost{color:var(--pine-fg);border-color:rgb(245 234 216/.7)}
+.hero .btn-ghost:hover{background:rgb(245 234 216/.12)}
+.status{display:flex;gap:28px;margin-top:40px;padding-top:20px;border-top:1px solid rgb(245 234 216/.35)}
+.open::before{background:#8fd19e}
+
+.picks{padding:96px 0}
+.picks header{display:flex;justify-content:space-between;align-items:end;margin-bottom:32px}
+.picks h2{font-size:56px}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+.item{background:var(--card);border-radius:var(--r-lg);padding:12px 12px 20px;text-decoration:none}
+.item img{aspect-ratio:4/3;object-fit:cover;border-radius:var(--r-md);width:100%}
+.item h3{font-size:18px;font-weight:600;margin:16px 8px 2px}
+.item p{margin:0 8px;display:flex;justify-content:space-between}
+.foot{border-top:1px solid var(--line);padding-block:28px;display:flex;justify-content:space-between}
+@media (max-width:760px){.grid{grid-template-columns:1fr}.status{flex-direction:column;gap:8px}.hero-body{padding:0 20px 40px}}
+</style>
+</head>
+<body>
+<nav class="switch" aria-label="Drafts"><a href="index.html">All</a><a href="1-storefront.html" aria-current="page">A Storefront</a><a href="2-split-counter.html">B Split</a><a href="3-menu-first.html">C Menu-first</a><a href="4-editorial.html">D Editorial</a><a href="5-ticket.html">E Ticket</a><a href="6-espresso.html">F Espresso</a><a href="7-the-shop.html">G The shop</a></nav>
+
+<header class="hero">
+  <nav class="nav" aria-label="Main">
+    <a class="mark" href="#">Hiatus</a>
+    <ul><li><a class="caps" href="#picks">Menu</a></li><li><a class="caps" href="#">Sign in</a></li></ul>
+  </nav>
+  <div class="hero-body">
+    <h1 class="display">Take a<br>break.</h1>
+    <p>Order ahead, skip the line, and pick up your cup when it's ready.</p>
+    <div class="actions">
+      <a class="btn btn-inverse" href="#">Start an order</a>
+      <a class="btn btn-ghost" href="#picks">See the menu</a>
+    </div>
+    <div class="status caps">
+      <span class="open">Open now · until 10 PM</span>
+      <span>Pickup only</span>
+      <span>Ready in ~8 min</span>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="picks" id="picks" aria-labelledby="picks-h">
+    <header>
+      <h2 class="display" id="picks-h">On the counter</h2>
+      <a class="caps" href="#">Full menu →</a>
+    </header>
+    <div class="grid">
+      <a class="item" href="#"><img src="assets/hero-ube-cup.jpg" alt=""><h3>Ube Latte</h3><p class="muted"><span>Sweet, nutty</span><span class="caps">₱165</span></p></a>
+      <a class="item" href="#"><img src="assets/hero-ube-cups.jpg" alt=""><h3>Spanish Latte</h3><p class="muted"><span>Condensed milk</span><span class="caps">₱150</span></p></a>
+      <a class="item" href="#"><img src="assets/hero-mirror.jpg" alt=""><h3>Sea Salt Mocha</h3><p class="muted"><span>Dark, salted</span><span class="caps">₱170</span></p></a>
+    </div>
+  </section>
+</main>
+<footer class="wrap foot caps muted"><span>Hiatus Coffee</span><span>Slow moments, served warm.</span></footer>
+</body>
+</html>

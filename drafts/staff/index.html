@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Staff counter: flow + directions</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../welcome/shared.css">
+<style>
+/* Every direction is a real responsive page, loaded in iframes at a counter
+   screen (1366x768), a landscape tablet (1024x768) and a phone (390x844). */
+body{background:#e4dccd}
+.wrap2{max-width:1560px;margin:0 auto;padding:0 24px}
+h1{font-size:56px;margin:40px 0 8px}
+.flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin:16px 0 8px}
+.flow div{background:var(--card);border-radius:14px;padding:14px}
+.flow b{display:block;font-family:Anton,Impact,sans-serif;font-weight:400;font-size:22px;text-transform:uppercase}
+.flow span{font-size:14px;color:var(--ink-soft)}
+.opt{margin-top:44px}
+.opt header{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:12px}
+.opt h2{font-size:38px}.opt p{margin:0;color:var(--ink-soft);max-width:78ch}
+.row{display:flex;gap:18px;align-items:flex-start}
+.dev .caps{display:block;margin-bottom:8px;color:var(--muted)}
+.screen{overflow:hidden;border-radius:12px;border:1px solid #c9bda6;background:var(--surface)}
+.screen iframe{border:0;transform-origin:0 0;display:block}
+.c .screen{width:615px;height:346px}.c iframe{width:1366px;height:768px;transform:scale(.45)}
+.t .screen{width:461px;height:346px}.t iframe{width:1024px;height:768px;transform:scale(.45)}
+.p .screen{width:176px;height:380px}.p iframe{width:390px;height:844px;transform:scale(.45)}
+</style></head>
+<body><div class="wrap2">
+<h1 class="display">Staff counter</h1>
+<p style="max-width:80ch;color:var(--ink-soft)">The flow every direction serves — one screen, one loop per order, payment folded into hand-over (today it lives on a separate POS tab):</p>
+<div class="flow">
+  <div><b>1 · New</b><span>Order arrives: highlighted, counted in the top bar (and a chime, in the real build).</span></div>
+  <div><b>2 · Start</b><span>One big button. Late orders say "Late" / "Over 12m" — never colour alone.</span></div>
+  <div><b>3 · Ready</b><span>Mark ready; the customer is notified.</span></div>
+  <div><b>4 · Hand over</b><span>Customer arrives. If unpaid, the payment panel opens right there: quick cash amounts + change, or e-wallet.</span></div>
+  <div><b>5 · Done</b><span>Paid and handed over in one tap. Sold-out and shift stay one tap away in the top bar.</span></div>
+</div>
+<script>
+const OPTIONS = [
+  ["W refined · the queue", "w2-table.html", "W after the ui-ux-pro-max audit: new orders wait in a fixed 'incoming' slot (no rows jumping under a finger), Mark ready is outlined so only Hand over + Start shout, every row has a labelled ⋯ menu, and an in-flight row shows 'Marking ready…'."],
+  ["W refined · hand-over panel", "w2-table.html?sheet", "The payment panel now has a labelled close; bottom sheet on phones."],
+  ["W refined · after hand-over (undo)", "w2-table.html?toast", "The paid order leaves the table and a 5-second Undo toast confirms it — reversible without a blocking dialog."],
+  ["W refined · row menu open", "w2-table.html?menu", "⋯ on a row: mark an item sold out, print the receipt, cancel the order (destructive, so it still confirms)."],
+  ["W refined · empty queue", "w2-table.html?empty", "The state nobody designed before: an empty, steady incoming slot and a clear 'Nothing in the queue · 46 done today'."],
+  ["W refined · dark", "w2-table.html?dark", "The refined table in the app's dark ramp."],
+  ["W · Unified table (your preference)", "w-table.html", "Every open order in one table — order, items, type, status (with Late flags), wait, payment, and one next-step button — sorted ready → new → making, filtered by stage chips. On phones the rows restack as cards."],
+  ["W · with the hand-over panel open", "w-table.html?sheet", "Tapping 'Take ₱120 · hand over' highlights the row and opens the payment panel beside the table; on phones it rises as a bottom sheet."],
+  ["W · dark (evening counter)", "w-table.html?dark", "The same table in the app's dark ramp."],
+  ["T · Three lanes", "t-lanes.html", "Kitchen-display style: New · Making · Ready side by side, one big action per ticket. The whole counter in one glance; phones switch lanes with a segmented control."],
+  ["T · with the hand-over panel open", "t-lanes.html?sheet", "Same board after tapping 'Take ₱120 · hand over' on a ready order: the payment panel slides in beside the lanes — no trip to a POS tab."],
+  ["U · List + focus", "u-focus.html", "One order at a time, big: every open order in a compact list (ready first), the selected one full-size with its payment inline. Calmest for a single barista; phones show the list."],
+  ["V · Ticket rail + pickup shelf", "v-rail.html", "The bar's own furniture: torn-edge tickets on a rail (oldest first) for making, and a pickup shelf below for meeting, paying and handing over. Two zones, two jobs."],
+  ["T · dark (evening counter)", "t-lanes.html?dark", "The recommended board in the app's real dark ramp — the POS/kiosk guidance favours dark for screens that stay on all shift."],
+];
+for (const [name, file, note] of OPTIONS) {
+  const devs = [["c","Counter · 1366"],["t","Tablet · 1024"],["p","Phone · 390"]].map(([c,l]) => `<div class="dev ${c}"><span class="caps">${l}</span><div class="screen"><iframe src="${file}" title="${name}, ${l}"></iframe></div></div>`).join("");
+  document.write(`<section class="opt"><header><h2 class="display">${name}</h2><p>${note}</p><a class="caps" href="${file}">Open full page →</a></header><div class="row">${devs}</div></section>`);
+}
+</script>
+<p style="margin:40px 0 80px;color:var(--muted)">SAMPLE data: names, drinks and prices are placeholders.</p>
+</div></body></html>

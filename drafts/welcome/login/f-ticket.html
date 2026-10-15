@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>F · Order ticket</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* The form as an order ticket — the same object the counter works from —
+   with torn edges top and bottom and a dashed tear line. A narrow column by
+   nature, so it reads the same on a phone and a desktop; on wide screens a
+   tilted cup photo and the stamp sit behind it like things on the counter. */
+main{position:relative;display:grid;place-items:center;padding:clamp(28px,5vw,56px) 16px;overflow:hidden}
+.ticket{position:relative;z-index:2;width:100%;max-width:420px;background:var(--card);padding:30px clamp(20px,5vw,32px) 26px;
+  -webkit-mask:radial-gradient(circle 7px at 50% 0,#0000 98%,#000) 0 0/22px 51% repeat-x,radial-gradient(circle 7px at 50% 100%,#0000 98%,#000) 0 100%/22px 51% repeat-x;
+  mask:radial-gradient(circle 7px at 50% 0,#0000 98%,#000) 0 0/22px 51% repeat-x,radial-gradient(circle 7px at 50% 100%,#0000 98%,#000) 0 100%/22px 51% repeat-x}
+.ticket .head{display:flex;justify-content:space-between;align-items:baseline;padding-bottom:14px;margin-bottom:22px;border-bottom:1.5px dashed var(--line-strong)}
+.ticket .no{font-family:Anton,Impact,sans-serif;font-size:26px}
+.ticket .tear{margin:22px 0 0;padding-top:14px;border-top:1.5px dashed var(--line-strong);display:flex;justify-content:space-between}
+.ticket.form{max-width:420px}
+.form h1{font-size:clamp(2.75rem,8vw,3.75rem)}
+.prop{position:absolute;z-index:1;display:none}
+.photo{width:300px;left:calc(50% - 520px);top:16%;transform:rotate(-6deg);background:var(--card);padding:8px;border-radius:16px}
+.photo img{border-radius:10px;aspect-ratio:4/3;object-fit:cover}
+.stamp{--s:120px;right:calc(50% - 400px);bottom:14%}
+@media (min-width:1000px){.prop,.stamp{display:block}.stamp{display:grid}}
+@media (max-width:999px){.stamp{display:none}}
+</style></head>
+<body>
+<header class="topbar"><b>Hiatus</b><span class="caps">Log in <span class="btn btn-cta">Sign up</span></span></header>
+<main>
+  <figure class="prop photo" aria-hidden="true" style="margin:0"><img src="../assets/shop-notes.jpg" alt=""></figure>
+  <div class="stamp" aria-hidden="true"><svg viewBox="0 0 128 128"><defs><path id="r" d="M64 64m-48 0a48 48 0 1 1 96 0a48 48 0 1 1-96 0"/></defs><text font-family="JetBrains Mono" font-size="9.6" letter-spacing="2.6" fill="#f5ead8"><textPath href="#r">TAKE THAT MUCH NEEDED BREAK · </textPath></text></svg><b>Come<br>in</b></div>
+  <div class="ticket form">
+    <div class="head"><span class="caps muted">Hiatus · counter</span><span class="no">LOG IN</span></div>
+    <h1 class="display">Welcome<br>back.</h1>
+    <p class="lede">Log in to order ahead and keep track of your cups.</p>
+    <label class="field"><span class="caps">Email</span><i></i></label>
+    <label class="field"><span class="caps">Password</span><i></i></label>
+    <a class="forgot" href="#">Forgot your password?</a>
+    <div class="submit caps">Log in</div>
+    <div class="tear caps muted"><span>No account yet?</span><a href="#" style="color:var(--accent-ink)">Create one →</a></div>
+  </div>
+</main>
+</body></html>

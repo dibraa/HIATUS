@@ -1,0 +1,95 @@
+/* Staff counter mockups. Co-Fi tokens (light + the app's real dark ramp),
+   built against ui-ux-pro-max's POS/kiosk guidance: 56px touch targets,
+   high contrast, status never by colour alone, stable layout under live
+   updates. Flat, per Co-Fi — no shadows. */
+@import url("../welcome/shared.css");
+:root{
+  --tap:56px;--esp:#241d18;--esp-fg:#f5ead8;--esp-muted:#cdbfa8;
+  --new:#c87137;--new-soft:#f6e3d2;--new-ink:#964a1c;
+  --make:#3e6b53;--make-soft:#dceccb;--make-ink:#22400f;
+  --ready:#241d18;
+  --late:#8a4708;--late-soft:#fbe6cd;--late-ink:#7a3d09;
+  --over:#a51f18;--over-soft:#fbdcd8;--over-ink:#8f1d16;
+}
+body.dark{
+  --ink:#f5ead8;--ink-soft:#ded2bb;--muted:#a89b85;--line:#352f24;--line-strong:#7d7261;
+  --raised:#262119;--surface:#14120e;--card:#1c1813;
+  --cta:#f0e6d2;--cta-fg:#14120e;
+  --new-soft:#3a2a1c;--new-ink:#e0904f;--make-soft:#1b2e14;--make-ink:#a8cf88;
+  --late-soft:#33220f;--late-ink:#ecab74;--over-soft:#3a1a17;--over-ink:#f0a29b;
+  --esp:#0d0b09;background:var(--surface);color:var(--ink)
+}
+body{min-height:100vh;display:flex;flex-direction:column}
+.ico{width:20px;height:20px;flex:none;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* Top bar: where you are, how the shift is going, the two side jobs. */
+.sbar{display:flex;align-items:center;gap:12px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--surface)}
+.sbar .brand{font-family:Anton,Impact,sans-serif;font-size:20px;text-transform:uppercase;margin-right:8px}
+.sbar nav{display:flex;gap:4px}
+.sbar nav a{display:inline-flex;align-items:center;gap:8px;min-height:48px;padding:0 14px;border-radius:12px;text-decoration:none;font:500 12px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)}
+.sbar nav a[aria-current]{background:var(--ink);color:var(--surface)}
+.sbar nav .n{display:inline-grid;place-items:center;min-width:22px;height:22px;padding:0 6px;border-radius:99px;background:var(--new);color:#14120f;font-size:11px}
+.sbar .shift{margin-left:auto;display:flex;align-items:center;gap:10px;font:500 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)}
+.sbar .shift .dot{width:9px;height:9px;border-radius:50%;background:#1f6b34}
+.sbar .shift b{color:var(--ink);font-weight:500}
+
+/* KPI strip: the "too minimal" fix — the room's state in one line. */
+.kpis{display:flex;gap:28px;align-items:baseline;padding:10px 16px;border-bottom:1px solid var(--line);font:500 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);overflow-x:auto;white-space:nowrap}
+.kpis b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:22px;color:var(--ink);letter-spacing:0;margin-right:6px}
+
+/* Ticket */
+.tk{background:var(--card);border-radius:14px;border:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}
+.tk.fresh{border:2px solid var(--new);}
+.tk .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;padding:12px 14px 8px}
+.tk .code{font-family:Anton,Impact,sans-serif;font-size:26px;line-height:1}
+.tk .who{font-size:13px;color:var(--ink-soft);margin-top:4px}
+.tk .meta{text-align:right;display:grid;gap:4px;justify-items:end}
+.time{font:500 13px 'JetBrains Mono',monospace;font-variant-numeric:tabular-nums}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:7px;font:500 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+.chip.new{background:var(--new-soft);color:var(--new-ink)}
+.chip.late{background:var(--late-soft);color:var(--late-ink)}
+.chip.over{background:var(--over-soft);color:var(--over-ink)}
+.chip.paid{background:var(--make-soft);color:var(--make-ink)}
+.chip.unpaid{background:var(--raised);color:var(--ink)}
+.chip.type{background:transparent;border:1px solid var(--line-strong);color:var(--ink-soft)}
+.tk ul{list-style:none;margin:0;padding:4px 14px 10px;display:grid;gap:6px}
+.tk li{display:grid;grid-template-columns:26px 1fr;gap:6px;font-size:15px;line-height:1.3}
+.tk li .q{font:600 15px 'JetBrains Mono',monospace}
+.tk li small{display:block;color:var(--muted);font-size:12px}
+.note{margin:0 14px 10px;padding:8px 10px;border-radius:9px;background:var(--late-soft);color:var(--late-ink);font-size:13px;display:flex;gap:8px}
+.act{margin-top:auto;display:flex;gap:8px;padding:10px 14px 14px;border-top:1px dashed var(--line-strong)}
+.act .go{flex:1;min-height:var(--tap);border-radius:12px;border:0;display:inline-flex;align-items:center;justify-content:center;gap:10px;font:500 14px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em;cursor:pointer}
+.go.start{background:var(--new);color:#14120f}
+.go.ready{background:var(--make);color:#f5ead8}
+.go.hand{background:var(--cta);color:var(--cta-fg)}
+.act .more{width:var(--tap);min-height:var(--tap);border-radius:12px;border:1.5px solid var(--line-strong);background:transparent;color:var(--ink);display:grid;place-items:center}
+
+/* Hand-over / payment panel */
+.pay{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px;display:grid;gap:12px;align-content:start}
+.pay .code{font-family:Anton,Impact,sans-serif;font-size:28px;line-height:1.05}
+.pay-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.eyebrow{font:500 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.18em;color:var(--muted)}
+.pay-total,.change{display:flex;justify-content:space-between;align-items:baseline;padding:10px 0;border-bottom:1px dashed var(--line-strong)}
+.pay-total b,.change b{font-family:Anton,Impact,sans-serif;font-weight:400;font-size:30px}
+.change b{color:var(--make-ink)}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--raised);padding:5px;border-radius:14px}
+.seg button{min-height:48px;border:0;border-radius:10px;background:transparent;font:500 13px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.1em;color:var(--ink-soft)}
+.seg button[aria-checked="true"]{background:var(--card);color:var(--ink);outline:1.5px solid var(--ink)}
+.quick{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.quick button{min-height:var(--tap);border-radius:12px;border:1.5px solid var(--line-strong);background:var(--card);color:var(--ink);font:500 13px 'JetBrains Mono',monospace}
+.quick button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.go.big{min-height:64px;width:100%;border:0;border-radius:14px;display:inline-flex;align-items:center;justify-content:center;gap:10px;font:500 14px "JetBrains Mono",monospace;text-transform:uppercase;letter-spacing:.12em}
+.linkish{min-height:48px;border:0;background:none;color:var(--ink-soft);text-decoration:underline;text-underline-offset:4px;font-size:14px}
+@media (max-width:560px){.quick{grid-template-columns:repeat(3,1fr)}}
+
+/* Phones: the section links are the bar's job; the "Counter" wordmark gives
+   way so Queue · Sold out · Shift fit without sideways scroll. */
+@media (max-width:560px){
+  .sbar{padding:8px 10px;gap:6px}
+  .sbar .brand{display:none}
+  .sbar nav{flex:1;justify-content:space-between}
+  .sbar nav a{padding:0 8px;gap:6px;font-size:11px;letter-spacing:.06em}
+}
+
+/* Visually hidden, still read aloud (same as Tailwind's sr-only in the app). */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}

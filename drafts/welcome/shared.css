@@ -1,0 +1,48 @@
+/* Welcome-page mockups: Co-Fi editorial tokens, copied by value from
+   src/app/globals.css so every draft is judged on layout, not on palette. */
+:root{
+  --ink:#14120f;--ink-soft:#3b352c;--muted:#6b6152;--line:#ded3bf;--line-strong:#8a7c63;
+  --raised:#e7dfcf;--surface:#efe9de;--card:#fffdf8;
+  --band:#c9b99b;--band-muted:#4a4133;
+  --pine:#3e6b53;--pine-fg:#f5ead8;--pine-muted:#d2e4d6;--pine-display:#9cc4a8;
+  --cta:#241d18;--cta-hover:#3a2f26;--cta-fg:#f5ead8;
+  --accent:#c87137;--accent-ink:#964a1c;--accent-soft:#f6e3d2;--success:#1f6b34;
+  --r-lg:28px;--r-md:16px;--r-sm:10px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface);color:var(--ink);font:16px/1.55 Geist,system-ui,sans-serif}
+img{display:block;max-width:100%}
+a{color:inherit}
+.display{font-family:Anton,Impact,sans-serif;text-transform:uppercase;font-weight:400;line-height:.9;letter-spacing:-.01em;margin:0}
+.caps{font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em;font-weight:500;font-size:12px}
+.muted{color:var(--muted)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 32px}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;min-height:52px;padding:0 26px;border-radius:999px;
+  font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em;font-size:13px;font-weight:500;text-decoration:none;
+  border:1.5px solid transparent;transition:background .2s}
+.btn-cta{background:var(--cta);color:var(--cta-fg)}.btn-cta:hover{background:var(--cta-hover)}
+.btn-ghost{border-color:var(--line-strong);color:var(--ink)}.btn-ghost:hover{background:var(--raised)}
+.btn-inverse{background:var(--pine-fg);color:var(--pine)}
+.btn-accent{background:var(--accent);color:var(--ink)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+
+/* Simplified nav: wordmark, two links, one action. */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:22px 32px;max-width:1264px;margin:0 auto}
+.nav .mark{font-family:Anton,Impact,sans-serif;font-size:26px;letter-spacing:.02em;text-decoration:none;text-transform:uppercase}
+.nav ul{display:flex;gap:28px;list-style:none;margin:0;padding:0;align-items:center}
+.nav ul a{text-decoration:none}
+.nav ul a:hover{text-decoration:underline;text-underline-offset:4px}
+
+.open{display:inline-flex;align-items:center;gap:8px}
+.open::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--success)}
+
+/* Draft switcher (not part of the design) */
+.switch{position:sticky;top:0;z-index:50;display:flex;gap:4px;flex-wrap:wrap;padding:8px 12px;background:#14120f}
+.switch a{color:#d9ccb6;text-decoration:none;padding:8px 12px;border-radius:8px;font:500 11px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em}
+.switch a[aria-current]{background:#f5ead8;color:#14120f}
+
+@media (max-width:760px){
+  .wrap{padding:0 20px}.nav{padding:16px 20px}.nav ul li:not(:last-child){display:none}
+}

@@ -22,8 +22,11 @@ import { useState, type ComponentProps, type ReactNode } from "react";
 
 /** Shared control skin. Single-line by deliberate choice: a multi-line string
  *  literal in a className carries the CR from a CRLF file into the server HTML
- *  but not the client, which produces a hydration mismatch. */
-const CONTROL = "w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink transition-colors placeholder:text-muted hover:border-ink-soft focus:border-ink disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted";
+ *  but not the client, which produces a hydration mismatch.
+ *
+ *  `min-h-control` puts every text input, select and textarea on the same
+ *  44px line as a Button, so a field-and-button row lines up by default. */
+const CONTROL = "min-h-control w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink transition-colors placeholder:text-muted hover:border-ink-soft focus:border-ink disabled:cursor-not-allowed disabled:bg-raised disabled:text-muted";
 
 const CONTROL_INVALID = "border-danger shadow-[0_0_0_3px_rgb(165_31_24_/_0.2)] hover:border-danger focus:border-danger";
 
@@ -147,7 +150,7 @@ export function PasswordField({
           aria-pressed={visible}
           title={visible ? "Hide password" : "Show password"}
           onClick={() => setVisible((current) => !current)}
-          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted transition-colors duration-150 ease-hi hover:text-ink focus-visible:text-ink"
+          className="absolute inset-y-0 right-0 flex w-11 items-center justify-center text-muted transition-colors hover:text-ink focus-visible:text-ink"
         >
           {visible ? <EyeOffIcon /> : <EyeIcon />}
         </button>
