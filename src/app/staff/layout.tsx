@@ -44,23 +44,27 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-surface">
-        <header className="sticky top-0 z-30 border-b border-line bg-surface">
+        <header className="sticky top-0 z-30 border-b border-line bg-surface" style={{ ["--staff-bar-h" as string]: "57px" }}>
           <div className="flex items-center gap-3 px-3 py-2 sm:px-4">
             <span className="display hidden text-xl text-ink sm:inline">Counter</span>
             <StaffNav newCount={summary?.pending_now ?? 0} />
             <Link
               href="/staff/shift"
-              className="ui-caps ml-auto hidden min-h-12 shrink-0 items-center gap-2 rounded-xl px-3 text-2xs text-ink-soft hover:bg-raised md:inline-flex"
+              className="ui-caps ml-auto inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-2xs text-ink-soft hover:bg-raised"
             >
               <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-full ${shift ? "bg-success" : "bg-warning"}`} />
               {shift ? (
                 <>
-                  On shift <span className="text-ink">since {since}</span> · drawer{" "}
-                  <span className="numeric text-ink">{formatPrice(shift.opening_cash)}</span>
+                  <span className="hidden sm:inline">
+                    On shift <span className="text-ink">since {since}</span> · drawer{" "}
+                    <span className="numeric text-ink">{formatPrice(shift.opening_cash)}</span>
+                  </span>
+                  <span className="numeric text-ink sm:hidden">{formatPrice(shift.opening_cash)}</span>
                 </>
               ) : (
-                <>Not clocked in · clock in</>
+                <span className="hidden sm:inline">Not clocked in · clock in</span>
               )}
+              <span className="sr-only sm:hidden">{shift ? "On shift" : "Not clocked in"}</span>
             </Link>
           </div>
         </header>

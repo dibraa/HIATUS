@@ -56,8 +56,8 @@ export function StaffNav({ newCount = 0 }: { newCount?: number }) {
               <Link
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`ui-caps inline-flex min-h-12 items-center gap-2 rounded-xl px-3 text-2xs transition-colors sm:px-3.5 ${
-                  active ? "bg-ink text-surface" : "text-ink-soft hover:bg-raised hover:text-ink"
+                className={`ui-caps inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-2xs transition-colors sm:px-3.5 ${
+                  active ? "bg-accent text-accent-fg" : "text-ink-soft hover:bg-raised hover:text-ink"
                 }`}
               >
                 <svg

@@ -6,7 +6,7 @@ import { advanceOrderStatus, takePayment } from "@/app/actions/staff";
 import { formatPrice, orderCode } from "@/lib/format";
 import { PAYMENT_METHOD_LABELS } from "@/lib/order-meta";
 import type { PaymentMethod } from "@/types/database";
-import type { QueueOrder } from "./order-ticket";
+import type { QueueOrder } from "@/types/staff";
 
 /**
  * Hand-over with the payment folded in: the customer is at the counter, the
@@ -105,7 +105,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
                   type="button"
                   aria-pressed={tendered === amount}
                   onClick={() => setTendered(amount)}
-                  className={`numeric min-h-14 rounded-xl border text-sm ${
+                  className={`numeric min-h-11 rounded-xl border text-sm ${
                     tendered === amount ? "border-ink bg-ink text-surface" : "border-line-strong bg-card text-ink hover:bg-raised"
                   }`}
                 >
