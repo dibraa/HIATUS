@@ -122,7 +122,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col bg-surface text-ink">
+      <body className="flex min-h-full flex-col bg-surface text-ink" suppressHydrationWarning>
         <Providers>
           {/* First tab stop on every page: jumps the header nav straight to content */}
           <a href="#main" className="skip-link">
