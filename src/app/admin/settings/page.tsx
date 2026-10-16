@@ -4,6 +4,10 @@ import { Badge } from "@/components/ui/badge";
 import { getSettings, isOpenNow } from "@/lib/settings";
 import { ROLE_LABELS } from "@/lib/roles";
 import type { Role } from "@/types/database";
+import { apiJson } from "@/lib/api-client";
+import { getServerToken } from "@/lib/server-token";
+import type { AuthenticationSettings } from "@/lib/authentication-options";
+import { AuthenticationSettingsForm } from "./authentication-settings";
 import {
   BusinessHoursForm,
   OrderingForm,
@@ -21,6 +25,15 @@ export default async function SettingsPage() {
     await getSettings();
 
   const { open } = isOpenNow(businessHours);
+  let authentication: AuthenticationSettings | null = null;
+  let authenticationError: string | null = null;
+  try {
+    authentication = await apiJson<AuthenticationSettings>("/settings/authentication", {
+      token: (await getServerToken()) ?? undefined, cache: "no-store",
+    });
+  } catch {
+    authenticationError = "Sign-in settings could not be loaded. Reload this page to try again.";
+  }
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -48,6 +61,7 @@ export default async function SettingsPage() {
           <a href="#settings-shop">Shop details</a>
           <a href="#settings-messages">Order messages</a>
           <a href="#settings-access">Roles and access</a>
+          <a href="#settings-authentication">Sign-in and security</a>
         </nav>
         <div className="admin-settings-sections">
           <section id="settings-ordering" aria-label="Ordering settings"><OrderingForm ordering={ordering} /></section>
@@ -55,6 +69,7 @@ export default async function SettingsPage() {
           <section id="settings-hours" aria-label="Opening hours settings"><BusinessHoursForm hours={businessHours} /></section>
           <section id="settings-shop" aria-label="Shop details settings"><ShopInfoForm info={shopInfo} /></section>
           <section id="settings-messages" aria-label="Order message settings"><TemplatesForm templates={templates} /></section>
+          <section id="settings-authentication" aria-label="Sign-in and security settings"><AuthenticationSettingsForm settings={authentication} error={authenticationError} /></section>
 
           {/* ---------- Access control reference ---------- */}
           <section

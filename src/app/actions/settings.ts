@@ -7,6 +7,13 @@ import type { BusinessHours } from "@/types/database";
 
 export type SettingsState = { error: string | null; success: string | null };
 
+export async function saveAuthenticationSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  return writeSetting("authentication", {
+    google_enabled: formData.get("google_enabled") === "on",
+    recaptcha_enabled: formData.get("recaptcha_enabled") === "on",
+  }, ["/login", "/signup"]);
+}
+
 async function writeSetting(key: string, value: unknown, revalidate: string[] = []): Promise<SettingsState> {
   const token = await getServerToken();
   try {

@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import { signUp, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
+import { GoogleSignIn } from "@/components/google-sign-in";
+import type { getAuthenticationOptions } from "@/lib/authentication-options";
 
 const initialState: AuthState = { error: null };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export function SignupForm() {
+export function SignupForm({ authentication }: { authentication: Awaited<ReturnType<typeof getAuthenticationOptions>> }) {
   const [state, formAction, pending] = useActionState(signUp, initialState);
+  const [googlePending, setGooglePending] = useState(false);
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,6 +23,12 @@ export function SignupForm() {
     : null;
 
   return (
+    <div className="flex flex-col gap-5">
+    {authentication.options?.google_enabled && authentication.options.google_client_id && <>
+      <GoogleSignIn clientId={authentication.options.google_client_id} intent="signup" disabled={pending || Boolean(state.success)} onPendingChange={setGooglePending} />
+      <p className="border-t border-line pt-4 text-center text-sm text-muted">Or create an account with email</p>
+    </>}
+    <FormError>{authentication.error}</FormError>
     <form action={formAction} className="flex flex-col gap-4">
       <TextField
         id="full_name"
@@ -85,7 +94,7 @@ export function SignupForm() {
         type="submit"
         size="md"
         loading={pending}
-        disabled={Boolean(state.success)}
+        disabled={googlePending || Boolean(state.success)}
         className="mt-1 w-full"
       >
         {pending ? "Creating account…" : "Sign up"}
@@ -130,5 +139,6 @@ export function SignupForm() {
         </div>
       )}
     </form>
+    </div>
   );
 }
