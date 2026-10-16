@@ -4,10 +4,12 @@ import { AuthTicket } from "@/components/auth-ticket";
 import { TextLink } from "@/components/ui/text-link";
 import { ControlSkeleton, FieldSkeleton } from "@/components/ui/skeleton";
 import { LoginForm } from "./login-form";
+import { getAuthenticationOptions } from "@/lib/authentication-options";
 
 export const metadata: Metadata = { title: "Log in" };
 
-export default function LoginPage() {
+export default async function LoginPage() {
+  const authentication = await getAuthenticationOptions();
   return (
     <AuthTicket
       label="Log in"
@@ -22,7 +24,7 @@ export default function LoginPage() {
       {/* Suspense: LoginForm reads the `next` search param, which opts the
           subtree into client-side rendering. */}
       <Suspense fallback={<FormSkeleton />}>
-        <LoginForm />
+        <LoginForm authentication={authentication} />
       </Suspense>
     </AuthTicket>
   );

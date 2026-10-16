@@ -5,6 +5,9 @@ import { cookies } from "next/headers";
 import { apiFetch, apiJson } from "@/lib/api-client";
 import { homePathFor } from "@/lib/roles";
 import type { Role } from "@/types/database";
+import { createHash, randomBytes } from "node:crypto";
+
+const RESET_UNAVAILABLE = "Password reset is temporarily unavailable. Please try again later.";
 
 export type AuthState = { error: string | null; success?: string | null; email?: string };
 export type ResetState = { error: string | null; sent: boolean };
@@ -21,13 +24,13 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
   try {
     const response = await apiJson<{ token: string; user: { role: Role } }>("/auth/login", {
       method: "POST",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, recaptcha_token: String(formData.get("recaptcha_token") ?? "") }),
     });
     token = response.token;
     role = response.user.role;
 
     const store = await cookies();
-    store.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax" });
+    store.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
   } catch (err: unknown) {
     // Hand the address back: React resets the form after the action, and
     // retyping an email because the password was wrong is pure friction.
@@ -46,6 +49,52 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
  */
 function isSafeNext(next: string): boolean {
   return next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\");
+}
+
+export async function beginGoogleAuthentication(intent: "login" | "signup"): Promise<{ nonce?: string; error?: string }> {
+  if (intent !== "login" && intent !== "signup") return { error: "Invalid sign-in request." };
+  try {
+    const verifier = randomBytes(32).toString("base64url");
+    const result = await apiJson<{ nonce: string }>("/auth/google/challenge", {
+      method: "POST",
+      body: JSON.stringify({ intent, browser_hash: createHash("sha256").update(verifier).digest("hex") }),
+    });
+    (await cookies()).set("google_auth", verifier, {
+      httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600,
+    });
+    return result;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+}
+
+export async function signInWithGoogle(formData: FormData): Promise<{ error: string; code?: string }> {
+  let role: Role;
+  const next = String(formData.get("next") ?? "");
+  try {
+    const store = await cookies();
+    const verifier = store.get("google_auth")?.value;
+    if (!verifier) return { error: "Google sign-in expired. Please start again.", code: "CHALLENGE_EXPIRED" };
+    const res = await apiFetch("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({
+        credential: String(formData.get("credential") ?? ""), nonce: String(formData.get("nonce") ?? ""),
+        password: String(formData.get("password") ?? ""), recaptcha_token: String(formData.get("recaptcha_token") ?? ""),
+        browser_hash: createHash("sha256").update(verifier).digest("hex"),
+      }),
+    });
+    const data = await res.json() as { error?: string; code?: string; token: string; user: { role: Role } };
+    if (!res.ok) return { error: data.error || "Google sign-in failed. Please try again.", code: data.code };
+    store.delete("google_auth");
+    store.set("token", data.token, {
+      httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax", secure: process.env.NODE_ENV === "production",
+    });
+    role = data.user.role;
+  } catch (error) {
+    return { error: (error as Error).message };
+  }
+  if (isSafeNext(next)) redirect(next);
+  redirect(homePathFor(role));
 }
 
 export async function signUp(_prevState: AuthState, formData: FormData): Promise<AuthState> {

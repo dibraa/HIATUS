@@ -1,11 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useActionState, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { TextLink } from "@/components/ui/text-link";
+import { GoogleSignIn } from "@/components/google-sign-in";
+import { LoginCaptcha } from "@/components/login-captcha";
+import type { getAuthenticationOptions } from "@/lib/authentication-options";
 
 const initialState: AuthState = { error: null };
 
@@ -15,7 +18,13 @@ const NOTICES: Record<string, string> = {
   "missing-code": "That link was incomplete. Request a new one.",
 };
 
-export function LoginForm() {
+export function LoginForm({ authentication }: { authentication: Awaited<ReturnType<typeof getAuthenticationOptions>> }) {
+  const { options, error: optionsError } = authentication;
+  const router = useRouter();
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
+  const [googlePending, setGooglePending] = useState(false);
+  const resetCaptcha = () => { setCaptchaToken(null); setCaptchaReset(value => value + 1); };
   const searchParams = useSearchParams();
 
   // Empty, not "/", when absent. A blank `next` lets the sign-in action route
@@ -25,11 +34,21 @@ export function LoginForm() {
   const next = searchParams.get("next") ?? "";
   const notice = NOTICES[searchParams.get("error") ?? ""];
 
-  const [state, formAction, pending] = useActionState(signIn, initialState);
+  const [state, formAction, pending] = useActionState(async (previous: AuthState, data: FormData) => {
+    try {
+      const result = await signIn(previous, data);
+      if (result.error) router.refresh();
+      return result;
+    }
+    finally { resetCaptcha(); }
+  }, initialState);
 
   return (
+    <div className="flex flex-col gap-5">
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
+      <input type="hidden" name="recaptcha_token" value={captchaToken || ""} />
+      <FormError>{optionsError}</FormError>
 
       {notice && <FormError>{notice}</FormError>}
 
@@ -62,9 +81,19 @@ export function LoginForm() {
           address is registered. */}
       <FormError>{state.error}</FormError>
 
-      <Button type="submit" size="md" loading={pending} className="mt-1 w-full">
+      {options?.recaptcha_enabled && options.recaptcha_site_key && (
+        <LoginCaptcha siteKey={options.recaptcha_site_key} resetKey={captchaReset} onChange={setCaptchaToken} />
+      )}
+
+      <Button type="submit" size="md" loading={pending} disabled={googlePending || !options || (options.recaptcha_enabled && !captchaToken)} className="mt-1 w-full">
         {pending ? "Signing in…" : "Log in"}
       </Button>
     </form>
+    {options?.google_enabled && options.google_client_id && <>
+      <p className="border-t border-line pt-4 text-center text-sm text-muted">Or continue with Google</p>
+      <GoogleSignIn clientId={options.google_client_id} intent="login" next={next}
+        captchaToken={captchaToken} captchaRequired={options.recaptcha_enabled} disabled={pending} onAttempt={resetCaptcha} onPendingChange={setGooglePending} />
+    </>}
+    </div>
   );
 }
