@@ -122,23 +122,23 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col bg-surface text-ink">
+      <body className="flex min-h-full flex-col bg-surface text-ink" suppressHydrationWarning>
         <Providers>
           {/* First tab stop on every page: jumps the header nav straight to content */}
           <a href="#main" className="skip-link">
             Skip to main content
           </a>
 
-          <div className="site-chrome">{!isAdminRoute && <Navbar />}</div>
+          <div className="site-chrome">{!isAdminRoute && !isStaffRoute && <Navbar />}</div>
 
           {/* The container every page centres in. Sections that need to reach
               the viewport edge (the tan loyalty band, the partner strip) break
               out with `.full-bleed` rather than this being unconstrained.
-              Admin skips it entirely and lays out its own workspace. */}
+              Admin and staff skip it entirely and lay out their own workspace. */}
           <main
             id="main"
             className={
-              isAdminRoute
+              isAdminRoute || isStaffRoute
                 ? "w-full flex-1"
                 : "mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10"
             }
