@@ -6,7 +6,7 @@ import { advanceOrderStatus, takePayment } from "@/app/actions/staff";
 import { formatPrice, orderCode } from "@/lib/format";
 import { PAYMENT_METHOD_LABELS } from "@/lib/order-meta";
 import type { PaymentMethod } from "@/types/database";
-import type { QueueOrder } from "./order-ticket";
+import type { QueueOrder } from "@/types/staff";
 
 /**
  * Hand-over with the payment folded in: the customer is at the counter, the
@@ -49,11 +49,11 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end bg-scrim lg:static lg:z-auto lg:block lg:bg-transparent">
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-scrim sm:items-center sm:p-4">
       <section
         role="dialog"
         aria-labelledby="handover-title"
-        className="relative grid max-h-[88vh] w-full gap-3 overflow-auto rounded-t-3xl bg-card p-5 pb-7 ring-1 ring-line lg:sticky lg:top-20 lg:max-h-none lg:rounded-2xl lg:pb-5"
+        className="relative grid max-h-[88vh] w-full gap-3 overflow-auto rounded-t-3xl bg-card p-5 pb-7 ring-1 ring-line sm:max-w-md sm:rounded-2xl sm:pb-5"
       >
         <button
           type="button"
@@ -105,7 +105,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
                   type="button"
                   aria-pressed={tendered === amount}
                   onClick={() => setTendered(amount)}
-                  className={`numeric min-h-14 rounded-xl border text-sm ${
+                  className={`numeric min-h-11 rounded-xl border text-sm ${
                     tendered === amount ? "border-ink bg-ink text-surface" : "border-line-strong bg-card text-ink hover:bg-raised"
                   }`}
                 >
