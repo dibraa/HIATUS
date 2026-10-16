@@ -10,6 +10,7 @@ import {
   homePathFor,
 } from "@/lib/roles";
 import type { Role } from "@/types/database";
+import { USE_MOCKS } from "@/lib/mock-staff-data";
 
 // The fallback is public (it is in this file), so a token signed with it can
 // be forged by anyone and would pass every role check below. Development keeps
@@ -52,6 +53,12 @@ export async function proxy(request: NextRequest) {
   }
 
   const access = role ? { role, isActive } : null;
+
+  // Frontend-first preview: the staff workspace renders from mock data with
+  // no backend running, so its routes skip the auth gate while USE_MOCKS is on.
+  if (USE_MOCKS && wantsStaff) {
+    return NextResponse.next({ request: { headers: requestHeaders } });
+  }
 
   if (requiresAuth && !role) {
     const url = request.nextUrl.clone();

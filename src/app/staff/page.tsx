@@ -6,6 +6,7 @@ import { formatPrice } from "@/lib/format";
 import { DataError } from "@/components/ui/data-error";
 import { FilterTabs } from "@/components/ui/filter-tabs";
 import { ACTIVE_STATUSES } from "@/lib/order-meta";
+import { USE_MOCKS, MOCK_QUEUE, MOCK_SUMMARY } from "@/lib/mock-staff-data";
 import type { OrderItem, OrderStatus, TodaySummary } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 import { QueueBoard } from "./queue-board";
@@ -24,32 +25,38 @@ const TABS: { label: string; value: string; statuses: OrderStatus[] }[] = [
 
 const STAGE_RANK: Partial<Record<OrderStatus, number>> = { ready: 0, pending: 1, preparing: 2 };
 
-export default async function StaffQueuePage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const { tab = "active" } = await searchParams;
+export default async function StaffQueuePage({ searchParams }: { searchParams: Promise<{ tab?: string; q?: string }> }) {
+  const { tab = "active", q = "" } = await searchParams;
   const active = TABS.find((t) => t.value === tab) ?? TABS[0];
-  const token = await getServerToken();
 
-  let summary: TodaySummary | null;
-  let allOrders: (QueueOrder & { _id: string })[];
-  try {
-    [summary, allOrders] = await Promise.all([
-      apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }),
-      apiJson<(QueueOrder & { _id: string })[]>("/orders", { token: token ?? undefined }),
-    ]);
-  } catch {
-    return (
-      <div>
-        <AutoRefresh seconds={15} />
-        <DataError title="Couldn't load the queue" body="Check your connection and try again." showRetry />
-      </div>
-    );
-  }
-  const settings = await getSettings();
-  const prep = settings.ordering.default_prep_minutes;
+  let allOrders: QueueOrder[];
+  let ordersToday: number;
+  let prep = 10;
 
-  const open = allOrders
-    .filter((o) => ACTIVE_STATUSES.includes(o.status))
-    .map((o) => ({
+  if (USE_MOCKS) {
+    allOrders = MOCK_QUEUE;
+    ordersToday = MOCK_SUMMARY.ordersToday;
+  } else {
+    const token = await getServerToken();
+    let summary: TodaySummary | null;
+    let fetched: (QueueOrder & { _id: string })[];
+    try {
+      [summary, fetched] = await Promise.all([
+        apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }),
+        apiJson<(QueueOrder & { _id: string })[]>("/orders", { token: token ?? undefined }),
+      ]);
+    } catch {
+      return (
+        <div>
+          <AutoRefresh seconds={15} />
+          <DataError title="Couldn't load the queue" body="Check your connection and try again." showRetry />
+        </div>
+      );
+    }
+    const settings = await getSettings();
+    prep = settings.ordering.default_prep_minutes;
+    ordersToday = summary?.orders_today ?? 0;
+    allOrders = fetched.map((o) => ({
       ...o,
       id: o._id ?? o.id,
       order_items: ((o as unknown as { items: (OrderItem & { _id?: string })[] }).items ?? []).map((item) => ({
@@ -57,7 +64,11 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
         id: item._id ?? item.id,
       })),
       profiles: (o as unknown as { user_id: unknown }).user_id as { full_name: string | null; phone: string | null } | null,
-    }))
+    }));
+  }
+
+  const open = allOrders
+    .filter((o) => ACTIVE_STATUSES.includes(o.status))
     .sort(
       (a, b) =>
         (STAGE_RANK[a.status] ?? 9) - (STAGE_RANK[b.status] ?? 9) ||
@@ -78,19 +89,22 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
   return (
     <div>
       <AutoRefresh seconds={15} />
-      <h1 className="sr-only">Order queue</h1>
+      <p className="ui-caps text-2xs text-muted">Counter operations</p>
+      <h1 className="display mt-1 text-4xl text-ink">Order Queue</h1>
 
-      <QueueSummary
-        open={open.length}
-        avgWait={avgWait}
-        late={late}
-        toCollect={formatPrice(toCollect).replace(".00", "")}
-        today={summary?.orders_today ?? 0}
-      />
+      <div className="mt-4">
+        <QueueSummary
+          open={open.length}
+          avgWait={avgWait}
+          late={late}
+          toCollect={formatPrice(toCollect).replace(".00", "")}
+          today={ordersToday}
+        />
+      </div>
 
       <FilterTabs
         label="Filter by stage"
-        className="mb-3"
+        className="mb-3 mt-4"
         tabs={TABS.map((t) => ({
           label: t.label,
           href: `/staff?tab=${t.value}`,
@@ -105,10 +119,11 @@ export default async function StaffQueuePage({ searchParams }: { searchParams: P
         renderedAt={renderedAt.toISOString()}
         lateAfter={prep}
         overAfter={Math.round(prep * 1.5)}
-        emptyTitle={active.value === "active" ? "Nothing in the queue" : "Nothing here"}
+        query={q}
+        emptyTitle={active.value === "active" ? "All orders fulfilled!" : "Nothing here"}
         emptyBody={
           active.value === "active"
-            ? `Every order has been handed over. ${summary?.orders_today ?? 0} today so far.`
+            ? `Every ticket is handed over. ${ordersToday} today so far.`
             : "No orders are at this stage right now."
         }
       />

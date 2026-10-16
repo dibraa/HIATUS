@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin, isStaff } from "@/lib/roles";
@@ -7,69 +5,80 @@ import { apiJson } from "@/lib/api-client";
 import { getServerToken } from "@/lib/server-token";
 import { formatPrice } from "@/lib/format";
 import { StaffNav } from "@/components/staff-nav";
+import { StaffSidebar } from "@/components/staff-sidebar";
+import { StaffTopbar } from "@/components/staff-topbar";
 import { ThemeProvider } from "@/components/theme-provider";
+import { USE_MOCKS, MOCK_QUEUE, MOCK_SHIFT, MOCK_USER } from "@/lib/mock-staff-data";
 import type { Shift, TodaySummary } from "@/types/database";
 
 /**
- * The counter's frame: one bar with the sections, the count of new orders,
- * and the shift — clocked in since when, and the drawer float — so the two
- * side jobs (sold out, shift) are one tap from the queue and never a reason
- * to lose sight of it.
+ * The counter's frame: a fixed rail (brand, who is on shift, the sections,
+ * sign out) with the workspace beside it. On phones the rail collapses to a
+ * top bar so the queue keeps the full width.
  *
- * The queue is a wide table and gets the full width; the other staff pages
- * keep the narrower reading column they were designed for.
+ * Frontend-first: with USE_MOCKS the shell renders from mock data and skips
+ * the auth redirects, so the queue is viewable with no backend running.
  */
 export default async function StaffLayout({ children }: { children: React.ReactNode }) {
-  const user = await getCurrentUser();
-  const access = accessOf(user);
+  let staffName = MOCK_USER.name;
+  let newCount = MOCK_QUEUE.filter((o) => o.status === "pending").length;
+  let onShift = true;
+  let since: string | null = MOCK_SHIFT.since;
+  let drawerCash: string | null = formatPrice(MOCK_SHIFT.openingCash);
+  const mockUnpaid = MOCK_QUEUE.filter((o) => o.payment_status === "unpaid");
+  let alerts = {
+    fresh: newCount,
+    unpaidCount: mockUnpaid.length,
+    unpaidTotal: formatPrice(mockUnpaid.reduce((s, o) => s + o.total_amount, 0)).replace(".00", ""),
+  };
 
-  if (!user) redirect("/login?next=/staff");
-  if (isAdmin(access)) redirect("/admin");
-  if (!isStaff(access)) redirect("/");
+  if (!USE_MOCKS) {
+    const user = await getCurrentUser();
+    const access = accessOf(user);
 
-  const token = (await getServerToken()) ?? undefined;
-  const [shift, summary] = await Promise.all([
-    apiJson<Shift | null>("/staff/shift", { token }).catch(() => null),
-    apiJson<TodaySummary>("/analytics/today", { token }).catch(() => null),
-  ]);
-  const pathname = (await headers()).get("x-pathname") ?? "";
-  const wide = pathname === "/staff";
+    if (!user) redirect("/login?next=/staff");
+    if (isAdmin(access)) redirect("/admin");
+    if (!isStaff(access)) redirect("/");
 
-  const since = shift
-    ? new Intl.DateTimeFormat("en-PH", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit" }).format(
-        new Date(shift.started_at)
-      )
-    : null;
+    const token = (await getServerToken()) ?? undefined;
+    const [shift, summary] = await Promise.all([
+      apiJson<Shift | null>("/staff/shift", { token }).catch(() => null),
+      apiJson<TodaySummary>("/analytics/today", { token }).catch(() => null),
+    ]);
+    staffName = user.profile?.full_name?.trim() || user.email.split("@")[0];
+    newCount = summary?.pending_now ?? 0;
+    onShift = !!shift;
+    since = shift
+      ? new Intl.DateTimeFormat("en-PH", { timeZone: "Asia/Manila", hour: "numeric", minute: "2-digit" }).format(
+          new Date(shift.started_at)
+        )
+      : null;
+    drawerCash = shift ? formatPrice(shift.opening_cash) : null;
+    alerts = { fresh: newCount, unpaidCount: summary?.unpaid_now ?? 0, unpaidTotal: "" };
+  }
 
   return (
     <ThemeProvider>
       <div className="min-h-screen bg-surface">
-        <header className="sticky top-0 z-30 border-b border-line bg-surface" style={{ ["--staff-bar-h" as string]: "57px" }}>
-          <div className="flex items-center gap-3 px-3 py-2 sm:px-4">
-            <span className="display hidden text-xl text-ink sm:inline">Counter</span>
-            <StaffNav newCount={summary?.pending_now ?? 0} />
-            <Link
-              href="/staff/shift"
-              className="ui-caps ml-auto inline-flex min-h-11 shrink-0 items-center gap-2 rounded-xl px-3 text-2xs text-ink-soft hover:bg-raised"
-            >
-              <span aria-hidden="true" className={`h-2.5 w-2.5 rounded-full ${shift ? "bg-success" : "bg-warning"}`} />
-              {shift ? (
-                <>
-                  <span className="hidden sm:inline">
-                    On shift <span className="text-ink">since {since}</span> · drawer{" "}
-                    <span className="numeric text-ink">{formatPrice(shift.opening_cash)}</span>
-                  </span>
-                  <span className="numeric text-ink sm:hidden">{formatPrice(shift.opening_cash)}</span>
-                </>
-              ) : (
-                <span className="hidden sm:inline">Not clocked in · clock in</span>
-              )}
-              <span className="sr-only sm:hidden">{shift ? "On shift" : "Not clocked in"}</span>
-            </Link>
-          </div>
-        </header>
+        <aside className="fixed inset-y-0 left-0 z-40 hidden w-[15.5rem] border-r border-line bg-card lg:block">
+          <StaffSidebar staffName={staffName} newCount={newCount} onShift={onShift} since={since} drawerCash={drawerCash} />
+        </aside>
 
-        <div className={wide ? "px-3 py-4 sm:px-4" : "mx-auto max-w-5xl px-4 py-6 sm:px-6"}>{children}</div>
+        <div className="min-w-0 lg:pl-[15.5rem]">
+          <header className="sticky top-0 z-30">
+            <StaffTopbar
+              staffName={staffName}
+              onShift={onShift}
+              since={since}
+              alerts={alerts}
+            />
+            <div className="border-b border-line bg-surface px-3 py-1.5 lg:hidden">
+              <StaffNav newCount={newCount} />
+            </div>
+          </header>
+
+          <div className="px-3 py-4 sm:px-4 lg:px-6 lg:py-6">{children}</div>
+        </div>
       </div>
     </ThemeProvider>
   );
