@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { orderCode } from "@/lib/format";
 import { HandOverPanel } from "./hand-over-panel";
 import { IncomingOrders } from "./incoming-orders";
-import { QueueRow } from "./queue-row";
+import { QueueCard } from "./queue-card";
+import { QueueReceiptModal } from "./queue-receipt-modal";
 import type { QueueOrder } from "@/types/staff";
 
 type Props = {
@@ -16,15 +17,34 @@ type Props = {
   overAfter: number;
   emptyTitle: string;
   emptyBody: string;
+  query: string;
 };
 
-export function QueueBoard({ orders, renderedAt, lateAfter, overAfter, emptyTitle, emptyBody }: Props) {
+/**
+ * The counter workspace: a full-width ticket grid. Tapping a card opens its
+ * centered receipt; the hand-over flow opens over the grid. The top bar's
+ * global search arrives through the URL (?q=); stage stays in the URL too
+ * via the filter tabs above.
+ */
+export function QueueBoard({ orders, renderedAt, lateAfter, overAfter, emptyTitle, emptyBody, query }: Props) {
   const [shown, setShown] = useState<Set<string>>(() => new Set(orders.map((o) => o.id)));
   const [handingOver, setHandingOver] = useState<string | null>(null);
+  const [openCode, setOpenCode] = useState<string | null>(null);
   const [now, setNow] = useState(() => new Date(renderedAt).getTime());
 
   const visible = orders.filter((o) => shown.has(o.id));
   const incoming = orders.filter((o) => !shown.has(o.id));
+
+  const term = query.trim().toLowerCase();
+  const filtered = useMemo(
+    () =>
+      term
+        ? visible.filter((o) =>
+            `${orderCode(o.id)} ${o.profiles?.full_name ?? ""}`.toLowerCase().includes(term)
+          )
+        : visible,
+    [visible, term]
+  );
 
   useEffect(() => {
     const tick = () => setNow(Date.now());
@@ -43,48 +63,69 @@ export function QueueBoard({ orders, renderedAt, lateAfter, overAfter, emptyTitl
     : "";
 
   const handOverOrder = orders.find((o) => o.id === handingOver) ?? null;
+  const openOrder = !handOverOrder ? orders.find((o) => o.id === openCode) ?? null : null;
 
   return (
-    <div className={`grid items-start gap-4 ${handOverOrder ? "lg:grid-cols-[minmax(0,1fr)_22rem]" : ""}`}>
+    <div>
       <p className="sr-only" role="status" aria-live="polite">
         {announcement}
       </p>
 
-      <div className="min-w-0">
-        <IncomingOrders incoming={incoming} onShow={() => setShown(new Set(orders.map((o) => o.id)))} />
+      <IncomingOrders incoming={incoming} onShow={() => setShown(new Set(orders.map((o) => o.id)))} />
 
-        {visible.length === 0 ? (
-          <EmptyState
-            title={emptyTitle}
-            body={emptyBody}
-            action={
+      {term && (
+        <p className="ui-caps mb-3 text-2xs text-muted">
+          Filtered by <span className="text-ink">“{query.trim()}”</span> ·{" "}
+          <Link href="/staff" className="underline underline-offset-4 hover:text-ink">
+            Clear
+          </Link>
+        </p>
+      )}
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          title={term ? "No matches" : emptyTitle}
+          body={term ? `Nothing matches "${query.trim()}".` : emptyBody}
+          action={
+            !term ? (
               <Link
                 href="/staff/pos"
-                className="ui-caps inline-flex min-h-11 items-center rounded-md border border-line-strong px-4 text-2xs text-ink transition-colors hover:bg-raised"
+                className="ui-caps inline-flex min-h-11 items-center rounded-full bg-accent px-6 text-2xs text-accent-fg transition-colors hover:bg-accent-hover"
               >
                 Go to POS
               </Link>
-            }
-          />
-        ) : (
-          <ul
-            className="divide-y divide-line overflow-hidden rounded-2xl bg-card ring-1 ring-line"
-            style={{ top: "var(--staff-bar-h, 57px)" }}
-          >
-            {visible.map((order) => (
-              <QueueRow
-                key={order.id}
-                order={order}
-                now={now}
-                lateAfter={lateAfter}
-                overAfter={overAfter}
-                selected={order.id === handingOver}
-                onHandOver={() => setHandingOver(order.id)}
-              />
-            ))}
-          </ul>
-        )}
-      </div>
+            ) : undefined
+          }
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          {filtered.map((order) => (
+            <QueueCard
+              key={order.id}
+              order={order}
+              now={now}
+              lateAfter={lateAfter}
+              overAfter={overAfter}
+              onOpen={() => setOpenCode(order.id)}
+              onHandOver={() => setHandingOver(order.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      {openOrder && (
+        <QueueReceiptModal
+          order={openOrder}
+          now={now}
+          lateAfter={lateAfter}
+          overAfter={overAfter}
+          onClose={() => setOpenCode(null)}
+          onHandOver={() => {
+            setOpenCode(null);
+            setHandingOver(openOrder.id);
+          }}
+        />
+      )}
 
       {handOverOrder && <HandOverPanel order={handOverOrder} onClose={() => setHandingOver(null)} />}
     </div>

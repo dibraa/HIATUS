@@ -5,6 +5,8 @@ import { apiJson } from "@/lib/api-client";
 import { getSettings } from "@/lib/settings";
 import { formatDateTime, formatPrice, orderCode } from "@/lib/format";
 import { PAYMENT_METHOD_LABELS } from "@/lib/order-meta";
+import { USE_MOCKS, MOCK_QUEUE } from "@/lib/mock-staff-data";
+import { DataError } from "@/components/ui/data-error";
 import type { Order, OrderItem, PaymentMethod } from "@/types/database";
 import { PrintReceiptButton } from "./print-receipt-button";
 
@@ -23,23 +25,66 @@ type ReceiptPayment = {
 
 export default async function ReceiptPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const token = await getServerToken();
-  const [rawOrder, payments, settings] = await Promise.all([
-    apiJson<Record<string, unknown>>(`/orders/${id}`, { token: token ?? undefined }),
-    apiJson<ReceiptPayment[]>(`/orders/${id}/payments`, { token: token ?? undefined }),
-    getSettings(),
-  ]);
+  const settings = await getSettings();
 
-  const order = {
-    ...rawOrder,
-    id: (rawOrder._id ?? rawOrder.id) as string,
-    items: ((rawOrder.items ?? []) as (OrderItem & { _id?: string })[]).map((item) => ({
-      ...item,
-      id: item._id ?? item.id,
-    })),
-  } as unknown as Order & { id: string; items: (OrderItem & { id: string })[] };
-  const payment = payments.find((entry) => entry.kind === "payment") ?? payments[0];
-  if (!payment) throw new Error("No payment record exists for this order.");
+  let order: Order & { id: string; items: (OrderItem & { id: string })[] };
+  let payment: ReceiptPayment | undefined;
+
+  if (USE_MOCKS) {
+    const mock = MOCK_QUEUE.find((o) => o.id === id);
+    if (!mock) {
+      return (
+        <main className="mx-auto max-w-md px-5 py-8">
+          <DataError title="Order not found" body="No ticket with that code exists in the preview queue." />
+        </main>
+      );
+    }
+    order = {
+      id: mock.id,
+      user_id: "",
+      status: mock.status,
+      subtotal_amount: mock.total_amount,
+      discount_amount: mock.discount_amount,
+      total_amount: mock.total_amount,
+      pickup_note: mock.pickup_note,
+      order_type: mock.order_type,
+      table_label: mock.table_label,
+      priority: mock.priority,
+      payment_method: mock.payment_method,
+      payment_status: mock.payment_status,
+      paid_at: mock.payment_status === "paid" ? mock.created_at : null,
+      ready_at: null,
+      created_at: mock.created_at,
+      updated_at: mock.created_at,
+      items: mock.order_items.map((item) => ({ ...item })),
+    };
+    payment = mock.payment_status === "paid"
+      ? {
+          kind: "payment",
+          method: mock.payment_method,
+          amount: mock.total_amount,
+          reference: null,
+          created_at: mock.created_at,
+        }
+      : undefined;
+  } else {
+    const token = await getServerToken();
+    const [rawOrder, payments] = await Promise.all([
+      apiJson<Record<string, unknown>>(`/orders/${id}`, { token: token ?? undefined }),
+      apiJson<ReceiptPayment[]>(`/orders/${id}/payments`, { token: token ?? undefined }),
+    ]);
+
+    order = {
+      ...(rawOrder as object),
+      id: (rawOrder._id ?? rawOrder.id) as string,
+      items: ((rawOrder.items ?? []) as (OrderItem & { _id?: string })[]).map((item) => ({
+        ...item,
+        id: item._id ?? item.id,
+      })),
+    } as unknown as Order & { id: string; items: (OrderItem & { id: string })[] };
+    payment = payments.find((entry) => entry.kind === "payment") ?? payments[0];
+    if (!payment) throw new Error("No payment record exists for this order.");
+  }
 
   return (
     <main className="mx-auto max-w-md px-5 py-8 print:max-w-none print:px-0 print:py-0">
@@ -58,15 +103,24 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
         </header>
 
         <dl className="flex flex-col gap-1 border-b border-line py-4 text-sm">
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted">Paid</dt>
-            <dd className="text-right text-ink">{formatDateTime(payment.created_at)}</dd>
-          </div>
-          <div className="flex justify-between gap-4">
-            <dt className="text-muted">Method</dt>
-            <dd className="text-ink">{PAYMENT_METHOD_LABELS[payment.method]}</dd>
-          </div>
-          {payment.reference && (
+          {payment ? (
+            <>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted">Paid</dt>
+                <dd className="text-right text-ink">{formatDateTime(payment.created_at)}</dd>
+              </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-muted">Method</dt>
+                <dd className="text-ink">{PAYMENT_METHOD_LABELS[payment.method]}</dd>
+              </div>
+            </>
+          ) : (
+            <div className="flex justify-between gap-4">
+              <dt className="text-muted">Status</dt>
+              <dd className="font-medium text-warning">Unpaid at the counter</dd>
+            </div>
+          )}
+          {payment?.reference && (
             <div className="flex justify-between gap-4">
               <dt className="text-muted">Reference</dt>
               <dd className="text-ink">{payment.reference}</dd>
@@ -95,8 +149,8 @@ export default async function ReceiptPage({ params }: { params: Promise<{ id: st
             </div>
           )}
           <div className="mt-1 flex justify-between border-t border-line pt-3">
-            <dt className="display text-xl text-ink">Total paid</dt>
-            <dd className="numeric text-lg font-semibold text-ink">{formatPrice(payment.amount)}</dd>
+            <dt className="display text-xl text-ink">{payment ? "Total paid" : "Total due"}</dt>
+            <dd className="numeric text-lg font-semibold text-ink">{formatPrice(payment?.amount ?? order.total_amount)}</dd>
           </div>
         </dl>
 

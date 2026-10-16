@@ -49,11 +49,11 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
   }
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end bg-scrim lg:static lg:z-auto lg:block lg:bg-transparent">
+    <div className="fixed inset-0 z-40 flex items-end justify-center bg-scrim sm:items-center sm:p-4">
       <section
         role="dialog"
         aria-labelledby="handover-title"
-        className="relative grid max-h-[88vh] w-full gap-3 overflow-auto rounded-t-3xl bg-card p-5 pb-7 ring-1 ring-line lg:sticky lg:top-20 lg:max-h-none lg:rounded-2xl lg:pb-5"
+        className="relative grid max-h-[88vh] w-full gap-3 overflow-auto rounded-t-3xl bg-card p-5 pb-7 ring-1 ring-line sm:max-w-md sm:rounded-2xl sm:pb-5"
       >
         <button
           type="button"
