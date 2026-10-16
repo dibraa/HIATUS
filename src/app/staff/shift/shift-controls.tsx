@@ -42,8 +42,12 @@ export function ClockInForm() {
       </p>
 
       <div className="mt-4 flex flex-col gap-1.5">
-        <label htmlFor="opening-cash" className="text-sm font-medium text-ink-soft">
-          Opening cash <span className="font-normal text-muted">(optional)</span>
+        <label
+          htmlFor="opening-cash"
+          className="text-sm font-medium text-ink-soft"
+        >
+          Opening cash{" "}
+          <span className="font-normal text-muted">(optional)</span>
         </label>
         <input
           id="opening-cash"
@@ -58,7 +62,12 @@ export function ClockInForm() {
         />
       </div>
 
-      <Button type="submit" size="lg" className="mt-5 w-full" disabled={pending}>
+      <Button
+        type="submit"
+        size="lg"
+        className="mt-5 w-full"
+        disabled={pending}
+      >
         {pending ? "Clocking in…" : "Clock in"}
       </Button>
     </form>
@@ -70,11 +79,8 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
   const [note, setNote] = useState("");
   const [pending, startTransition] = useTransition();
 
-  // The variance is the whole reason to count a drawer, so it is shown as the
-  // number is typed rather than discovered after submitting.
+  // A counted amount can be saved without claiming an unimplemented cash report.
   const counted = Number(closing);
-  const variance =
-    closing !== "" && Number.isFinite(counted) ? counted - expectedCash : null;
 
   return (
     <form
@@ -82,7 +88,10 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {
-          const { error } = await clockOut(closing === "" ? null : counted, note);
+          const { error } = await clockOut(
+            closing === "" ? null : counted,
+            note,
+          );
           if (error) toast.error(error);
           else toast.success("Clocked out. Shift recorded.");
         });
@@ -95,8 +104,12 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
       </p>
 
       <div className="mt-4 flex flex-col gap-1.5">
-        <label htmlFor="closing-cash" className="text-sm font-medium text-ink-soft">
-          Counted cash <span className="font-normal text-muted">(optional)</span>
+        <label
+          htmlFor="closing-cash"
+          className="text-sm font-medium text-ink-soft"
+        >
+          Counted cash{" "}
+          <span className="font-normal text-muted">(optional)</span>
         </label>
         <input
           id="closing-cash"
@@ -112,26 +125,24 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
         />
 
         <p id="variance-hint" aria-live="polite" className="text-xs">
-          {variance === null ? (
+          {closing === "" || !Number.isFinite(counted) ? (
             <span className="text-muted">
-              Expected {formatPrice(expectedCash)} — float plus cash taken.
-            </span>
-          ) : Math.abs(variance) < 0.005 ? (
-            <span className="font-medium text-success">Balances exactly.</span>
-          ) : variance > 0 ? (
-            <span className="font-medium text-warning">
-              Over by {formatPrice(variance)}.
+              Opening float: {formatPrice(expectedCash)}. This is a reference,
+              not the expected closing balance.
             </span>
           ) : (
-            <span className="font-medium text-danger">
-              Short by {formatPrice(Math.abs(variance))}.
+            <span className="text-muted">
+              Counted cash: {formatPrice(counted)}. Saved when you clock out.
             </span>
           )}
         </p>
       </div>
 
       <div className="mt-4 flex flex-col gap-1.5">
-        <label htmlFor="shift-note" className="text-sm font-medium text-ink-soft">
+        <label
+          htmlFor="shift-note"
+          className="text-sm font-medium text-ink-soft"
+        >
           Note <span className="font-normal text-muted">(optional)</span>
         </label>
         <textarea

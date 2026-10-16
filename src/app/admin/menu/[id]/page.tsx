@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
-import { PageHeader } from "@/components/ui/page-header";
+import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
 import type { MenuItem } from "@/types/database";
 import { MenuItemForm } from "../menu-item-form";
 
@@ -16,7 +16,7 @@ export default async function EditMenuItemPage({ params }: { params: Promise<{ i
   const item: MenuItem = { ...raw, id: raw._id ?? raw.id };
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="admin-menu-editor">
       <PageHeader title={"Edit " + item.name} />
       <MenuItemForm item={item} />
     </div>

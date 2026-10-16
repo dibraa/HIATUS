@@ -119,6 +119,7 @@ export function SalesChart({
             />
             <Bar
               dataKey="net_amount"
+              isAnimationActive={false}
               fill={c["--hi-accent"]}
               radius={[4, 4, 0, 0]}
               maxBarSize={44}
@@ -127,7 +128,7 @@ export function SalesChart({
         </ResponsiveContainer>
       </div>
 
-      <div className="mt-6 overflow-x-auto">
+      <div className="admin-table-scroll mt-6" tabIndex={0} role="region" aria-label="Revenue by period">
         <table className="w-full min-w-[34rem] text-left text-sm">
           <caption className="sr-only">
             Revenue per period, with order count and average order value.

@@ -41,7 +41,7 @@ export function NotificationList({ notifications }: { notifications: OrderNotifi
       </div>
       <ul>
         {notifications.map((notification) => (
-          <li key={notification.id} className="border-b border-line last:border-0">
+          <li key={notification._id ?? notification.id} className="border-b border-line last:border-0">
             <Link href={`/orders/${notification.order_id}`} className="block px-5 py-4 transition-colors hover:bg-raised">
               <div className="flex items-start gap-3">
                 <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${read[notification._id ?? notification.id] ? "bg-line-strong" : "bg-accent"}`} aria-hidden="true" />

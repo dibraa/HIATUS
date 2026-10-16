@@ -113,7 +113,7 @@ export async function takePayment(orderId: string, method: PaymentMethod, amount
 
 export async function refundOrder(orderId: string, amount: number | null, reason: string): Promise<ActionResult> {
   try {
-    await apiJson(`/orders/${orderId}/payment`, { method: "POST", token: await token(), body: JSON.stringify({ amount, reason: reason || null, kind: "refund", method: "cash" }) });
+    await apiJson(`/orders/${orderId}/payment`, { method: "POST", token: await token(), body: JSON.stringify({ amount, reason: reason || null, kind: "refund" }) });
     revalidateOrderViews(orderId);
     return { error: null };
   } catch (err: unknown) { return { error: (err as Error).message }; }
@@ -121,7 +121,7 @@ export async function refundOrder(orderId: string, amount: number | null, reason
 
 export async function voidOrder(orderId: string, reason: string): Promise<ActionResult> {
   try {
-    await apiJson(`/orders/${orderId}/payment`, { method: "POST", token: await token(), body: JSON.stringify({ reason: reason || null, kind: "void", method: "cash" }) });
+    await apiJson(`/orders/${orderId}/payment`, { method: "POST", token: await token(), body: JSON.stringify({ reason: reason || null, kind: "void" }) });
     revalidateOrderViews(orderId);
     return { error: null };
   } catch (err: unknown) { return { error: (err as Error).message }; }

@@ -11,6 +11,8 @@ export type QueueOrder = {
   payment_status: "unpaid" | "paid" | "refunded" | "voided";
   total_amount: number;
   discount_amount: number;
+  subtotal_amount?: number;
+  paid_at?: string | null;
   pickup_note: string | null;
   created_at: string;
   profiles: { full_name: string | null; phone: string | null } | null;

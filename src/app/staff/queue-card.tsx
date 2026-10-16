@@ -3,182 +3,239 @@
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { advanceOrderStatus } from "@/app/actions/staff";
+import {
+  advanceOrderStatus,
+  notifyCustomerReady,
+  prioritizeOrder,
+} from "@/app/actions/staff";
 import { formatPrice, orderCode } from "@/lib/format";
-import { NEXT_STATUS, ORDER_TYPE_LABELS, STATUS_LABELS } from "@/lib/order-meta";
+import {
+  ADVANCE_LABELS,
+  NEXT_STATUS,
+  ORDER_TYPE_LABELS,
+  PAYMENT_STATUS_LABELS,
+  STATUS_LABELS,
+} from "@/lib/order-meta";
 import { getSizeOption } from "@/lib/sizes";
-import type { OrderStatus } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 
-type Props = {
+export function QueueCard({
+  order,
+  now,
+  lateAfter,
+  overAfter,
+  disabled,
+  onPayment,
+  onMore,
+}: {
   order: QueueOrder;
   now: number;
   lateAfter: number;
   overAfter: number;
-  onOpen: () => void;
-  onHandOver: () => void;
-};
-
-/**
- * One ticket as a card. The whole card opens the receipt modal; the
- * full-width button at the bottom is the one-tap advance and never opens
- * anything. At most one escalation marker per card, always as text.
- */
-export function QueueCard({ order, now, lateAfter, overAfter, onOpen, onHandOver }: Props) {
+  disabled?: boolean;
+  onPayment: () => void;
+  onMore: () => void;
+}) {
   const [pending, startTransition] = useTransition();
-  const [expanded, setExpanded] = useState(false);
-
+  const [error, setError] = useState<string | null>(null);
   const code = orderCode(order.id);
-  const customer = order.profiles?.full_name?.trim() || "Walk-in";
-  const minutes = Math.max(0, Math.floor((now - new Date(order.created_at).getTime()) / 60000));
-  const waiting = order.status !== "ready";
-  const isNew = order.status === "pending" && minutes < 2;
+  const minutes = Math.max(
+    0,
+    Math.floor((now - new Date(order.created_at).getTime()) / 60000),
+  );
   const paid = order.payment_status === "paid";
-  const typeMeta = `${ORDER_TYPE_LABELS[order.order_type]}${order.table_label ? ` · ${order.table_label}` : ""}`;
-
-  const over = waiting && minutes >= overAfter;
-  const late = waiting && !over && minutes >= lateAfter;
-
-  function run(fn: () => Promise<{ error: string | null }>, success: string) {
+  const unpaid =
+    order.payment_status === "unpaid" && order.status !== "cancelled";
+  const reversed =
+    order.payment_status === "refunded" || order.payment_status === "voided";
+  const next = !reversed ? NEXT_STATUS[order.status] : undefined;
+  const waiting = order.status === "pending" || order.status === "preparing";
+  async function run(
+    action: () => Promise<{ error: string | null }>,
+    success: string,
+  ) {
+    setError(null);
     startTransition(async () => {
-      const { error } = await fn();
-      if (error) toast.error(error);
-      else toast.success(success);
+      const result = await action();
+      if (result.error) {
+        setError(result.error);
+        toast.error(result.error);
+      } else toast.success(success);
     });
   }
-  const advance = (to: OrderStatus) => run(() => advanceOrderStatus(order.id, to), `${code} to ${STATUS_LABELS[to]}`);
-
-  const next = NEXT_STATUS[order.status];
-  const stageChip =
-    order.status === "pending" ? (
-      <span className="ui-caps rounded-full bg-accent-soft px-2.5 py-1 text-2xs text-accent-ink">New</span>
-    ) : order.status === "preparing" ? (
-      <span className="ui-caps rounded-full bg-raised px-2.5 py-1 text-2xs text-ink-soft">Making</span>
-    ) : (
-      <span className="ui-caps rounded-full bg-success-soft-bg px-2.5 py-1 text-2xs text-success-soft-fg">Ready</span>
-    );
-  const marker = over
-    ? { text: `Over ${overAfter}m`, cls: "text-warning" }
-    : late
-      ? { text: "Late", cls: "text-warning" }
-      : order.priority > 0
-        ? { text: "Priority", cls: "text-accent-ink" }
-        : isNew
-          ? { text: "New", cls: "text-accent-ink" }
-          : null;
-
-  const visibleItems = expanded ? order.order_items : order.order_items.slice(0, 3);
-  const hiddenCount = order.order_items.length - visibleItems.length;
-  const clockCls = over || late ? "text-warning" : "text-ink";
-
   return (
-    <article
-      aria-label={`Order ${code}. Activate for receipt and actions.`}
-      role="button"
-      tabIndex={0}
-      onClick={onOpen}
-      onKeyDown={(e) => {
-        if ((e.key === "Enter" || e.key === " ") && !(e.target as HTMLElement).closest("button")) {
-          e.preventDefault();
-          onOpen();
-        }
-      }}
-      className={`flex cursor-pointer flex-col rounded-2xl bg-card ring-1 ring-line transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:shadow-md hover:ring-line-strong ${
-        isNew ? "shadow-[inset_4px_0_0_var(--hi-accent)]" : ""
-      }`}
-    >
-      <div className="flex items-start justify-between gap-2 px-4 pb-1 pt-3.5">
-        <div className="min-w-0">
-          <p className="display text-2xl leading-none text-ink">{code}</p>
-          <p className="mt-1 truncate text-sm font-semibold text-ink-soft">{customer}</p>
-        </div>
-        <div className="grid shrink-0 justify-items-end gap-1">
-          <span className={`numeric text-sm font-semibold ${clockCls}`}>{minutes}m</span>
-          {marker && <span className={`ui-caps text-2xs ${marker.cls}`}>{marker.text}</span>}
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-1.5 px-4 py-2">
-        {stageChip}
+    <article className="counter-ticket" aria-label={`Order ${code}`}>
+      <div className="counter-ticket-heading">
+        <h3 className="display">{code}</h3>
         <span
-          className={`ui-caps rounded-full px-2.5 py-1 text-2xs ${
-            paid ? "bg-success-soft-bg text-success-soft-fg" : "bg-raised text-ink-soft"
-          }`}
+          className={`numeric ${waiting && minutes >= lateAfter ? "text-warning" : "text-muted"}`}
+          aria-label={`Waiting ${minutes} minutes`}
         >
-          {paid ? "Paid" : `Unpaid ${formatPrice(order.total_amount)}`}
+          {minutes}m{waiting && minutes >= overAfter ? " · Overdue" : ""}
         </span>
-        <span className="ui-caps rounded-full px-2.5 py-1 text-2xs text-muted ring-1 ring-line">{typeMeta}</span>
       </div>
-
-      <ul className="grid gap-1 px-4 pb-2">
-        {visibleItems.map((item) => (
-          <li key={item.id} className="truncate text-sm text-ink">
-            <span className="numeric font-semibold">{item.quantity}x</span> {item.item_name}
-            {item.size && <span className="text-xs text-muted"> ({getSizeOption(item.size).label})</span>}
+      <p className="counter-ticket-customer">
+        {order.profiles?.full_name?.trim() || "Walk-in"} ·{" "}
+        {ORDER_TYPE_LABELS[order.order_type]}
+        {order.table_label ? ` · ${order.table_label}` : ""}
+      </p>
+      <div className="counter-ticket-badges">
+        <span
+          className={`ui-caps counter-ticket-badge ${paid ? "bg-success-soft-bg text-success-soft-fg" : "bg-warning-soft-bg text-warning-soft-fg"}`}
+        >
+          {order.status === "cancelled" && order.payment_status === "unpaid"
+            ? "Cancelled"
+            : PAYMENT_STATUS_LABELS[order.payment_status]}
+        </span>
+        {order.priority > 0 && (
+          <span className="ui-caps counter-ticket-badge bg-warning-soft-bg text-warning-soft-fg">
+            Priority
+          </span>
+        )}
+        {order.special_request_flag && (
+          <span className="ui-caps counter-ticket-badge bg-warning-soft-bg text-warning-soft-fg">
+            Special request
+          </span>
+        )}
+        {!next && order.status !== "cancelled" && (
+          <span className="ui-caps counter-ticket-badge bg-raised text-ink-soft">
+            {STATUS_LABELS[order.status]}
+          </span>
+        )}
+      </div>
+      <ul className="counter-ticket-items">
+        {order.order_items.map((item) => (
+          <li key={item.id}>
+            <span className="numeric counter-item-quantity">
+              {item.quantity}×
+            </span>
+            <div>
+              <strong>{item.item_name}</strong>
+              {(item.size || item.flavor) && (
+                <p>
+                  {[
+                    item.size ? getSizeOption(item.size).label : null,
+                    item.flavor,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+              )}
+            </div>
           </li>
         ))}
-        {hiddenCount > 0 && (
-          <li>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setExpanded(true);
-              }}
-              className="min-h-11 text-xs text-muted underline underline-offset-2 hover:text-ink"
-            >
-              +{hiddenCount} more
-            </button>
-          </li>
-        )}
       </ul>
-
       {(order.pickup_note || order.special_request_flag) && (
-        <p className="mx-4 mb-2 flex gap-1.5 rounded-xl bg-warning-soft-bg px-3 py-2 text-xs text-warning-soft-fg">
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 24 24"
-            className="mt-px h-4 w-4 shrink-0 fill-none stroke-current"
-            strokeWidth="2"
-            strokeLinecap="round"
-          >
-            <path d="M12 9v4M12 17h.01M10.3 3.9 2.6 17.5A2 2 0 0 0 4.3 20.5h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z" />
-          </svg>
-          <span>{order.pickup_note || "Flagged for special handling"}</span>
+        <div className="counter-customer-request">
+          <strong>Customer request</strong>
+          <p>
+            {order.pickup_note ||
+              "Flagged for special handling. Check with the customer."}
+          </p>
+        </div>
+      )}
+      <div className="counter-ticket-total">
+        <span>Order total</span>
+        <strong className="numeric">{formatPrice(order.total_amount)}</strong>
+      </div>
+      {error && (
+        <p
+          role="alert"
+          className="mb-3 rounded-md bg-danger-soft-bg p-3 text-sm text-danger-soft-fg"
+        >
+          {error}
         </p>
       )}
-
-      <div className="mt-auto p-4 pt-2">
-        {next === "completed" ? (
+      <div className="counter-ticket-actions">
+        {next && (
           <Button
-            size="md"
-            variant="primary"
+            className="w-full"
             loading={pending}
-            onClick={(e) => {
-              e.stopPropagation();
-              if (paid) advance("completed");
-              else onHandOver();
-            }}
-            aria-label={paid ? `Hand over order ${code}` : `Take payment for order ${code}`}
-            className="min-h-12 w-full"
+            disabled={disabled || (next === "completed" && !paid)}
+            onClick={() =>
+              run(
+                () => advanceOrderStatus(order.id, next),
+                `${code} · ${STATUS_LABELS[next]}`,
+              )
+            }
           >
-            {pending ? "Working" : paid ? "Hand over" : `Take ${formatPrice(order.total_amount)}`}
+            {ADVANCE_LABELS[order.status]}
           </Button>
-        ) : next ? (
+        )}
+        {unpaid && (
           <Button
-            size="md"
-            variant={order.status === "pending" ? "primary" : "outline"}
-            loading={pending}
-            onClick={(e) => {
-              e.stopPropagation();
-              advance(next);
-            }}
-            aria-label={`${order.status === "pending" ? "Start" : "Mark ready"} order ${code}`}
-            className="min-h-12 w-full"
+            className="w-full"
+            variant={order.status === "ready" ? "primary" : "outline"}
+            disabled={disabled || pending}
+            onClick={onPayment}
           >
-            {pending ? "Working" : order.status === "pending" ? "Start" : "Mark ready"}
+            Take payment
           </Button>
-        ) : null}
+        )}
+      </div>
+      {order.status === "ready" && unpaid && (
+        <p className="counter-payment-hint">
+          Payment must be confirmed before handover.
+        </p>
+      )}
+      <div className="counter-ticket-links">
+        {order.status === "pending" && !reversed && (
+          <>
+            <button
+              type="button"
+              disabled={disabled || pending}
+              onClick={() =>
+                run(
+                  () => prioritizeOrder(order.id, true),
+                  `${code} moved to the front`,
+                )
+              }
+            >
+              Move to front
+            </button>
+            {order.priority > 0 && (
+              <button
+                type="button"
+                disabled={disabled || pending}
+                onClick={() =>
+                  run(
+                    () => prioritizeOrder(order.id, false),
+                    `${code} priority removed`,
+                  )
+                }
+              >
+                Remove priority
+              </button>
+            )}
+          </>
+        )}
+        <button type="button" disabled={disabled || pending} onClick={onMore}>
+          More actions
+        </button>
+        {(paid || reversed) && (
+          <a
+            href={`/staff/pos/receipt/${order.id}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            {reversed ? "Transaction record" : "Receipt"}{" "}
+            <span aria-hidden="true">↗</span>
+          </a>
+        )}
+        {order.status === "ready" && (
+          <button
+            type="button"
+            disabled={disabled || pending}
+            onClick={() =>
+              run(
+                () => notifyCustomerReady(order.id),
+                `${code} · customer notified`,
+              )
+            }
+          >
+            Notify customer
+          </button>
+        )}
       </div>
     </article>
   );

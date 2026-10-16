@@ -53,7 +53,7 @@ function SettingsCard({
   submitLabel?: string;
 }) {
   return (
-    <form action={action} className="rounded-lg border border-line bg-card p-5">
+    <form action={action} className="admin-settings-card">
       <h2 className="display text-xl text-ink">{title}</h2>
       <p className="mt-1.5 max-w-[60ch] text-sm text-muted">{description}</p>
 
@@ -96,7 +96,7 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
         {hours.map((day) => (
           <div
             key={day.day}
-            className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line pb-3 last:border-0 last:pb-0"
+            className="admin-hours-row"
           >
             <span className="w-24 shrink-0 text-sm font-medium text-ink">
               {day.label}
