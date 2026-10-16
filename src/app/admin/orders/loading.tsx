@@ -1,4 +1,4 @@
-/** Admin orders skeleton — header, filter tabs, then a list of order cards. */
+/** Admin orders skeleton — header, filter tabs, then the orders table. */
 export default function Loading() {
   return (
     <div aria-busy="true">
@@ -20,11 +20,13 @@ export default function Loading() {
           ))}
         </div>
 
-        {/* Order cards */}
-        <div className="flex flex-col gap-3">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="skeleton h-28 rounded-lg" />
-          ))}
+        {/* Orders table */}
+        <div className="admin-panel">
+          <div className="flex flex-col gap-3">
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="skeleton h-16 rounded-lg" />
+            ))}
+          </div>
         </div>
       </div>
     </div>

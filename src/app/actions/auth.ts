@@ -82,16 +82,8 @@ export async function signOut() {
   redirect("/login");
 }
 
-/** Told to the customer while the API has no reset routes (it answers 404). */
-const RESET_UNAVAILABLE =
-  "Password reset by email isn't available yet. Ask at the counter and we'll reset it for you.";
-
 /**
  * Step 1: email a one-time reset link (POST /auth/forgot-password).
- *
- * The API answers the same way whether or not the address has an account,
- * and so does this page — otherwise the form would tell anyone which emails
- * are registered.
  */
 export async function requestPasswordReset(
   _prev: ResetState,
@@ -106,7 +98,9 @@ export async function requestPasswordReset(
       method: "POST",
       body: JSON.stringify({ email }),
     });
-    if (res.status === 404) return { error: RESET_UNAVAILABLE, sent: false };
+    if (res.status === 404) {
+      return { error: "No account is registered with that email address.", sent: false };
+    }
     if (res.status === 429) {
       return { error: "Too many reset requests. Wait a few minutes and try again.", sent: false };
     }

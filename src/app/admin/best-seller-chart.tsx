@@ -90,6 +90,7 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
             />
             <Bar
               dataKey="total_quantity"
+              isAnimationActive={false}
               fill={c["--hi-accent"]}
               radius={[0, 4, 4, 0]}
               maxBarSize={22}

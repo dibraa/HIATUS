@@ -18,11 +18,17 @@ import { USE_MOCKS } from "@/lib/mock-staff-data";
 const DEV_FALLBACK_SECRET = "change_this_secret";
 if (!process.env.JWT_SECRET) {
   if (process.env.NODE_ENV === "production") {
-    throw new Error("JWT_SECRET is not set. Set it to the same value the Express backend signs tokens with.");
+    throw new Error(
+      "JWT_SECRET is not set. Set it to the same value the Express backend signs tokens with.",
+    );
   }
-  console.warn("[proxy] JWT_SECRET is not set; using the development fallback secret.");
+  console.warn(
+    "[proxy] JWT_SECRET is not set; using the development fallback secret.",
+  );
 }
-const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? DEV_FALLBACK_SECRET);
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET ?? DEV_FALLBACK_SECRET,
+);
 
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -32,7 +38,8 @@ export async function proxy(request: NextRequest) {
   const wantsAdmin = path.startsWith(ADMIN_PREFIX);
   const wantsStaff = path.startsWith(STAFF_PREFIX);
   const wantsCustomerArea =
-    path === "/" || CUSTOMER_ONLY_PREFIXES.some((prefix) => path.startsWith(prefix));
+    path === "/" ||
+    CUSTOMER_ONLY_PREFIXES.some((prefix) => path.startsWith(prefix));
   const requiresAuth =
     wantsAdmin ||
     wantsStaff ||
@@ -47,7 +54,24 @@ export async function proxy(request: NextRequest) {
     try {
       const { payload } = await jwtVerify(token, secret);
       role = (payload as { role: Role }).role ?? null;
+      if (requiresAuth || wantsCustomerArea) {
+        const base =
+          process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
+        const response = await fetch(`${base}/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (!response.ok) role = null;
+        else {
+          const account = (await response.json()) as {
+            role: Role;
+            is_active: boolean;
+          };
+          role = account.is_active ? account.role : null;
+        }
+      }
     } catch {
+      role = null;
       // expired or invalid token — treat as logged out
     }
   }

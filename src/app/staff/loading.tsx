@@ -5,7 +5,7 @@ export default function Loading() {
     <div role="status" aria-label="Loading the queue">
       <p className="sr-only">Loading the queue</p>
       <div className="display text-4xl text-ink" aria-hidden="true">
-        Order Queue
+        The Counter
       </div>
       <div aria-hidden="true" className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-5">
         {Array.from({ length: 5 }).map((_, i) => (

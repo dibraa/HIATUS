@@ -10,20 +10,14 @@ import type { ReactNode } from "react";
  * count has its own accessible phrase ("3 new") rather than a bare number.
  */
 const LINKS: { href: string; label: string; icon: ReactNode }[] = [
-  { href: "/staff", label: "Queue", icon: <path d="M4 6h16M4 12h16M4 18h10" /> },
   {
-    href: "/staff/pos",
-    label: "POS",
-    icon: (
-      <>
-        <rect x="3" y="5" width="18" height="14" rx="2" />
-        <path d="M3 10h18" />
-      </>
-    ),
+    href: "/staff",
+    label: "Counter",
+    icon: <path d="M4 6h16M4 12h16M4 18h10" />,
   },
   {
     href: "/staff/menu",
-    label: "Sold out",
+    label: "Availability",
     icon: (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -33,7 +27,7 @@ const LINKS: { href: string; label: string; icon: ReactNode }[] = [
   },
   {
     href: "/staff/shift",
-    label: "Shift",
+    label: "My shift",
     icon: (
       <>
         <circle cx="12" cy="12" r="9" />
@@ -50,14 +44,19 @@ export function StaffNav({ newCount = 0 }: { newCount?: number }) {
     <nav aria-label="Staff sections" className="min-w-0">
       <ul className="no-scrollbar flex gap-1 overflow-x-auto">
         {LINKS.map((link) => {
-          const active = link.href === "/staff" ? pathname === "/staff" : pathname.startsWith(link.href);
+          const active =
+            link.href === "/staff"
+              ? pathname === "/staff" || pathname.startsWith("/staff/pos")
+              : pathname.startsWith(link.href);
           return (
             <li key={link.href} className="shrink-0">
               <Link
                 href={link.href}
                 aria-current={active ? "page" : undefined}
                 className={`ui-caps inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-2xs transition-colors sm:px-3.5 ${
-                  active ? "bg-accent text-accent-fg" : "text-ink-soft hover:bg-raised hover:text-ink"
+                  active
+                    ? "bg-accent text-accent-fg"
+                    : "text-ink-soft hover:bg-raised hover:text-ink"
                 }`}
               >
                 <svg

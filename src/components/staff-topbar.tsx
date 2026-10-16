@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { SignOutButton } from "@/components/sign-out-button";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -29,6 +29,8 @@ export function StaffTopbar({
   alerts: Alerts;
 }) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const searchRef = useRef<HTMLInputElement>(null);
   const [draft, setDraft] = useState("");
   const [alertsOpen, setAlertsOpen] = useState(false);
@@ -50,7 +52,12 @@ export function StaffTopbar({
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
     const q = draft.trim();
-    router.push(q ? `/staff?q=${encodeURIComponent(q)}` : "/staff");
+    const params = new URLSearchParams(
+      pathname === "/staff" ? searchParams.toString() : "",
+    );
+    if (q) params.set("q", q);
+    else params.delete("q");
+    router.push(`/staff${params.size ? `?${params}` : ""}`);
     searchRef.current?.blur();
   }
 
@@ -91,24 +98,38 @@ export function StaffTopbar({
   return (
     <div className="border-b border-line bg-surface">
       <div className="flex min-h-14 items-center gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
-        <div className="w-full max-w-md flex-1 max-md:hidden">{searchBox("staff-global-search")}</div>
+        <div className="w-full max-w-md flex-1 max-md:hidden">
+          {searchBox("staff-global-search")}
+        </div>
 
         <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
           <span className="relative">
             <button
               type="button"
               onClick={() => setAlertsOpen((v) => !v)}
-              aria-label={hasAlerts ? "Alerts, needs attention" : "Alerts, all clear"}
+              aria-label={
+                hasAlerts ? "Alerts, needs attention" : "Alerts, all clear"
+              }
               aria-haspopup="true"
               aria-expanded={alertsOpen}
               className="grid h-11 w-11 place-items-center rounded-xl text-ink-soft transition-colors hover:bg-raised hover:text-ink"
             >
-              <svg aria-hidden="true" viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="h-5 w-5 fill-none stroke-current"
+                strokeWidth="1.9"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
                 <path d="M10.3 21a1.9 1.9 0 0 0 3.4 0" />
               </svg>
               {hasAlerts && (
-                <span aria-hidden="true" className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent" />
+                <span
+                  aria-hidden="true"
+                  className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-accent"
+                />
               )}
             </button>
             {alertsOpen && (
@@ -119,22 +140,29 @@ export function StaffTopbar({
                     onClick={() => setAlertsOpen(false)}
                     className="rounded-xl px-3 py-2.5 text-sm text-ink transition-colors hover:bg-raised"
                   >
-                    <span className="numeric font-semibold">{alerts.fresh}</span> new{" "}
-                    {alerts.fresh === 1 ? "order" : "orders"} waiting to start
+                    <span className="numeric font-semibold">
+                      {alerts.fresh}
+                    </span>{" "}
+                    new {alerts.fresh === 1 ? "order" : "orders"} waiting to
+                    start
                   </Link>
                 )}
                 {alerts.unpaidCount > 0 && (
                   <Link
-                    href="/staff/pos"
+                    href="/staff?tab=unpaid"
                     onClick={() => setAlertsOpen(false)}
                     className="rounded-xl px-3 py-2.5 text-sm text-ink transition-colors hover:bg-raised"
                   >
-                    <span className="numeric font-semibold">{alerts.unpaidCount}</span> awaiting payment
-                    ({alerts.unpaidTotal})
+                    <span className="numeric font-semibold">
+                      {alerts.unpaidCount}
+                    </span>{" "}
+                    awaiting payment ({alerts.unpaidTotal})
                   </Link>
                 )}
                 {!hasAlerts && (
-                  <p className="px-3 py-2.5 text-sm text-muted">All clear. Nothing needs attention.</p>
+                  <p className="px-3 py-2.5 text-sm text-muted">
+                    All clear. Nothing needs attention.
+                  </p>
                 )}
               </div>
             )}
@@ -146,24 +174,37 @@ export function StaffTopbar({
             href="/staff/shift"
             className="ui-caps ml-1 hidden min-h-11 items-center gap-1.5 rounded-full px-3 text-2xs transition-colors hover:bg-raised sm:inline-flex"
           >
-            <span aria-hidden="true" className={`h-2 w-2 rounded-full ${onShift ? "bg-success" : "bg-warning"}`} />
+            <span
+              aria-hidden="true"
+              className={`h-2 w-2 rounded-full ${onShift ? "bg-success" : "bg-warning"}`}
+            />
             <span className={onShift ? "text-success" : "text-warning"}>
               {onShift ? "Clocked in" : "Clock in"}
             </span>
             {since && onShift && <span className="sr-only">since {since}</span>}
           </Link>
 
-          <span className="ml-1 hidden items-center gap-2 sm:flex" title={staffName}>
-            <span aria-hidden="true" className="grid h-9 w-9 place-items-center rounded-full bg-ink text-xs font-bold text-surface">
+          <span
+            className="ml-1 hidden items-center gap-2 sm:flex"
+            title={staffName}
+          >
+            <span
+              aria-hidden="true"
+              className="grid h-9 w-9 place-items-center rounded-full bg-ink text-xs font-bold text-surface"
+            >
               {initial}
             </span>
-            <span className="hidden max-w-28 truncate text-sm font-semibold text-ink xl:inline">{staffName}</span>
+            <span className="hidden max-w-28 truncate text-sm font-semibold text-ink xl:inline">
+              {staffName}
+            </span>
           </span>
           <SignOutButton />
         </div>
       </div>
 
-      <div className="px-3 pb-2.5 md:hidden">{searchBox("staff-global-search-m")}</div>
+      <div className="px-3 pb-2.5 md:hidden">
+        {searchBox("staff-global-search-m")}
+      </div>
     </div>
   );
 }

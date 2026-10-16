@@ -1,15 +1,15 @@
 import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
-import { PageHeader } from "@/components/ui/page-header";
+import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
 import { FilterTabs } from "@/components/ui/filter-tabs";
-import { StatCard, StatGrid } from "@/components/ui/stat-card";
+import { AdminStatCard as StatCard } from "@/components/admin-stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Hairline } from "@/components/ui/hairline";
 import { formatPrice } from "@/lib/format";
 import type { BestSellingFlavor, PopularItemRow, SalesReportRow } from "@/types/database";
 import { SalesChart } from "./charts";
 import { ItemsTable } from "./items-table";
+import { ExportButton } from "./export-button";
 import { BestSellerChart } from "../best-seller-chart";
 
 export const metadata: Metadata = { title: "Reports" };
@@ -38,7 +38,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
 
   return (
     <div>
-      <PageHeader title="Reports" description="Revenue and demand over a period you choose." />
+      <PageHeader title="Reports" description="Revenue and demand over a period you choose." action={<ExportButton data={{ kind: "sales", rows: salesRaw, grain: selected.grain }} />} />
 
       <FilterTabs
         label="Choose a reporting period"
@@ -46,21 +46,19 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         tabs={RANGES.map((r) => ({ label: r.label, href: `/admin/reports?range=${r.value}`, active: r.value === selected.value }))}
       />
 
-      <StatGrid>
+      <div className="admin-stats">
         <StatCard label="Net revenue" value={formatPrice(netTotal)} hint={selected.label.toLowerCase()} tone="positive" />
         <StatCard label="Orders" value={orderTotal} hint="Completed" />
         <StatCard label="Average order" value={formatPrice(orderTotal === 0 ? 0 : netTotal / orderTotal)} hint="Net, per order" />
         <StatCard label="Discounts given" value={formatPrice(discountTotal)} hint="Manual adjustments" />
-      </StatGrid>
+      </div>
 
-      <section aria-labelledby="revenue-heading" className="mt-10">
-        <Hairline className="mb-6" />
+      <section aria-labelledby="revenue-heading" className="admin-panel admin-report-section">
         <h2 id="revenue-heading" className="display text-xl text-ink mb-4">Revenue</h2>
         <SalesChart data={salesRaw} grain={selected.grain} />
       </section>
 
-      <section aria-labelledby="items-heading" className="mt-10">
-        <Hairline className="mb-6" />
+      <section aria-labelledby="items-heading" className="admin-panel admin-report-section">
         <h2 id="items-heading" className="display text-xl text-ink mb-4">What sells</h2>
         {itemsRaw.length === 0 ? (
           <EmptyState as="h3" title="Nothing sold in this range" body="Try a longer period." />
@@ -69,8 +67,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
         )}
       </section>
 
-      <section aria-labelledby="flavors-heading" className="mt-10">
-        <Hairline className="mb-6" />
+      <section aria-labelledby="flavors-heading" className="admin-panel admin-report-section">
         <h2 id="flavors-heading" className="display text-xl text-ink mb-4">Best-selling flavours</h2>
         <BestSellerChart data={flavorsRaw} />
       </section>

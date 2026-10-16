@@ -13,12 +13,12 @@ export function ItemsTable({ items }: { items: PopularItemRow[] }) {
         type="button"
         onClick={() => setShowItemsTable((value) => !value)}
         aria-expanded={showItemsTable}
-        className="ui-caps text-2xs text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
+        className="inline-flex min-h-11 items-center text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
       >
         {showItemsTable ? "Hide details" : "View details"}
       </button>
       {showItemsTable && (
-        <div className="mt-3 overflow-x-auto">
+        <div className="admin-table-scroll mt-3" tabIndex={0} role="region" aria-label="Item sales details">
           <table className="w-full min-w-[32rem] text-left text-sm">
             <thead>
               <tr className="border-b border-line eyebrow text-muted">

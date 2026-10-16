@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
-import { StatCard } from "@/components/ui/stat-card";
+import { AdminStatCard as StatCard } from "@/components/admin-stat-card";
+import { AdminPageHeader } from "@/components/admin-page-header";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DataError } from "@/components/ui/data-error";
 import { Badge } from "@/components/ui/badge";
 import { OrderStatusBadge } from "@/components/order-status-badge";
-import { formatPrice, formatTime, formatElapsed, orderCode } from "@/lib/format";
+import { formatPrice, formatElapsed, orderCode } from "@/lib/format";
 import { ORDER_TYPE_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import type { OrderStatus, PaymentStatus, PopularItemRow, SalesReportRow, TodaySummary } from "@/types/database";
 
@@ -74,24 +75,20 @@ export default async function AdminDashboardPage() {
   const openNow = (summary?.pending_now ?? 0) + (summary?.preparing_now ?? 0) + (summary?.ready_now ?? 0);
 
   return (
-    <div className="space-y-5">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
-            {openNow > 0 ? `${openNow} order${openNow === 1 ? "" : "s"} need attention` : "You're all caught up"}
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            {summary ? `${formatPrice(summary.revenue_today)} today · ${summary.orders_today} orders` : "Loading today's summary…"}
-          </p>
-        </div>
-        <Link href="/staff" className="inline-flex min-h-11 items-center rounded-md bg-accent px-5 text-sm font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">
-          Open the queue
-        </Link>
-      </header>
+    <div className="admin-dashboard">
+      <AdminPageHeader
+        title="Dashboard"
+        description={summary ? `${formatPrice(summary.revenue_today)} today · ${summary.orders_today} orders` : "Today's overview"}
+        action={<Link href="/admin/orders" className="admin-primary-link">View orders</Link>}
+      />
+      <div className="admin-attention-row">
+        <p><span className="admin-live-dot" aria-hidden="true" />{openNow > 0 ? `${openNow} order${openNow === 1 ? "" : "s"} need attention` : "You're all caught up"}</p>
+        <div><Link href="/admin/menu">Manage menu</Link><Link href="/staff">Open the queue</Link></div>
+      </div>
 
       <section aria-labelledby="today-heading">
         <h2 id="today-heading" className="sr-only">Today at a glance</h2>
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="admin-stats admin-stats-three">
           <StatCard label="Total sales" value={formatPrice(summary?.revenue_today ?? 0)} hint={`${summary?.orders_today ?? 0} completed orders`} tone="positive" />
           <StatCard label="Total orders" value={summary?.orders_today ?? 0} hint={`${openNow} currently open`} />
           <StatCard label="Awaiting payment" value={summary?.unpaid_now ?? 0} tone={(summary?.unpaid_now ?? 0) > 0 ? "attention" : "default"} hint="Across all open orders" />
@@ -99,7 +96,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.8fr)]">
-        <section aria-labelledby="analytics-heading" className="rounded-2xl border border-line bg-card p-5 sm:p-6">
+        <section aria-labelledby="analytics-heading" className="admin-panel">
           <div className="mb-6 flex items-baseline justify-between gap-4">
             <h2 id="analytics-heading" className="text-lg font-semibold text-ink">Sales analytics</h2>
             <Link href="/admin/reports" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
@@ -107,7 +104,7 @@ export default async function AdminDashboardPage() {
           <SalesTrend data={salesRaw} />
         </section>
 
-        <section aria-labelledby="top-items-heading" className="rounded-2xl border border-line bg-card p-5 sm:p-6">
+        <section aria-labelledby="top-items-heading" className="admin-panel">
           <div className="mb-5 flex items-baseline justify-between gap-4">
             <h2 id="top-items-heading" className="text-lg font-semibold text-ink">Trending coffee</h2>
             <Link href="/admin/reports" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
@@ -131,7 +128,7 @@ export default async function AdminDashboardPage() {
         </section>
       </div>
 
-      <section aria-labelledby="recent-heading" className="rounded-2xl border border-line bg-card p-5 sm:p-6">
+      <section aria-labelledby="recent-heading" className="admin-panel">
         <div className="mb-4 flex items-baseline justify-between gap-4">
           <h2 id="recent-heading" className="text-lg font-semibold text-ink">Recent orders</h2>
           <Link href="/admin/orders" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
@@ -139,8 +136,8 @@ export default async function AdminDashboardPage() {
         {recentOrders.length === 0 ? (
           <EmptyState as="h3" title="No orders yet" body="Orders placed through the storefront appear here as they come in." />
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[42rem] text-left text-sm">
+          <div className="admin-table-scroll" tabIndex={0} role="region" aria-label="Recent orders table">
+            <table className="admin-recent-table w-full text-left text-sm">
               <thead className="border-b border-line text-xs text-muted">
                 <tr>
                   <th scope="col" className="px-2 py-3 font-medium">#</th>

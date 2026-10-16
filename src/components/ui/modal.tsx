@@ -98,7 +98,7 @@ export function Modal({
       if (!dialog) return;
 
       const focusable = dialog.querySelectorAll<HTMLElement>(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
       );
       if (focusable.length === 0) return;
 
@@ -168,6 +168,6 @@ export function Modal({
         </div>
       </div>
     </div>,
-    document.body
+    document.querySelector("dialog[open]") ?? document.body,
   );
 }

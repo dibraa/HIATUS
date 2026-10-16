@@ -41,7 +41,8 @@ export function ReviewCard({ review }: { review: Review }) {
             <StarRating value={review.rating} readOnly size="sm" />
             <time dateTime={review.createdAt} className="text-xs text-muted">{review.dateLabel}</time>
           </span>
-          <span className="mt-2 block eyebrow text-muted">Verified purchase</span>
+          <span className="mt-2 block text-sm font-semibold text-ink">{review.reviewerName}</span>
+          <span className="mt-1 block eyebrow text-muted">Verified purchase</span>
         </button>
       </li>
 

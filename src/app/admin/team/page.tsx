@@ -2,15 +2,24 @@ import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { getCurrentUser } from "@/lib/auth";
-import { PageHeader } from "@/components/ui/page-header";
+import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
 import type { Role } from "@/types/database";
-import { CreateStaffForm } from "./team-controls";
 import { TeamTable } from "./team-table";
 
 export const metadata: Metadata = { title: "Team" };
 export const dynamic = "force-dynamic";
 
-type TeamMember = { _id: string; id?: string; email: string; full_name: string | null; phone: string | null; role: Role; is_active: boolean; created_at: string; on_shift: boolean };
+type TeamMember = {
+  _id: string;
+  id?: string;
+  email: string;
+  full_name: string | null;
+  phone: string | null;
+  role: Role;
+  is_active: boolean;
+  created_at: string;
+  on_shift: boolean;
+};
 type ActiveShift = { staff_id: { _id: string } | string };
 
 export default async function TeamPage() {
@@ -22,7 +31,8 @@ export default async function TeamPage() {
     apiJson<ActiveShift[]>("/staff/shifts", { token: token ?? undefined }),
   ]);
   const raw = teamResult.status === "fulfilled" ? teamResult.value : [];
-  const activeShifts = shiftResult.status === "fulfilled" ? shiftResult.value : [];
+  const activeShifts =
+    shiftResult.status === "fulfilled" ? shiftResult.value : [];
   const loadError =
     teamResult.status === "rejected"
       ? teamResult.reason instanceof Error
@@ -31,8 +41,8 @@ export default async function TeamPage() {
       : null;
   const activeStaffIds = new Set(
     activeShifts.map((shift) =>
-      typeof shift.staff_id === "string" ? shift.staff_id : shift.staff_id._id
-    )
+      typeof shift.staff_id === "string" ? shift.staff_id : shift.staff_id._id,
+    ),
   );
   const members = raw.map((m) => ({
     ...m,
@@ -45,19 +55,15 @@ export default async function TeamPage() {
       <PageHeader
         title="Team"
         description="Who can work the counter, who can see the books."
-        action={<CreateStaffForm />}
       />
 
-      <div className="mx-auto max-w-6xl">
-        <section aria-labelledby="roster-heading">
-          <div className="mb-3 flex items-baseline justify-between gap-3">
-            <h2 id="roster-heading" className="eyebrow text-muted">Roster</h2>
-            <span className="text-xs text-muted">{members.length} member{members.length === 1 ? "" : "s"}</span>
-          </div>
-
-          <TeamTable members={members} currentUserId={me?.id} loadError={loadError} />
-        </section>
-      </div>
+      <section className="admin-panel" aria-label="Team accounts">
+        <TeamTable
+          members={members}
+          currentUserId={me?.id}
+          loadError={loadError}
+        />
+      </section>
     </div>
   );
 }

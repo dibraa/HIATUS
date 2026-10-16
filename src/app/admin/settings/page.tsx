@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/ui/page-header";
+import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { getSettings, isOpenNow } from "@/lib/settings";
 import { ROLE_LABELS } from "@/lib/roles";
@@ -30,7 +30,8 @@ export default async function SettingsPage() {
 
       {/* Current state up top: the most common reason to open this page is to
           check whether the shop is showing as open, not to change anything. */}
-      <div className="mb-8 flex flex-wrap items-center gap-3 rounded-lg border border-line bg-raised px-4 py-3">
+      <div className="admin-settings-status">
+        <span className="text-muted">Storefront status</span>
         <Badge tone={open ? "success" : "neutral"}>
           {open ? "Open now" : "Closed now"}
         </Badge>
@@ -39,36 +40,45 @@ export default async function SettingsPage() {
         </Badge>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <OrderingForm ordering={ordering} />
-        <PaymentMethodsForm methods={paymentMethods} />
-        <div className="lg:col-span-2">
-          <BusinessHoursForm hours={businessHours} />
-        </div>
-        <ShopInfoForm info={shopInfo} />
-        <TemplatesForm templates={templates} />
+      <div className="admin-settings-layout">
+        <nav className="admin-settings-nav" aria-label="Settings sections">
+          <a href="#settings-ordering">Ordering</a>
+          <a href="#settings-payments">Payments</a>
+          <a href="#settings-hours">Opening hours</a>
+          <a href="#settings-shop">Shop details</a>
+          <a href="#settings-messages">Order messages</a>
+          <a href="#settings-access">Roles and access</a>
+        </nav>
+        <div className="admin-settings-sections">
+          <section id="settings-ordering" aria-label="Ordering settings"><OrderingForm ordering={ordering} /></section>
+          <section id="settings-payments" aria-label="Payment settings"><PaymentMethodsForm methods={paymentMethods} /></section>
+          <section id="settings-hours" aria-label="Opening hours settings"><BusinessHoursForm hours={businessHours} /></section>
+          <section id="settings-shop" aria-label="Shop details settings"><ShopInfoForm info={shopInfo} /></section>
+          <section id="settings-messages" aria-label="Order message settings"><TemplatesForm templates={templates} /></section>
 
-        {/* ---------- Access control reference ---------- */}
-        <section
-          aria-labelledby="access-heading"
-          className="rounded-lg border border-line bg-card p-5 lg:col-span-2"
-        >
-          <h2
-            id="access-heading"
-            className="display text-xl text-ink"
+          {/* ---------- Access control reference ---------- */}
+          <section
+            id="settings-access"
+            aria-labelledby="access-heading"
+            className="admin-settings-card"
           >
-            Roles and access
-          </h2>
-          <dl className="mt-4 flex flex-col gap-3">
-            {(["customer", "staff", "admin"] as Role[]).map((role) => (
-              <div key={role} className="rounded-md border border-line bg-raised p-3">
-                <dt className="text-sm font-semibold text-ink">
-                  {ROLE_LABELS[role]}
-                </dt>
-              </div>
-            ))}
-          </dl>
-        </section>
+            <h2
+              id="access-heading"
+              className="display text-xl text-ink"
+            >
+              Roles and access
+            </h2>
+            <dl className="mt-4 flex flex-col gap-3">
+              {(["customer", "staff", "admin"] as Role[]).map((role) => (
+                <div key={role} className="rounded-md border border-line bg-raised p-3">
+                  <dt className="text-sm font-semibold text-ink">
+                    {ROLE_LABELS[role]}
+                  </dt>
+                </div>
+              ))}
+            </dl>
+          </section>
+        </div>
       </div>
     </div>
   );

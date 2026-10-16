@@ -1,9 +1,8 @@
 import type { OrderItem } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 
-/** Frontend-first preview: the staff workspace renders from these mocks with
- *  no backend running. Flip to false to read the live API again. */
-export const USE_MOCKS = true;
+/** Preview fixtures remain available for local UI development but are disabled in the app. */
+export const USE_MOCKS = false;
 
 export const MOCK_USER = {
   name: "Maria Santos",
