@@ -130,9 +130,9 @@ export function QueueReceiptModal({
   ) : null;
 
   const secondary =
-    "ui-caps inline-flex min-h-11 items-center justify-center rounded-xl border border-line-strong px-3 text-2xs text-ink transition-colors hover:border-ink";
+    "ui-caps inline-flex min-h-11 items-center justify-center rounded-full border border-line-strong px-3 text-xs text-ink transition-colors hover:border-ink";
   const dangerBtn =
-    "ui-caps inline-flex min-h-11 items-center justify-center gap-2 rounded-xl px-3 text-2xs transition-colors";
+    "ui-caps inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-3 text-xs transition-colors";
 
   return (
     <dialog
@@ -168,7 +168,7 @@ export function QueueReceiptModal({
         )}
         <div className="flex items-start justify-between gap-2">
           <div>
-            <h2 className="display text-4xl leading-none text-ink">{code}</h2>
+            <h2 className="display text-3xl leading-none text-ink">{code}</h2>
             <p className="mt-1.5 text-sm font-medium text-ink-soft">
               {customer} · {ORDER_TYPE_LABELS[order.order_type]}
               {order.table_label ? ` · ${order.table_label}` : ""}
@@ -193,38 +193,26 @@ export function QueueReceiptModal({
           </button>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          <span className="ui-caps rounded-full bg-raised px-2.5 py-1 text-2xs text-ink-soft">
-            {minutes}m{over ? " over" : ""}
-          </span>
-          {over && (
-            <span className="ui-caps rounded-full bg-danger-soft-bg px-2.5 py-1 text-2xs text-danger-soft-fg">
-              Over {overAfter}m
+        {/* Same wait block and neutral tags as the ticket; amber only when late. */}
+        <div
+          className={`flex flex-wrap items-center gap-2${late || over ? " is-late" : ""}`}
+        >
+          <p className="counter-wait">
+            <b>{minutes}</b>
+            <span>min{over ? " · Overdue" : late ? " · Late" : ""}</span>
+          </p>
+          {order.priority > 0 && <span className="counter-tag">Priority</span>}
+          {!paid && (
+            <span className="counter-tag">
+              {order.payment_status === "unpaid"
+                ? "Not paid"
+                : PAYMENT_STATUS_LABELS[order.payment_status]}
             </span>
           )}
-          {!over && late && (
-            <span className="ui-caps rounded-full bg-warning-soft-bg px-2.5 py-1 text-2xs text-warning-soft-fg">
-              Late
-            </span>
-          )}
-          {order.priority > 0 && (
-            <span className="ui-caps rounded-full bg-accent-soft px-2.5 py-1 text-2xs text-accent-ink">
-              Priority
-            </span>
-          )}
-          <span
-            className={`ui-caps rounded-full px-2.5 py-1 text-2xs ${
-              paid
-                ? "bg-success-soft-bg text-success-soft-fg"
-                : "bg-warning-soft-bg text-warning-soft-fg"
-            }`}
-          >
-            {PAYMENT_STATUS_LABELS[order.payment_status]}
-          </span>
         </div>
 
         {(order.pickup_note || order.special_request_flag) && (
-          <p className="flex gap-2 rounded-xl bg-warning-soft-bg px-3.5 py-2.5 text-sm text-warning-soft-fg">
+          <p className="flex gap-2 rounded-xl bg-raised px-3.5 py-2.5 text-sm text-ink">
             <svg
               aria-hidden="true"
               viewBox="0 0 24 24"
@@ -344,7 +332,7 @@ export function QueueReceiptModal({
         <div className="grid grid-cols-2 gap-2">
           <Link
             href="/staff/menu"
-            className={`${dangerBtn} bg-warning-soft-bg text-warning-soft-fg hover:ring-1 hover:ring-warning`}
+            className={`${dangerBtn} border border-line-strong text-ink hover:border-ink`}
           >
             Mark item sold out
           </Link>
