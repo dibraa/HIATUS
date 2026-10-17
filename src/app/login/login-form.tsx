@@ -81,19 +81,25 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
           address is registered. */}
       <FormError>{state.error}</FormError>
 
-      {options?.recaptcha_enabled && options.recaptcha_site_key && (
-        <LoginCaptcha siteKey={options.recaptcha_site_key} resetKey={captchaReset} onChange={setCaptchaToken} />
-      )}
-
       <Button type="submit" size="md" loading={pending} disabled={googlePending || !options || (options.recaptcha_enabled && !captchaToken)} className="mt-1 w-full">
         {pending ? "Signing in…" : "Log in"}
       </Button>
+
+      {/* The verification sits at the bottom of the ticket, below Google, so a
+          single box gates both sign-in paths. Say so beside the control it
+          enables rather than leaving a disabled button unexplained. */}
+      {options?.recaptcha_enabled && !captchaToken && (
+        <p className="-mt-2 text-xs text-muted">Complete the verification below to sign in.</p>
+      )}
     </form>
     {options?.google_enabled && options.google_client_id && <>
       <p className="border-t border-line pt-4 text-center text-sm text-muted">Or continue with Google</p>
       <GoogleSignIn clientId={options.google_client_id} intent="login" next={next}
         captchaToken={captchaToken} captchaRequired={options.recaptcha_enabled} disabled={pending} onAttempt={resetCaptcha} onPendingChange={setGooglePending} />
     </>}
+    {options?.recaptcha_enabled && options.recaptcha_site_key && (
+      <LoginCaptcha siteKey={options.recaptcha_site_key} resetKey={captchaReset} onChange={setCaptchaToken} />
+    )}
     </div>
   );
 }
