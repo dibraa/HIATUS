@@ -29,7 +29,9 @@ export function ShopTour() {
       className="scroll-mt-20"
     >
       <div className="rounded-2xl bg-inverse-card py-band text-inverse-card-fg ring-1 ring-line">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        {/* Side inset grows with the band: a 24px side under 104px of headroom
+            left the heading pinned to the panel's edge on desktop. */}
+        <div className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-12">
           <h2 id="tour-heading" className="display text-6xl">
             Look around
           </h2>

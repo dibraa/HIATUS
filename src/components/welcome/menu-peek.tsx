@@ -49,8 +49,10 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
               aria-label={`${item.name}, from ${formatPrice(priceForSize(item.price, "S"))}. Sign up to order.`}
               // The same matte as the hero photograph: card ground, 10px gutter, 2xl
               // corner around an xl image. Spelled out rather than `.matte` so the
-              // hover tint can still win (that class is unlayered).
-              className="group flex w-full flex-col rounded-2xl bg-card p-2.5 transition-colors hover:bg-raised focus-visible:outline-offset-4"
+              // hover tint can still win (that class is unlayered). The one-pixel
+              // press is the button's: on touch there is no hover, so it is the
+              // only sign a tap landed before the sign-up page loads.
+              className="group flex w-full flex-col rounded-2xl bg-card p-2.5 transition-[background-color,translate] hover:bg-raised active:translate-y-px focus-visible:outline-offset-4"
             >
               <ProductImage
                 src={item.image_url}
@@ -70,13 +72,14 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
             </Link>
           </li>
         ))}
-        {/* Full width on phones when it would otherwise sit alone in a row. The
-            hover darkens the pine itself rather than borrowing secondary-hover,
-            which turns light sage in dark mode under cream text. */}
-        <li className={`flex ${peek.items.length % 2 === 0 ? "max-sm:col-span-2" : ""}`}>
+        {/* Full width wherever the grid is two-up (phones AND tablets, below
+            `lg`) when it would otherwise sit alone in a row. The hover darkens
+            the pine itself rather than borrowing secondary-hover, which turns
+            light sage in dark mode under cream text. */}
+        <li className={`flex ${peek.items.length % 2 === 0 ? "max-lg:col-span-2" : ""}`}>
           <Link
             href="/signup"
-            className="flex w-full flex-col justify-between gap-6 rounded-2xl bg-inverse-bg p-5 text-inverse-fg transition-[filter] hover:brightness-90 focus-visible:outline-offset-4 sm:p-6"
+            className="flex w-full flex-col justify-between gap-6 rounded-2xl bg-inverse-bg p-5 text-inverse-fg transition-[filter,translate] hover:brightness-90 active:translate-y-px focus-visible:outline-offset-4 sm:p-6"
           >
             <span className="display text-4xl text-inverse-display">
               The whole

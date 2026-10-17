@@ -25,7 +25,10 @@ export async function SiteFooter() {
   const phone = (settings.shopInfo.phone ?? "").trim();
   const hasContact = Boolean(address || phone || SHOP_SOCIALS.length);
 
-  const contactLink = "underline underline-offset-4 transition-colors hover:text-inverse-muted";
+  // inline-flex so the global coarse-pointer 44px min-height can take hold;
+  // an inline box ignores min-height and measured 21px tall on touch.
+  const contactLink =
+    "inline-flex items-center underline underline-offset-4 transition-colors hover:text-inverse-muted";
 
   return (
     <footer id="visit" aria-labelledby="visit-heading" className="mt-section scroll-mt-20 bg-inverse-bg text-inverse-fg">
