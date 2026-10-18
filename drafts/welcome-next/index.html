@@ -1,0 +1,378 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Guest welcome · next steps mockup</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@500&family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Guest welcome mockup: the CURRENT page (src/components/welcome/*) with four
+   additions borrowed from the research in README.md. Everything that already
+   ships is drawn as it ships; each addition carries a "From:" note.
+   Query flags: ?dark (dark theme), ?clean (hide the research notes).
+
+   Content rule: nothing here is invented. The two drinks, their prices, the
+   category, hours, captions and Instagram handle are what the live page shows
+   today. Anything the shop has to supply is a dashed, bracketed blank. */
+
+:root{
+  --ink:#14120f;--ink-soft:#3b352c;--muted:#6b6152;--line:#ded3bf;--line-strong:#8a7c63;
+  --raised:#e7dfcf;--surface:#efe9de;--card:#fffdf8;
+  --inv-bg:#3e6b53;--inv-fg:#f5ead8;--inv-muted:#d2e4d6;--inv-line:#a6c9b2;--inv-display:#9cc4a8;
+  --inv-card:#241d18;--inv-card-fg:#f5ead8;--inv-card-muted:#cdbfa8;
+  --cta:#241d18;--cta-hover:#3a2f26;--cta-fg:#f5ead8;
+  --accent:#c87137;--accent-ink:#964a1c;--focus:#14120f;
+
+  --space-snug:.75rem;--space-block:1.5rem;
+  --space-heading:clamp(1.75rem,1.433rem + 1.333vw,2.5rem);
+  --space-band:clamp(3.5rem,2.233rem + 5.333vw,6.5rem);
+  --space-section:clamp(4rem,2.522rem + 6.222vw,7.5rem);
+
+  --t-2xs:.6875rem;--t-sm:.875rem;--t-lg:1.125rem;
+  --t-3xl:clamp(1.625rem,1.414rem + .889vw,2.125rem);
+  --t-4xl:clamp(1.875rem,1.506rem + 1.556vw,2.75rem);
+  --t-5xl:clamp(2.188rem,1.581rem + 2.556vw,3.625rem);
+  --t-6xl:clamp(2.563rem,1.692rem + 3.667vw,4.625rem);
+  --t-7xl:clamp(3rem,1.733rem + 5.333vw,6rem);
+
+  --f-display:"Anton","Arial Narrow",sans-serif;
+  --f-ui:"JetBrains Mono",ui-monospace,monospace;
+  --f-sans:"Geist",ui-sans-serif,system-ui,sans-serif;
+  --note:#2b59c3;
+}
+:root.dark{
+  color-scheme:dark;
+  --ink:#f5ead8;--ink-soft:#ded2bb;--muted:#a89b85;--line:#352f24;--line-strong:#7d7261;
+  --raised:#262119;--surface:#14120e;--card:#1c1813;
+  --inv-bg:#3a4f28;--inv-muted:#c3d4b2;--inv-line:#8fa87a;--inv-card:#16130f;
+  --cta:#f0e6d2;--cta-hover:#fffaf0;--cta-fg:#14120e;--accent-ink:#e0904f;--focus:#f5ead8;
+  --note:#8fb0ff;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface);color:var(--ink);font:400 1rem/1.5 var(--f-sans);-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+::selection{background:var(--accent);color:#14120f}
+/* The app's global touch rule (globals.css): every control is 44px tall on a
+   coarse pointer, however small it looks. */
+@media (pointer:coarse){:where(button,a[href]){min-height:44px}}
+.wrap{max-width:72rem;margin:0 auto;padding:0 1rem}
+/* Anchor jumps land below the sticky header, as `scroll-mt-20` does in the app. */
+section[id],[id$="-heading"]{scroll-margin-top:5rem}
+
+.display{font-family:var(--f-display);font-weight:400;text-transform:uppercase;letter-spacing:calc(-.0397em + 1.11px);line-height:.92;margin:0}
+.caps{font-family:var(--f-ui);text-transform:uppercase;letter-spacing:.12em;font-weight:500;font-size:var(--t-2xs)}
+.eyebrow{font-family:var(--f-ui);text-transform:uppercase;letter-spacing:.2em;font-size:var(--t-2xs);font-weight:500;color:var(--muted);margin:0}
+.numeric{font-family:var(--f-ui);font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.pretty{text-wrap:pretty}
+
+/* Copy the shop has to supply. Dashed so nobody mistakes it for real copy. */
+.fill{border-bottom:1.5px dashed currentColor}
+
+/* Research notes: where an addition came from. Hidden with ?clean. */
+.note{display:inline-block;margin:0 0 .75rem;padding:.25rem .6rem;border:1px solid var(--note);border-radius:6px;color:var(--note);font:500 .75rem/1.3 var(--f-sans);background:var(--surface)}
+.clean .note{display:none}
+
+/* Header: as shipped for a signed-out visitor. */
+header{position:sticky;top:0;z-index:5;background:var(--surface)}
+header .wrap{display:flex;align-items:center;gap:1rem;min-height:3.5rem}
+.brand{display:inline-flex;align-items:center;text-decoration:none}
+.brand-mark{height:34px;width:auto;overflow:visible}
+.brand-mark .side{fill:var(--accent)}
+.brand-mark .face{fill:var(--ink)}
+header nav{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+header nav a{text-decoration:none;display:inline-flex;align-items:center}
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:2.75rem;padding:0 1.25rem;border-radius:10px;font-family:var(--f-ui);text-transform:uppercase;letter-spacing:.12em;font-weight:500;font-size:var(--t-sm);text-decoration:none;border:1.5px solid transparent;transition:background-color .12s,color .12s,translate .2s}
+.btn:active{translate:0 1px}
+.btn-primary{background:var(--cta);color:var(--cta-fg)}
+.btn-primary:hover{background:var(--cta-hover)}
+.btn-outline{border-color:var(--line-strong);color:var(--ink);background:var(--card)}
+.btn-outline:hover{background:var(--cta);color:var(--cta-fg);border-color:var(--cta)}
+.btn-sm{min-height:2.25rem;padding:0 .9rem;font-size:var(--t-2xs)}
+.theme{display:grid;place-items:center;width:2.75rem;height:2.75rem;border:0;background:none;color:var(--ink);cursor:pointer;border-radius:8px}
+.theme:hover{background:var(--raised)}
+
+main{display:flex;flex-direction:column;gap:var(--space-section);padding-top:var(--space-block)}
+
+/* ---- Hero (as shipped) --------------------------------------------------- */
+.hero{display:grid;gap:2.5rem;align-items:end}
+.hero h1{font-size:var(--t-7xl);line-height:.88}
+.hero h1 span{color:var(--accent-ink)}
+.hero .pitch{margin:var(--space-heading) 0 0;max-width:34ch;font-size:var(--t-lg);color:var(--ink-soft)}
+.hero .ctas{margin-top:var(--space-block);display:flex;flex-wrap:wrap;gap:.75rem}
+.matte{background:var(--card);padding:.625rem;border-radius:1rem}
+.photo{position:relative;order:-1;margin:0}
+.photo .inner{position:relative;aspect-ratio:4/3.4;border-radius:.75rem;overflow:hidden}
+.photo .inner img{width:100%;height:100%;object-fit:cover;object-position:50% 30%}
+.sign{position:absolute;right:1.5rem;bottom:1.5rem;display:grid;gap:.25rem;padding:.75rem 1rem .5rem;border-radius:.5rem;background:var(--inv-bg);color:var(--inv-fg)}
+.sign .dot{display:inline-block;width:8px;height:8px;margin-right:.5rem;border-radius:50%;background:var(--inv-display)}
+.sign .sub{color:var(--inv-muted)}
+/* NEW: a way there, on the door sign itself. The underline marks it as a link
+   on a sign that is otherwise only words. */
+.sign a{margin-top:.25rem;padding-top:.25rem;border-top:1px solid color-mix(in srgb,var(--inv-line) 45%,transparent);min-height:2rem;display:inline-flex;align-items:center;text-decoration:underline;text-underline-offset:4px}
+.sign a:hover{color:var(--inv-muted)}
+.sign-note{position:absolute;z-index:1;left:1.25rem;bottom:1.25rem;margin:0}
+.stamp{position:absolute;right:1.25rem;top:1.25rem;width:6rem;aspect-ratio:1;display:grid;place-items:center;border-radius:50%;background:var(--inv-bg);color:var(--inv-fg)}
+.stamp svg{position:absolute;inset:0;animation:spin 28s linear infinite}
+.stamp span{font-family:var(--f-display);text-transform:uppercase;text-align:center;line-height:1;font-size:.875rem}
+@keyframes spin{to{rotate:360deg}}
+@media (prefers-reduced-motion:reduce){.stamp svg{animation:none}}
+
+@media (min-width:1024px){
+  .hero{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}
+  .photo{order:0}
+  .photo .inner{aspect-ratio:auto;height:min(68vh,620px)}
+  .sign{right:2rem;bottom:2rem}
+  .stamp{right:auto;left:-3.5rem;top:3rem;width:8rem}
+  .stamp span{font-size:1.125rem}
+}
+@media (max-width:639px){
+  .hero .ctas{flex-direction:column}
+  .hero .ctas .btn{width:100%}
+  /* On a phone the note would sit on top of the sign; it moves above the photo. */
+  .sign-note{position:static;margin-bottom:.5rem}
+}
+
+/* ---- On the menu (as shipped, with the full-row tile fix) ------------------- */
+.peek-head{display:flex;flex-direction:column;gap:1rem}
+.peek-head h2{font-size:var(--t-6xl)}
+.peek-head .cats{margin:var(--space-snug) 0 0;color:var(--muted)}
+.peek-head > a{color:var(--accent-ink);text-underline-offset:4px;min-height:2.75rem;display:inline-flex;align-items:center;align-self:flex-start}
+.peek{list-style:none;margin:var(--space-heading) 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem}
+.peek li{display:flex}
+.drink{display:flex;flex-direction:column;width:100%;padding:.625rem;border-radius:1rem;background:var(--card);text-decoration:none;transition:background-color .12s,translate .2s}
+.drink:hover{background:var(--raised)}
+.drink:active{translate:0 1px}
+.drink img{aspect-ratio:1;object-fit:cover;border-radius:.75rem;width:100%}
+.drink .meta{display:flex;flex-direction:column;gap:.25rem;padding:.75rem .375rem .375rem;flex:1}
+.drink .name{font-size:var(--t-lg)}
+.drink .price{margin-top:auto;padding-top:.25rem;font-size:var(--t-sm);color:var(--ink-soft)}
+.whole{display:flex;flex-direction:column;justify-content:space-between;gap:1.5rem;width:100%;padding:1.25rem;border-radius:1rem;background:var(--inv-bg);color:var(--inv-fg);text-decoration:none}
+.whole .display{font-size:var(--t-4xl);color:var(--inv-display)}
+.whole p{margin:0;font-size:var(--t-sm);color:var(--inv-muted)}
+.whole .caps{display:inline-block;margin-top:1rem;text-decoration:underline;text-underline-offset:4px}
+.peek .tile{grid-column:span 2}
+@media (min-width:640px){.peek{gap:1rem}.whole{padding:1.5rem}}
+@media (min-width:1024px){
+  .peek-head{flex-direction:row;align-items:flex-end;justify-content:space-between}
+  .peek{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+
+/* ---- NEW: the brand line ---------------------------------------------------
+   Escape Coffee's full-width "escape is always possible." line, in Hiatus's
+   own words: the stamp's tagline, set once at full size on the plain cream
+   ground. No new panel, so the page keeps its rhythm of photo, cards, dark
+   panel. Where-you-are sits under it as one quiet mono line. */
+.line-band{text-align:center}
+.line-band .display{font-size:clamp(3rem,1.4rem + 7vw,8.5rem);line-height:.86}
+.line-band .display em{font-style:normal;color:var(--accent-ink)}
+.line-band .where{margin:var(--space-block) 0 0;color:var(--muted);display:flex;flex-wrap:wrap;justify-content:center;gap:.25rem 1rem}
+
+/* ---- Look around (as shipped) ---------------------------------------------- */
+.tour{border-radius:1rem;background:var(--inv-card);color:var(--inv-card-fg);padding:var(--space-band) 0;box-shadow:0 0 0 1px var(--line)}
+.tour .in{max-width:72rem;margin:0 auto;padding:0 1.25rem}
+.tour h2{font-size:var(--t-6xl)}
+.spots{margin-top:var(--space-heading);display:grid;gap:1rem}
+.spots figure{margin:0}
+.spots img{aspect-ratio:4/3;object-fit:cover;border-radius:.5rem;width:100%}
+.spots figcaption{margin-top:1rem}
+.spots figcaption span{display:block}
+.spots .c{margin-top:.25rem;font-size:var(--t-sm);color:var(--inv-card-muted)}
+.quote{margin:var(--space-heading) 0 0;padding-top:1.5rem;border-top:1px solid color-mix(in srgb,var(--inv-card-muted) 25%,transparent);display:grid;gap:.5rem}
+.quote blockquote{margin:0}
+.quote .display{font-size:var(--t-3xl)}
+.quote figcaption{font-size:var(--t-sm);color:var(--inv-card-muted)}
+@media (min-width:640px){.tour .in{padding:0 2rem}.spots{grid-template-columns:repeat(3,1fr);gap:2rem 1rem}}
+@media (min-width:1024px){.tour .in{padding:0 3rem}}
+
+/* ---- NEW: the story --------------------------------------------------------
+   Drip's origin story and Café Gandolfi's "EST 1979", in the hero's own split
+   (5:7): the founding year large on the left, a few sentences on the right.
+   The words are the shop's to write, so every line is a labelled blank. */
+.story{display:grid;gap:var(--space-heading);align-items:start}
+.story .est .eyebrow{margin-bottom:var(--space-snug)}
+.story .est .display{font-size:var(--t-7xl);line-height:.88;padding-bottom:.5rem}
+.story h2{font-size:var(--t-5xl)}
+.story .body{display:grid;gap:1rem;margin-top:var(--space-heading);max-width:62ch;color:var(--ink-soft);font-size:var(--t-lg)}
+.story .body p{margin:0}
+.story .people{margin-top:var(--space-heading)}
+.story .slot{aspect-ratio:5/2;border-radius:.75rem;display:grid;place-items:center;border:1.5px dashed var(--line-strong);color:var(--muted);text-align:center;padding:1rem;background:var(--raised)}
+@media (min-width:1024px){.story{grid-template-columns:minmax(0,5fr) minmax(0,7fr)}}
+
+/* ---- Footer: "Come by" (as shipped) + address and directions ---------------- */
+footer{margin-top:var(--space-section);background:var(--inv-bg);color:var(--inv-fg)}
+footer .wrap{display:grid;gap:2rem;padding-top:3rem;padding-bottom:3rem}
+footer h2{font-size:var(--t-5xl)}
+footer .lede{margin:var(--space-snug) 0 0;max-width:34ch;color:var(--inv-muted)}
+footer h3{margin:0;color:var(--inv-muted)}
+footer dl{margin:var(--space-snug) 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:.375rem 1.25rem}
+footer dt{color:var(--inv-muted);line-height:1.5rem}
+footer dd{margin:0;font-size:var(--t-sm);line-height:1.5rem}
+footer ul{list-style:none;margin:var(--space-snug) 0 0;padding:0;display:grid;gap:.375rem}
+footer ul a{text-decoration:underline;text-underline-offset:4px;display:inline-flex;align-items:center;min-height:1.75rem}
+footer ul a:hover{color:var(--inv-muted)}
+@media (min-width:1024px){footer .wrap{grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1fr)}}
+</style>
+<script>
+  // ?dark and ?clean, applied before paint.
+  const q = new URLSearchParams(location.search);
+  if (q.has("dark")) document.documentElement.classList.add("dark");
+  if (q.has("clean")) document.documentElement.classList.add("clean");
+</script>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <a class="brand" href="#welcome-heading" aria-label="Hiatus home"><svg class="brand-mark" viewBox="-2 -2 233 161" aria-hidden="true" focusable="false"><defs><path id="hiatus-mark" fill-rule="evenodd" d="M110.0 155.5C109.3 154.6 108.0 147.8 107.1 140.2L105.5 126.5L101.2 126.2L96.8 125.9L97.2 139.0C97.5 151.7 97.4 152.3 95.2 154.0C93.5 155.4 92.0 155.7 89.2 155.3C81.5 154.1 82.0 158.5 82.0 94.4L82.0 37.0L84.3 35.6C87.0 33.8 100.0 32.1 102.9 33.2C106.0 34.3 106.7 36.8 109.0 53.0C110.6 64.8 116.5 105.6 122.0 143.0C123.3 151.9 123.2 153.6 121.4 155.4C119.4 157.5 111.7 157.5 110.0 155.5ZM130.5 155.1C129.3 153.1 127.7 137.9 128.6 137.0C129.1 136.6 134.8 135.2 141.2 134.1C162.5 130.3 181.0 122.1 193.1 111.2C203.1 102.2 207.4 94.1 203.8 91.3C203.1 90.7 200.8 89.7 198.6 89.0C189.9 86.2 182.9 74.4 184.6 65.3C187.4 49.6 202.8 41.6 216.8 48.6C224.8 52.6 231.2 63.9 226.2 65.4C225.3 65.7 221.9 66.2 218.7 66.6C213.3 67.2 212.8 67.1 210.9 64.6C208.6 61.6 206.4 61.3 203.2 63.6C200.5 65.5 200.3 70.0 202.8 72.3C204.2 73.5 206.5 74.0 211.5 74.0C219.7 74.0 224.1 76.3 227.0 82.1C229.5 86.9 229.5 90.2 227.1 97.8C222.0 114.2 204.2 132.1 182.4 142.6C164.7 151.1 132.8 158.8 130.5 155.1ZM66.9 149.8C62.8 148.4 61.0 147.3 60.6 145.7C59.6 141.9 59.9 84.3 61.0 81.5C61.9 79.0 62.3 78.9 68.7 79.2L75.5 79.5L75.8 114.7C76.1 155.3 76.6 153.1 66.9 149.8ZM44.8 141.0C42.7 139.9 40.6 138.1 40.0 137.1C39.4 135.9 39.0 125.8 39.0 111.6C39.0 89.4 38.9 88.0 37.1 87.0C35.0 85.9 23.7 85.6 22.7 86.6C21.9 87.5 25.5 96.4 28.5 100.8C30.8 104.2 31.0 105.4 31.0 115.6C31.0 132.0 29.4 132.6 17.7 120.0C-6.0 94.4 -5.4 60.8 19.3 35.8C24.3 30.7 26.6 28.9 28.3 29.2C30.4 29.5 30.5 30.0 30.8 41.3C31.0 52.1 30.9 53.4 28.9 56.2C26.5 59.5 22.1 69.6 22.0 71.8C22.0 73.4 36.1 73.5 37.8 71.8C38.7 70.9 39.0 63.9 39.0 46.4C39.0 18.9 39.1 18.7 47.5 15.4C55.5 12.4 55.0 8.0 54.8 79.4L54.5 142.5L51.5 142.7C49.9 142.9 46.8 142.1 44.8 141.0ZM128.4 125.0C124.8 123.6 125.9 130.3 116.6 54.5C114.7 39.1 112.9 25.8 112.5 24.9C112.2 24.0 110.9 22.8 109.7 22.3C106.8 21.0 91.9 22.5 81.8 25.0C72.3 27.5 69.8 27.5 67.7 25.2C65.6 22.9 65.3 11.2 67.3 8.8C70.4 4.7 94.0 0.7 115.5 0.7C145.0 0.6 171.6 7.5 192.4 20.4C200.0 25.2 201.6 27.5 199.9 31.4C198.4 34.5 190.7 40.0 187.8 40.0C186.4 40.0 182.7 38.4 179.5 36.5C166.2 28.5 138.0 20.7 133.4 23.8C131.5 25.0 130.2 28.4 130.6 31.0C130.8 32.4 131.9 41.8 133.0 52.0C134.1 62.2 135.9 77.9 137.0 87.0C138.1 96.1 139.2 106.4 139.5 110.0C139.9 113.6 140.4 117.2 140.6 118.2C141.8 122.2 133.4 126.9 128.4 125.0ZM149.3 120.8C148.3 119.5 147.2 111.6 142.5 72.0C141.0 60.2 139.5 47.7 139.1 44.2C138.1 36.0 139.1 34.5 144.8 35.5C152.2 36.7 152.5 37.5 154.4 56.0C157.3 84.6 159.2 99.4 160.1 101.2C160.7 102.2 162.1 103.0 163.4 103.0C168.3 103.0 168.4 101.9 167.3 73.7C166.8 59.3 166.5 47.0 166.7 46.3C167.5 44.1 169.9 44.1 174.2 46.4L178.5 48.7L178.5 79.6L178.5 110.5L172.5 113.7C167.4 116.4 152.9 122.0 150.9 122.0C150.5 122.0 149.8 121.4 149.3 120.8ZM99.4 80.0C97.5 65.4 95.5 53.1 95.0 52.6C93.8 51.4 93.7 68.0 94.7 91.2L95.3 106.9L98.4 107.2C100.1 107.4 101.8 107.3 102.2 107.0C102.6 106.7 101.3 94.6 99.4 80.0ZM62.6 64.8C61.5 63.2 61.0 60.2 61.0 54.8C61.0 45.9 62.7 43.0 68.0 43.0C73.3 43.0 75.0 45.9 75.0 54.8C75.0 64.5 73.6 67.0 68.0 67.0C65.1 67.0 63.7 66.4 62.6 64.8Z"/></defs><use href="#hiatus-mark" class="side" transform="translate(8 8)"/><use href="#hiatus-mark" class="side" transform="translate(6 6)"/><use href="#hiatus-mark" class="side" transform="translate(4 4)"/><use href="#hiatus-mark" class="side" transform="translate(2 2)"/><use href="#hiatus-mark" class="face"/></svg></a>
+    <nav aria-label="Account">
+      <!-- Log in / Sign up go to the real app routes when served from it; in
+           this static file they have nowhere to go, so they point at the app. -->
+      <a class="caps" href="http://localhost:3000/login">Log in</a>
+      <a class="btn btn-primary btn-sm" href="http://localhost:3000/signup">Sign up</a>
+      <button class="theme" type="button" aria-label="Switch to dark theme" aria-pressed="false" id="theme">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- Hero: unchanged, except the door sign now says how to get there. -->
+  <section class="hero" aria-labelledby="welcome-heading">
+    <div>
+      <h1 id="welcome-heading" class="display">A taste<br>of home,<br><span>of Bukidnon.</span></h1>
+      <p class="pitch">Breathe, slow down, and sip. Welcome to your daily hiatus in the heart of Malaybalay.</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href="http://localhost:3000/signup">Order ahead</a>
+        <a class="btn btn-outline" href="#menu-peek">See the menu</a>
+      </div>
+    </div>
+
+    <figure class="matte photo">
+      <p class="note sign-note">From: Kaffeine. The way there, on the sign.</p>
+      <div class="inner">
+        <img src="../../src/assets/shop/room.jpg" alt="Inside Hiatus: a wavy arched mirror, warm lamps, a potted plant and woven baskets on wooden shelves">
+      </div>
+      <figcaption class="sign">
+        <span class="caps"><span class="dot" aria-hidden="true"></span>Open · until 6 PM</span>
+        <span class="caps sub">Hiatus Headquarters</span>
+        <a class="caps" href="https://www.google.com/maps/search/?api=1&amp;query=Hiatus+Coffee+Malaybalay" target="_blank" rel="noopener noreferrer">Get directions<span class="sr-only"> (opens Google Maps)</span></a>
+      </figcaption>
+      <div class="stamp" aria-hidden="true">
+        <svg viewBox="0 0 128 128"><defs><path id="ring" d="M64 64m-48 0a48 48 0 1 1 96 0a48 48 0 1 1-96 0"/></defs><text fill="currentColor" font-size="9.6" letter-spacing="2.6" style="font-family:var(--f-ui)"><textPath href="#ring">TAKE THAT MUCH NEEDED BREAK · </textPath></text></svg>
+        <span>Come<br>in</span>
+      </div>
+    </figure>
+  </section>
+
+  <!-- On the menu: the live page's two available drinks, and the tile taking
+       the rest of the row (the fix shipped in menu-peek.tsx). -->
+  <section id="menu-peek" aria-labelledby="peek-heading">
+    <div class="peek-head">
+      <div>
+        <h2 id="peek-heading" class="display">On the menu</h2>
+        <p class="caps cats">Coffee</p>
+      </div>
+      <a class="caps" href="http://localhost:3000/signup">See the full menu</a>
+    </div>
+    <ul class="peek">
+      <li><a class="drink" href="http://localhost:3000/signup" aria-label="Kape 2, from ₱105.00. Sign up to order."><img src="../assets/kape.jpg" alt=""><span class="meta"><span class="eyebrow">Ube</span><span class="display name">Kape 2</span><span class="numeric price">from ₱105.00</span></span></a></li>
+      <li><a class="drink" href="http://localhost:3000/signup" aria-label="Kape 1, from ₱135.00. Sign up to order."><img src="../assets/kape.jpg" alt=""><span class="meta"><span class="eyebrow">Caramel</span><span class="display name">Kape 1</span><span class="numeric price">from ₱135.00</span></span></a></li>
+      <li class="tile"><a class="whole" href="http://localhost:3000/signup"><span class="display">The whole<br>menu</span><span><p>Sign up to see every drink, pick your size, and order ahead.</p><span class="caps">Sign up &rarr;</span></span></a></li>
+    </ul>
+  </section>
+
+  <!-- NEW: the brand line. -->
+  <section class="line-band" aria-labelledby="line-heading">
+    <p class="note">From: Escape Coffee. One full-width brand line, with where you are.</p>
+    <h2 id="line-heading" class="display">Take that<br>much needed <em>break.</em></h2>
+    <p class="caps where">
+      <span>Malaybalay, Bukidnon</span>
+      <span aria-hidden="true">·</span>
+      <span class="numeric fill" title="Malaybalay city centre. Swap for the shop's own map pin.">8.15° N, 125.13° E</span>
+    </p>
+  </section>
+
+  <!-- Look around: unchanged. -->
+  <section class="tour" aria-labelledby="tour-heading">
+    <div class="in">
+      <h2 id="tour-heading" class="display">Look around</h2>
+      <div class="spots">
+        <figure><img src="../../src/assets/shop/tin-wall.jpg" alt="A long wood-framed mirror on a corrugated tin wall, reflecting plants and shelves"><figcaption><span class="caps">The tin wall</span><span class="c pretty">A long mirror on corrugated tin.</span></figcaption></figure>
+        <figure><img src="../../src/assets/shop/curio-shelf.jpg" alt="A wooden curio shelf with a framed print, Filipino books, a woven owl, figurines and illustrated cups"><figcaption><span class="caps">The curio shelf</span><span class="c pretty">Rizal, Tagu-taguan, and a woven owl.</span></figcaption></figure>
+        <figure><img src="../../src/assets/shop/counter-notes.jpg" alt="Close-up of two ube lattes with handwritten notes on the cups"><figcaption><span class="caps">The counter</span><span class="c pretty">Your name and a note, handwritten on the cup.</span></figcaption></figure>
+      </div>
+      <figure class="quote">
+        <blockquote lang="ceb"><p class="display">&ldquo;Salamat sa pag-hapit.&rdquo;</p></blockquote>
+        <figcaption>Thank you for dropping by.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- NEW: the story. Every line is a blank for the shop to fill. -->
+  <section class="story" aria-labelledby="story-heading">
+    <div class="est">
+      <p class="note">From: Drip and Café Gandolfi. A short origin story and a founding year.</p>
+      <p class="eyebrow">Since</p>
+      <p class="display"><span class="fill">20__</span></p>
+    </div>
+    <div>
+      <h2 id="story-heading" class="display">How Hiatus started</h2>
+      <div class="body pretty">
+        <p><span class="fill">[Who started it, and why Malaybalay.]</span></p>
+        <p><span class="fill">[What a hiatus means here: the break the shop is for.]</span></p>
+        <p><span class="fill">[One line about the people at the counter, or the notes on the cups.]</span></p>
+      </div>
+      <div class="people">
+        <div class="slot">[Photo to supply: the people behind the counter]</div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer aria-labelledby="visit-heading">
+  <div class="wrap">
+    <div>
+      <h2 id="visit-heading" class="display">Come by</h2>
+      <p class="lede pretty">Stay a while, or order ahead and grab it on your way.</p>
+    </div>
+    <div>
+      <h3 class="caps">Hours</h3>
+      <dl>
+        <dt class="caps">Mon–Thu</dt><dd class="numeric">7 AM – 8 PM</dd>
+        <dt class="caps">Fri</dt><dd class="numeric">7 AM – 10 PM</dd>
+        <dt class="caps">Sat</dt><dd class="numeric">8 AM – 10 PM</dd>
+        <dt class="caps">Sun</dt><dd class="numeric">8 AM – 6 PM</dd>
+      </dl>
+    </div>
+    <div>
+      <p class="note">From: Kafoska. Address and a map link in the footer.</p>
+      <h3 class="caps">Find us</h3>
+      <ul>
+        <li><span class="fill">[Street address, from Settings]</span></li>
+        <li><a href="https://www.google.com/maps/search/?api=1&amp;query=Hiatus+Coffee+Malaybalay" target="_blank" rel="noopener noreferrer">Get directions<span class="sr-only"> (opens Google Maps)</span></a></li>
+        <li><a href="https://www.instagram.com/hiatuscoffee_ph/" target="_blank" rel="noopener noreferrer">@hiatuscoffee_ph</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>
+
+<style>.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}</style>
+<script>
+  // The theme button: flips the class and keeps its label honest.
+  const btn = document.getElementById("theme");
+  const sync = () => {
+    const dark = document.documentElement.classList.contains("dark");
+    btn.setAttribute("aria-pressed", String(dark));
+    btn.setAttribute("aria-label", dark ? "Switch to light theme" : "Switch to dark theme");
+  };
+  btn.addEventListener("click", () => { document.documentElement.classList.toggle("dark"); sync(); });
+  sync();
+</script>
+</body>
+</html>
