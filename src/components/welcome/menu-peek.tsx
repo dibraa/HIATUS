@@ -17,6 +17,10 @@ import { priceForSize } from "@/lib/sizes";
  * forward, and it keeps a short menu (one or two available drinks) from
  * leaving a lone card beside an empty row.
  */
+/** Columns the tile spans on the `lg` four-up row, keyed by drink count.
+ *  Literal class names, so Tailwind can see them. */
+const TILE_SPAN_LG: Record<number, string> = { 1: "lg:col-span-3", 2: "lg:col-span-2" };
+
 export function MenuPeek({ peek }: { peek: MenuPeekData }) {
   return (
     <section aria-labelledby="peek-heading" className="scroll-mt-20" id="menu-peek">
@@ -73,10 +77,16 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
           </li>
         ))}
         {/* Full width wherever the grid is two-up (phones AND tablets, below
-            `lg`) when it would otherwise sit alone in a row. The hover darkens
-            the pine itself rather than borrowing secondary-hover, which turns
-            light sage in dark mode under cream text. */}
-        <li className={`flex ${peek.items.length % 2 === 0 ? "max-lg:col-span-2" : ""}`}>
+            `lg`) when it would otherwise sit alone in a row; on the four-up
+            row it takes whatever columns the drinks leave, so fewer than three
+            never strands an empty cell at the end. The hover darkens the pine
+            itself rather than borrowing secondary-hover, which turns light
+            sage in dark mode under cream text. */}
+        <li
+          className={`flex ${peek.items.length % 2 === 0 ? "max-lg:col-span-2" : ""} ${
+            TILE_SPAN_LG[peek.items.length] ?? ""
+          }`}
+        >
           <Link
             href="/signup"
             className="flex w-full flex-col justify-between gap-6 rounded-2xl bg-inverse-bg p-5 text-inverse-fg transition-[filter,translate] hover:brightness-90 active:translate-y-px focus-visible:outline-offset-4 sm:p-6"

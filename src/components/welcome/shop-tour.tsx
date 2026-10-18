@@ -51,7 +51,7 @@ export function ShopTour() {
                 </div>
                 <figcaption className="mt-4">
                   <span className="ui-caps block text-2xs">{spot.title}</span>
-                  <span className="mt-1 block text-sm text-inverse-card-muted">{spot.caption}</span>
+                  <span className="mt-1 block text-pretty text-sm text-inverse-card-muted">{spot.caption}</span>
                 </figcaption>
               </figure>
             ))}
