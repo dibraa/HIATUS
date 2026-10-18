@@ -61,8 +61,15 @@ function getServerSnapshot(): Theme | null {
   return null;
 }
 
+/** The resolved active theme, or null before hydration resolves it. Shared by
+ *  the toggle and anything else that must render with the real theme — e.g. the
+ *  reCAPTCHA widget, whose light/dark frame is decided when it renders. */
+export function useResolvedTheme(): Theme | null {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
 export function ThemeToggle({ variant = "icon" }: { variant?: "icon" | "row" }) {
-  const theme = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const theme = useResolvedTheme();
 
   function toggle() {
     const next: Theme = theme === "dark" ? "light" : "dark";
