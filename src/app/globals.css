@@ -656,6 +656,12 @@ body:has(.admin-workspace) #main {
   display: none;
 }
 
+/* An open dialog shows pop-ups itself (AppToaster inDialog); the page copy
+   would only show through the backdrop as a dimmed duplicate. */
+body:has(dialog[open] .dialog-toaster) .page-toaster {
+  display: none;
+}
+
 /* --- The opening line ----------------------------------------------------
    ONE orchestrated entrance, on the landing hero, and nowhere else.
 

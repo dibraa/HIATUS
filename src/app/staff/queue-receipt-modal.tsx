@@ -5,6 +5,7 @@ import { useEffect, useRef, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
+import { AppToaster } from "@/components/app-toaster";
 import {
   advanceOrderStatus,
   flagSpecialRequest,
@@ -45,7 +46,6 @@ export function QueueReceiptModal({
 }) {
   const [pending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState<"refund" | "void" | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -80,11 +80,9 @@ export function QueueReceiptModal({
     success: string,
     done?: () => void,
   ) {
-    setError(null);
     startTransition(async () => {
       const { error } = await fn();
       if (error) {
-        setError(error);
         toast.error(error);
       } else {
         toast.success(success);
@@ -99,18 +97,30 @@ export function QueueReceiptModal({
     );
 
   const next = NEXT_STATUS[order.status];
-  const primary = reversed ? null : next === "completed" ? (
+  // Payment comes before making, so an unpaid New or Ready order goes to the
+  // payment dialog, which moves it on once the money is recorded.
+  const payFirst =
+    order.payment_status === "unpaid" &&
+    (order.status === "pending" || order.status === "ready");
+  const primary = reversed ? null : payFirst ? (
+    <Button
+      size="md"
+      variant="primary"
+      onClick={onHandOver}
+      className="min-h-12 w-full"
+    >
+      {order.status === "pending" ? "Pay & start" : "Pay & hand over"}
+    </Button>
+  ) : next === "completed" ? (
     <Button
       size="md"
       variant="primary"
       loading={pending}
-      onClick={paid ? () => advance("completed") : onHandOver}
-      aria-label={
-        paid ? `Hand over order ${code}` : `Take payment for order ${code}`
-      }
+      onClick={() => advance("completed")}
+      aria-label={`Hand over order ${code}`}
       className="min-h-12 w-full"
     >
-      {pending ? "Working" : paid ? "Hand over" : "Take payment"}
+      {pending ? "Working" : "Hand over"}
     </Button>
   ) : next ? (
     <Button
@@ -130,9 +140,9 @@ export function QueueReceiptModal({
   ) : null;
 
   const secondary =
-    "ui-caps inline-flex min-h-11 items-center justify-center rounded-full border border-line-strong px-3 text-xs text-ink transition-colors hover:border-ink";
+    "ui-caps inline-flex min-h-11 items-center justify-center rounded-md border border-line-strong px-3 text-xs text-ink transition-colors hover:border-ink";
   const dangerBtn =
-    "ui-caps inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-3 text-xs transition-colors";
+    "ui-caps inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-3 text-xs transition-colors";
 
   return (
     <dialog
@@ -142,7 +152,7 @@ export function QueueReceiptModal({
         e.preventDefault();
         if (!pending && !confirm) onClose();
       }}
-      className="fixed inset-0 m-auto max-h-[88dvh] w-[calc(100%-2rem)] max-w-lg overflow-auto rounded-2xl border border-line-strong bg-card p-5 text-ink backdrop:bg-scrim sm:p-6"
+      className="no-scrollbar fixed inset-0 m-auto max-h-[88dvh] w-[calc(100%-2rem)] max-w-lg overflow-auto rounded-2xl border border-line-strong bg-card p-5 text-ink backdrop:bg-scrim sm:p-6"
       onClick={(e) => {
         if (e.target === e.currentTarget && !pending && !confirm) {
           const rect = e.currentTarget.getBoundingClientRect();
@@ -158,14 +168,6 @@ export function QueueReceiptModal({
     >
       <fieldset disabled={pending || !!confirm} className="grid min-w-0 gap-3">
         <legend className="sr-only">Order details and actions</legend>
-        {error && (
-          <p
-            role="alert"
-            className="rounded-md bg-danger-soft-bg p-3 text-sm text-danger-soft-fg"
-          >
-            {error}
-          </p>
-        )}
         <div className="flex items-start justify-between gap-2">
           <div>
             <h2 className="display text-3xl leading-none text-ink">{code}</h2>
@@ -230,10 +232,10 @@ export function QueueReceiptModal({
           {order.order_items.map((item) => (
             <li
               key={item.id}
-              className="flex items-baseline justify-between gap-3 text-[15px] text-ink"
+              className="flex items-baseline justify-between gap-3 text-(length:--c-text-reach) text-ink"
             >
               <span className="min-w-0">
-                <span className="numeric font-semibold">{item.quantity}x</span>{" "}
+                <span className="numeric font-semibold">{item.quantity}×</span>{" "}
                 {item.item_name}
               </span>
               {item.size && (
@@ -324,7 +326,7 @@ export function QueueReceiptModal({
               value={reason}
               maxLength={280}
               onChange={(e) => setReason(e.target.value)}
-              className="min-h-11 w-full rounded-md border border-line-strong px-3 text-sm"
+              className="min-h-11 w-full rounded-md border border-line-strong bg-card px-3 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft"
               placeholder="Explain the correction before confirming"
             />
           </div>
@@ -390,6 +392,7 @@ export function QueueReceiptModal({
         }}
         onCancel={() => setConfirm(null)}
       />
+      <AppToaster inDialog />
     </dialog>
   );
 }

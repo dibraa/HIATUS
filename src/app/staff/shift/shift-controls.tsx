@@ -25,7 +25,7 @@ export function ClockInForm() {
 
   return (
     <form
-      className="rounded-lg border border-line bg-card p-5 shadow-sm"
+      className="staff-panel p-5"
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {
@@ -35,8 +35,8 @@ export function ClockInForm() {
         });
       }}
     >
-      <h2 className="display text-xl text-ink">Start your shift</h2>
-      <p className="mt-1.5 text-sm text-muted">
+      <h2 className="display staff-section-title">Start your shift</h2>
+      <p className="staff-lead mt-1.5">
         Count the float in the drawer before you begin, so the end-of-shift
         total has something to reconcile against.
       </p>
@@ -46,7 +46,7 @@ export function ClockInForm() {
           htmlFor="opening-cash"
           className="text-sm font-medium text-ink-soft"
         >
-          Opening cash{" "}
+          Opening float{" "}
           <span className="font-normal text-muted">(optional)</span>
         </label>
         <input
@@ -58,7 +58,7 @@ export function ClockInForm() {
           value={opening}
           onChange={(e) => setOpening(e.target.value)}
           placeholder="0.00"
-          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm numeric text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
+          className="min-h-11 w-full rounded-md border border-line-strong bg-card px-3 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft numeric"
         />
       </div>
 
@@ -84,7 +84,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
 
   return (
     <form
-      className="rounded-lg border border-line bg-card p-5 shadow-sm"
+      className="staff-panel p-5"
       onSubmit={(e) => {
         e.preventDefault();
         startTransition(async () => {
@@ -97,8 +97,8 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
         });
       }}
     >
-      <h2 className="display text-xl text-ink">End your shift</h2>
-      <p className="mt-1.5 text-sm text-muted">
+      <h2 className="display staff-section-title">End your shift</h2>
+      <p className="staff-lead mt-1.5">
         Count the drawer and enter the total. Anything that does not match is
         worth a note while you still remember it.
       </p>
@@ -108,7 +108,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
           htmlFor="closing-cash"
           className="text-sm font-medium text-ink-soft"
         >
-          Counted cash{" "}
+          Closing cash{" "}
           <span className="font-normal text-muted">(optional)</span>
         </label>
         <input
@@ -121,10 +121,10 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
           onChange={(e) => setClosing(e.target.value)}
           placeholder={expectedCash.toFixed(2)}
           aria-describedby="variance-hint"
-          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm numeric text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
+          className="min-h-11 w-full rounded-md border border-line-strong bg-card px-3 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft numeric"
         />
 
-        <p id="variance-hint" aria-live="polite" className="text-xs">
+        <p id="variance-hint" aria-live="polite" className="staff-caption">
           {closing === "" || !Number.isFinite(counted) ? (
             <span className="text-muted">
               Opening float: {formatPrice(expectedCash)}. This is a reference,
@@ -132,7 +132,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
             </span>
           ) : (
             <span className="text-muted">
-              Counted cash: {formatPrice(counted)}. Saved when you clock out.
+              Closing cash: {formatPrice(counted)}. Saved when you clock out.
             </span>
           )}
         </p>
@@ -152,7 +152,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
           value={note}
           onChange={(e) => setNote(e.target.value)}
           placeholder="e.g. ₱50 short — gave change twice on one order"
-          className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
+          className="min-h-11 w-full rounded-md border border-line-strong bg-card px-3 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft py-2.5"
         />
       </div>
 

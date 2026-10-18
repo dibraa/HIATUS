@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -43,13 +43,11 @@ export function QueueCard({
   onMore: () => void;
 }) {
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const code = orderCode(order.id);
   const minutes = Math.max(
     0,
     Math.floor((now - new Date(order.created_at).getTime()) / 60000),
   );
-  const paid = order.payment_status === "paid";
   const unpaid =
     order.payment_status === "unpaid" && order.status !== "cancelled";
   const reversed =
@@ -59,14 +57,20 @@ export function QueueCard({
   // Amber is reserved for this one state, so it stays readable at a glance.
   const late = waiting && minutes >= lateAfter;
   const overdue = waiting && minutes >= overAfter;
-  // Ready but unpaid: payment comes before hand over.
-  const payFirst = next === "completed" && !paid;
+  // Customers pay before their drink is made, so an unpaid New order's next
+  // step IS payment ("Pay & start"); an unpaid Ready order, the rare one that
+  // slipped through, pays and hands over in the same press.
+  const payFirst =
+    unpaid && (order.status === "pending" || order.status === "ready");
+  const payLabel = order.status === "pending" ? "Pay & start" : "Pay & hand over";
   const shown = order.order_items.length > 2
     ? order.order_items.slice(0, 1)
     : order.order_items;
   const hidden = order.order_items.length - shown.length;
+  // "Not paid" only where it is the exception. In New, unpaid is the normal
+  // state and the "Pay & start" button already says so.
   const tags = [
-    unpaid && "Not paid",
+    unpaid && order.status !== "pending" && "Not paid",
     reversed && PAYMENT_STATUS_LABELS[order.payment_status],
     order.status === "cancelled" && "Cancelled",
     order.priority > 0 && "Priority",
@@ -76,19 +80,18 @@ export function QueueCard({
     action: () => Promise<{ error: string | null }>,
     success: string,
   ) {
-    setError(null);
+    // Failures show as a pop-up only; the ticket keeps its fixed layout.
     startTransition(async () => {
       const result = await action();
-      if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
-      } else toast.success(success);
+      if (result.error) toast.error(result.error);
+      else toast.success(success);
     });
   }
 
   // One contextual link beside "More actions", so the row never wraps.
   let link: { label: string; onClick: () => void } | null = null;
-  if (unpaid && !payFirst) link = { label: "Take payment", onClick: onPayment };
+  if (unpaid && order.status === "preparing")
+    link = { label: "Take payment", onClick: onPayment };
   else if (order.status === "pending" && !reversed)
     link =
       order.priority > 0
@@ -120,7 +123,7 @@ export function QueueCard({
 
   return (
     <article
-      className={`counter-ticket${late ? " is-late" : ""}`}
+      className={`counter-ticket ticket-edges${late ? " is-late" : ""}`}
       aria-label={`Order ${code}, waiting ${minutes} minutes${late ? ", late" : ""}`}
     >
       <div className="counter-ticket-top">
@@ -194,11 +197,6 @@ export function QueueCard({
             </p>
           </div>
         )}
-        {error && (
-          <p role="alert" className="counter-ticket-error">
-            {error}
-          </p>
-        )}
       </div>
 
       <div className="counter-ticket-foot">
@@ -212,7 +210,7 @@ export function QueueCard({
             disabled={disabled || pending}
             onClick={onPayment}
           >
-            Take payment
+            {payLabel}
           </Button>
         ) : next ? (
           <Button
