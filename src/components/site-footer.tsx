@@ -1,4 +1,4 @@
-import { SHOP_SOCIALS } from "@/content/shop";
+import { SHOP_DIRECTIONS_URL, SHOP_SOCIALS } from "@/content/shop";
 import { groupBusinessHours } from "@/lib/hours";
 import { getSettings } from "@/lib/settings";
 
@@ -8,7 +8,8 @@ import { getSettings } from "@/lib/settings";
  *
  * Hours and contact come from Settings, so the footer never states hours the
  * admin has since changed. Empty settings are omitted rather than filled with
- * placeholders; with nothing known at all, the "Find us" column disappears.
+ * placeholders. "Get directions" always shows (SHOP_DIRECTIONS_URL), so the
+ * "Find us" column always has at least one way to reach the shop.
  *
  * Information only — no actions: the way in lives in the page and the top
  * bar. Every colour is an `inverse-*` token — `muted` and `line` are
@@ -23,7 +24,6 @@ export async function SiteFooter() {
   // API returns as null passes through untouched.
   const address = (settings.shopInfo.address ?? "").trim();
   const phone = (settings.shopInfo.phone ?? "").trim();
-  const hasContact = Boolean(address || phone || SHOP_SOCIALS.length);
 
   // inline-flex so the global coarse-pointer 44px min-height can take hold;
   // an inline box ignores min-height and measured 21px tall on touch.
@@ -37,7 +37,7 @@ export async function SiteFooter() {
           <h2 id="visit-heading" className="display text-5xl">
             Come by
           </h2>
-          <p className="mt-snug max-w-[34ch] text-inverse-muted">
+          <p className="mt-snug max-w-[34ch] text-pretty text-inverse-muted">
             Stay a while, or order ahead and grab it on your way.
           </p>
         </div>
@@ -54,28 +54,32 @@ export async function SiteFooter() {
           </dl>
         </div>
 
-        {hasContact && (
-          <div>
-            <h3 className="ui-caps text-2xs text-inverse-muted">Find us</h3>
-            <ul className="mt-snug grid gap-1.5">
-              {address && <li>{address}</li>}
-              {phone && (
-                <li>
-                  <a href={`tel:${phone}`} className={contactLink}>
-                    {phone}
-                  </a>
-                </li>
-              )}
-              {SHOP_SOCIALS.map((social) => (
-                <li key={social.href}>
-                  <a href={social.href} target="_blank" rel="noopener noreferrer" className={contactLink}>
-                    {social.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
+        <div>
+          <h3 className="ui-caps text-2xs text-inverse-muted">Find us</h3>
+          <ul className="mt-snug grid gap-1.5">
+            {address && <li>{address}</li>}
+            <li>
+              <a href={SHOP_DIRECTIONS_URL} target="_blank" rel="noopener noreferrer" className={contactLink}>
+                Get directions
+                <span className="sr-only"> (opens Google Maps)</span>
+              </a>
+            </li>
+            {phone && (
+              <li>
+                <a href={`tel:${phone}`} className={contactLink}>
+                  {phone}
+                </a>
+              </li>
+            )}
+            {SHOP_SOCIALS.map((social) => (
+              <li key={social.href}>
+                <a href={social.href} target="_blank" rel="noopener noreferrer" className={contactLink}>
+                  {social.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </footer>
   );

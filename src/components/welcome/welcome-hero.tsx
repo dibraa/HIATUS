@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { ButtonLink } from "@/components/ui/button";
 import { RotatingStamp } from "@/components/welcome/rotating-stamp";
-import { SHOP_ROOM } from "@/content/shop";
+import { SHOP_DIRECTIONS_URL, SHOP_ROOM } from "@/content/shop";
 import { formatTime } from "@/lib/hours";
 import type { BusinessHours } from "@/types/database";
 
@@ -10,7 +10,8 @@ import type { BusinessHours } from "@/types/database";
  *
  * The open/closed status is a sign ON the photograph rather than an eyebrow
  * over the headline — a shop says it is open on its door, not above its name —
- * which leaves the headline the first thing on the page.
+ * which leaves the headline the first thing on the page. The sign also holds
+ * the way there (Kaffeine's hours-and-directions-up-top, on our own sign).
  *
  * Source order is headline, then photo, so a screen reader meets the words
  * first. On phones the photo is lifted ABOVE the words with `order-first`: on
@@ -112,6 +113,22 @@ export function WelcomeHero({
           <span className={`ui-caps text-2xs ${open ? "text-inverse-muted" : "text-muted"}`}>
             {SHOP_ROOM.caption}
           </span>
+          {/* The way there, beside whether the door is open: a guest deciding
+              to walk in needs both at once. inline-flex so the coarse-pointer
+              44px minimum applies. */}
+          <a
+            href={SHOP_DIRECTIONS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`ui-caps mt-1 inline-flex min-h-8 items-center border-t pt-1 text-2xs underline underline-offset-4 transition-colors ${
+              open
+                ? "border-inverse-line/45 hover:text-inverse-muted"
+                : "border-line hover:text-muted"
+            }`}
+          >
+            Get directions
+            <span className="sr-only"> (opens Google Maps)</span>
+          </a>
         </figcaption>
 
         {/* Never above the photo's top edge: the sticky navbar sits right
