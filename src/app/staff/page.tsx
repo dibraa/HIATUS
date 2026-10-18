@@ -8,8 +8,9 @@ import type { OrderItem } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 import { QueueBoard } from "./queue-board";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { StaffPageHeading } from "./staff-page-heading";
 
-export const metadata: Metadata = { title: "The Counter" };
+export const metadata: Metadata = { title: "Counter" };
 export const dynamic = "force-dynamic";
 
 export default async function StaffQueuePage({
@@ -63,13 +64,16 @@ export default async function StaffQueuePage({
       }));
     } catch {
       return (
-        <div>
+        <div className="counter-page">
           <AutoRefresh seconds={15} />
-          <DataError
-            title="Couldn't load Queue & POS"
-            body="Check your connection and try again."
-            showRetry
-          />
+          <StaffPageHeading title="Counter" />
+          <div className="pt-4">
+            <DataError
+              title="Couldn't load the counter"
+              body="Check your connection and try again."
+              showRetry
+            />
+          </div>
         </div>
       );
     }
@@ -81,9 +85,7 @@ export default async function StaffQueuePage({
     <div className="counter-page">
       <AutoRefresh seconds={15} />
       {/* One header row; each lane carries its own count. */}
-      <div className="counter-page-heading">
-        <h1 className="display">Counter</h1>
-      </div>
+      <StaffPageHeading title="Counter" />
       <QueueBoard
         orders={allOrders}
         renderedAt={renderedAt.toISOString()}

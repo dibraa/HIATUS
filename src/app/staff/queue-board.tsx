@@ -310,6 +310,10 @@ export function QueueBoard({
           onClose={() => {
             if (!busy) setSelectedId(null);
           }}
+          onDone={() => {
+            setBusy(false);
+            setSelectedId(null);
+          }}
           onDetails={() => setPanel("actions")}
         />
       )}

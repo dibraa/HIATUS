@@ -3,10 +3,14 @@
    app's --hi-* tokens, so light, dark and data-theme all follow globals.css. */
 .staff-workspace {
   /* Type: ~x1.17 scale for a dense product screen. */
-  --c-text-page: 1.625rem;
+  /* 25px, chosen in live mode (24.7px): a quiet label a step above the 22px
+     lane headings, so New / Making / Ready carry the page. */
+  --c-text-page: 1.5625rem;
   --c-text-glance: 1.375rem;
   --c-text-heading: 1.125rem;
   --c-text-reach: 0.9375rem;
+  /* Running text in panels and forms (intros, descriptions, field values). */
+  --c-text-body: 0.875rem;
   --c-text-detail: 0.8125rem;
   /* Spacing on a 4px grid. */
   --c-gap-tight: 4px;
@@ -21,8 +25,9 @@
   --c-radius-md: 14px;
   --c-rail-width: 204px;
   /* Every ticket is the same height: the measured worst case (late, two
-     tags, two items with modifiers, a two-line customer request). */
-  --c-ticket-height: 464px;
+     tags, two items with modifiers, a two-line customer request), plus the
+     26px the receipt cut adds (bite padding and the header's tear line). */
+  --c-ticket-height: 490px;
   --c-tags-slot: 26px;
 
   min-height: 100dvh;
@@ -67,7 +72,10 @@
 .counter-navigation {
   display: grid;
   gap: var(--c-gap-tight);
-  margin-top: 24px;
+  /* The narrow tablet rail's room under the logo (28px, chosen in live
+     mode). The full desktop rail sets 0: its logo band already separates
+     them (see the min-width: 1181px block below). */
+  margin-top: 28px;
 }
 .counter-nav-link {
   display: flex;
@@ -122,6 +130,43 @@
   color: var(--hi-inverse-fg);
   font-size: var(--c-text-reach);
 }
+/* The same tint the nav links use on hover. Spelled out here because the
+   rule above sets the background unlayered, which beats the button's own
+   hover utilities, so it had no hover state on the rail at all. */
+.counter-staff-identity button:hover {
+  background: color-mix(in srgb, var(--hi-inverse-fg) 12%, transparent);
+}
+/* Focus on the pine rail is cream (5.14:1 on pine), not the page's ink ring,
+   which only reaches 3.06:1 against pine. */
+.counter-sidebar :focus-visible {
+  outline-color: var(--hi-inverse-fg);
+}
+
+/* Full desktop rail (chosen in live mode): the logo sits centred in a 56px
+   band whose hairline continues the page title's bottom rule across the
+   screen, the buttons start right under it, and the staff block below is
+   centred to match. The narrow tablet rail keeps its own layout. */
+@media (min-width: 1181px) {
+  .counter-sidebar-inner {
+    padding-top: 0;
+  }
+  .counter-brand {
+    justify-content: center;
+    height: 56px;
+    margin-inline: calc(-1 * var(--c-gap-related));
+    padding: 0;
+    border-bottom: 1px solid color-mix(in srgb, var(--hi-inverse-fg) 30%, transparent);
+  }
+  .counter-brand svg {
+    height: 36px;
+  }
+  .counter-navigation {
+    margin-top: 0;
+  }
+  .counter-staff-identity {
+    text-align: center;
+  }
+}
 
 /* --- Content column -------------------------------------------------- */
 .counter-content {
@@ -145,6 +190,37 @@
 .counter-page-heading h1 {
   font-size: var(--c-text-page);
   line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+/* --- Shared pieces: Availability and My shift ------------------------- */
+/* In the components layer so a utility on the same element (a sold-out
+   tint, a padding) still wins, as it would on any Tailwind component. */
+@layer components {
+  /* The flat card every list row, summary and form sits in. */
+  .staff-panel {
+    border: 1px solid var(--hi-line);
+    border-radius: var(--c-radius-md);
+    background: var(--hi-card);
+  }
+  /* Section headings inside a page (pair with .display). */
+  .staff-section-title {
+    font-size: var(--c-text-heading);
+    color: var(--hi-ink);
+  }
+  /* A muted line of running text: page intros, form descriptions. */
+  .staff-lead {
+    font-size: var(--c-text-body);
+    line-height: 1.6;
+    color: var(--hi-muted);
+    text-wrap: pretty;
+  }
+  /* Small muted text: counts, labels, prices, hints. */
+  .staff-caption {
+    font-size: var(--c-text-detail);
+    line-height: 1.5;
+    color: var(--hi-muted);
+  }
 }
 
 /* --- View bar: views, search, refresh -------------------------------- */
@@ -303,16 +379,20 @@
 }
 
 /* --- Ticket ------------------------------------------------------------ */
+/* Cut like the login ticket (chosen in live mode): the half-moon bites of
+   `.ticket-edges` (globals.css, added in queue-card.tsx) top and bottom,
+   square corners, and 2px dashed tear lines under the header and above the
+   total. No border: the mask would cut through it, and the paper-white card
+   on the cream ground is edge enough, as on the auth pages. The extra top
+   and bottom padding keeps content clear of the bites. */
 .counter-ticket {
   display: grid;
   grid-template-rows: auto var(--c-tags-slot) minmax(0, 1fr) auto;
   gap: var(--c-gap-block);
   height: var(--c-ticket-height);
   min-width: 0;
-  padding: var(--c-gap-section) var(--c-gap-section) var(--c-gap-block);
+  padding: 22px var(--c-gap-section) 18px;
   overflow: hidden;
-  border: 1px solid var(--hi-line);
-  border-radius: var(--c-radius-md);
   background: var(--hi-card);
 }
 .counter-ticket-top {
@@ -320,6 +400,8 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: var(--c-gap-block);
+  padding-bottom: var(--c-gap-block);
+  border-bottom: 2px dashed var(--hi-line-strong);
 }
 .counter-ticket-id {
   min-width: 0;
@@ -337,16 +419,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* A tag-sized chip (live choice): the same height as the tag row, so the
+   header reads as one quiet line; the amber fill still marks late orders. */
 .counter-wait {
   flex: none;
   display: inline-flex;
-  align-items: baseline;
-  gap: var(--c-gap-tight);
-  padding: var(--c-gap-tight) var(--c-gap-related);
+  align-items: center;
+  gap: 3px;
+  min-height: var(--c-tags-slot);
+  padding: 0 var(--c-gap-related);
+  line-height: 1;
   border-radius: var(--c-radius-sm);
 }
 .counter-wait b {
-  font-size: var(--c-text-glance);
+  font-size: var(--c-text-detail);
   font-weight: 700;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -371,8 +457,11 @@
   min-width: 0;
   overflow: hidden;
 }
+/* The one tag on every staff screen (Counter, Availability, My shift), so a
+   status reads the same wherever it appears. */
 .counter-tag {
   display: inline-flex;
+  flex: none;
   align-items: center;
   min-height: var(--c-tags-slot);
   padding: 0 var(--c-gap-block);
@@ -382,6 +471,12 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   white-space: nowrap;
+}
+/* A good-news fact (time on shift): the success pair instead of the outline. */
+.counter-tag.is-success {
+  border-color: transparent;
+  background: var(--hi-success-soft-bg);
+  color: var(--hi-success-soft-fg);
 }
 .counter-ticket-body {
   display: grid;
@@ -458,13 +553,6 @@
   line-clamp: 2;
   overflow: hidden;
 }
-.counter-ticket-error {
-  padding: var(--c-gap-related) var(--c-gap-block);
-  border-radius: var(--c-radius-sm);
-  background: var(--hi-danger-soft-bg);
-  color: var(--hi-danger-soft-fg);
-  font-size: var(--c-text-detail);
-}
 .counter-ticket-foot {
   display: grid;
   gap: var(--c-gap-block);
@@ -474,7 +562,7 @@
   justify-content: space-between;
   align-items: baseline;
   padding-top: var(--c-gap-block);
-  border-top: 1.5px dashed var(--hi-line-strong);
+  border-top: 2px dashed var(--hi-line-strong);
 }
 .counter-ticket-total > span {
   font-size: var(--c-text-detail);
@@ -602,7 +690,7 @@
     gap: var(--c-gap-related);
   }
   .staff-workspace {
-    --c-ticket-height: 504px;
+    --c-ticket-height: 530px;
   }
 }
 
@@ -631,9 +719,11 @@
   .counter-mobile-nav {
     display: block;
   }
-  /* Phone nav: the rail becomes a pine bar, icon over label (StaffNav). */
+  /* Phone nav: the rail becomes a pine bar, icon over label (StaffNav).
+     The side margins cancel the content column's padding exactly (16px
+     here, 12px below 768px) so the bar runs edge to edge. */
   .counter-mobile-nav {
-    margin: 0 calc(-1 * var(--c-gap-block)) var(--c-gap-related);
+    margin: 0 calc(-1 * var(--c-gap-section)) var(--c-gap-related);
     padding: var(--c-gap-related);
     background: var(--hi-inverse-bg);
   }
@@ -666,10 +756,19 @@
     color: var(--hi-inverse-bg);
     font-weight: 600;
   }
+  /* The ring sits on the pine bar, so it is always cream. Following
+     currentColor made the active (pine-text) item's ring pine on pine. */
+  .counter-mobile-nav a:focus-visible {
+    outline: 2px solid var(--hi-inverse-fg);
+    outline-offset: 2px;
+  }
 }
 @media (max-width: 767px) {
   .counter-content {
     padding: 0 var(--c-gap-block) var(--c-gap-section);
+  }
+  .counter-mobile-nav {
+    margin-inline: calc(-1 * var(--c-gap-block));
   }
   .counter-lanes,
   .counter-history-grid {
