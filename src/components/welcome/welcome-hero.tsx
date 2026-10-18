@@ -42,9 +42,12 @@ export function WelcomeHero({
       className="grid items-end gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]"
     >
       <div>
+        {/* Leading opened to 1.02 so the three lines stop crowding each
+            other. `!` because `.display` is unlayered (globals.css) and
+            would otherwise win over a plain `leading-*` utility. */}
         <h1
           id="welcome-heading"
-          className="display rise text-7xl text-ink [--rise:1]"
+          className="display rise text-7xl leading-[1.02]! text-ink [--rise:1]"
         >
           A taste
           <br />
@@ -52,11 +55,13 @@ export function WelcomeHero({
           <br />
           <span className="text-accent-ink">of Bukidnon.</span>
         </h1>
-        {/* More room under the headline (the fluid `heading` step, 28 -> 40px)
-            than under the pitch (one fixed `stack`, 24px):
-            at this type size an equal gap fuses headline, pitch and buttons
-            into one block, and the headline stops reading as the lead. */}
-        <p className="rise mt-heading max-w-[34ch] text-lg text-ink-soft [--rise:2]">
+        {/* The pitch reads as the headline's subtitle: one `snug` step (12px)
+            under it. The column is bottom-aligned to the photo (items-end),
+            so the space taken from above is given back below (the rest of
+            the `heading` step, then the buttons' `stack`). That lifts the
+            pitch without moving the headline, and the larger gap down to the
+            buttons keeps headline and pitch reading as one group. */}
+        <p className="rise mt-snug mb-[calc(var(--spacing-heading)-0.75rem)] max-w-[34ch] text-lg text-ink-soft [--rise:2]">
           Breathe, slow down, and sip. Welcome to your daily hiatus in the heart of Malaybalay.
         </p>
         <div className="rise mt-stack flex flex-wrap gap-3 [--rise:3] max-sm:flex-col max-sm:items-stretch">
@@ -131,11 +136,12 @@ export function WelcomeHero({
           </a>
         </figcaption>
 
-        {/* Never above the photo's top edge: the sticky navbar sits right
-            there, and on phones (photo first) a stamp lifted over the frame
-            collides with it. Desktop: straddling the left edge, below the
-            top. Phones: tucked inside the top-right corner. */}
-        <RotatingStamp className="absolute right-5 top-5 w-24 lg:-left-14 lg:right-auto lg:top-12 lg:w-32" />
+        {/* Desktop: pressed onto the frame's top-left corner, centred on the
+            left edge. It rises only 40px above the frame (-top-10), the gap
+            down from the 64px sticky navbar, so it never slides under it at
+            rest. Phones (photo first, navbar right above): tucked inside the
+            top-right corner instead. */}
+        <RotatingStamp className="absolute right-5 top-5 w-24 lg:-left-16 lg:-top-10 lg:right-auto lg:w-32" />
       </figure>
     </section>
   );

@@ -19,7 +19,7 @@ export function BrandLine() {
     <section aria-labelledby="brand-line-heading" className="text-center">
       <h2
         id="brand-line-heading"
-        className="display text-[clamp(3rem,1.4rem+7vw,8.5rem)] leading-[0.86] text-ink"
+        className="display text-[clamp(3rem,1.4rem+7vw,8.5rem)] text-ink"
       >
         Take that
         <br />
