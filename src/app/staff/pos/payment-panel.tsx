@@ -4,11 +4,11 @@ import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
-import { OrderStatusBadge } from "@/components/order-status-badge";
 import { formatPrice, formatTime, orderCode } from "@/lib/format";
 import { getSizeOption } from "@/lib/sizes";
 import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import {
+  advanceOrderStatus,
   applyManualDiscount,
   refundOrder,
   takePayment,
@@ -37,23 +37,43 @@ export type PosOrder = {
   order_items: OrderItem[];
 };
 
+/** The step a payment carries the order on to, when there is one. */
+export type PaymentThen = "preparing" | "completed";
+
 const METHODS: PaymentMethod[] = ["cash", "ewallet"];
 
+/** What the order becomes after payment, as the button and toast say it. */
+const THEN_COPY: Record<PaymentThen, { action: string; done: string; failed: string }> = {
+  preparing: { action: "start making", done: "started", failed: "moved to Making" },
+  completed: { action: "hand over", done: "handed over", failed: "marked handed over" },
+};
+
 /**
- * One order at the till — distilled to the single question: has the money arrived?
+ * One order at the till: what is owed, and the one button that records it.
  *
- *   - WHAT'S OWED (items + total)
- *   - HOW TO TAKE IT (payment method + one button)
+ * Customers pay at the counter before their drink is made, so the payment
+ * usually carries the order straight on (`then`): "Paid ₱120 · start making"
+ * records the payment and moves the order in one press. The button names the
+ * amount and the method, so it is the confirmation; there is no second dialog.
+ * Short cash disables it, and a wrong entry is corrected with refund or void,
+ * which still ask for a reason and confirm.
  *
- * The panel is a card with a hairline border. The total is the dominant
- * element. Everything else recedes.
+ * It calls the same two actions as before, in the same order (takePayment,
+ * then advanceOrderStatus), so the pay-before-hand-over rule stays with the
+ * API. If the payment saves but the move fails, the panel says so and offers
+ * the move again; it never asks for the money twice.
  */
 export function PaymentPanel({
   order,
+  then,
   onBusyChange,
+  onDone,
 }: {
   order: PosOrder;
+  then?: PaymentThen;
   onBusyChange?: (busy: boolean) => void;
+  /** Called once the payment (and the move, if any) has gone through. */
+  onDone?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [method, setMethod] = useState<PaymentMethod>(order.payment_method);
@@ -63,18 +83,19 @@ export function PaymentPanel({
   const [discountReason, setDiscountReason] = useState("");
   const [refundReason, setRefundReason] = useState("");
   const [voidReason, setVoidReason] = useState("");
-  const [confirmPayment, setConfirmPayment] = useState(false);
   const [confirmRefund, setConfirmRefund] = useState(false);
   const [confirmVoid, setConfirmVoid] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  /** Set when the payment saved but the follow-on move did not. */
+  const [stuck, setStuck] = useState<string | null>(null);
 
   useEffect(() => {
-    onBusyChange?.(pending || confirmPayment || confirmRefund || confirmVoid);
-  }, [pending, confirmPayment, confirmRefund, confirmVoid, onBusyChange]);
+    onBusyChange?.(pending || confirmRefund || confirmVoid);
+  }, [pending, confirmRefund, confirmVoid, onBusyChange]);
 
+  const code = orderCode(order.id);
+  const total = formatPrice(order.total_amount);
   const isUnpaid = order.payment_status === "unpaid";
-  const canPay = isUnpaid && order.status !== "cancelled";
-  const customer = order.profiles?.full_name?.trim() || "Walk-in";
+  const canPay = isUnpaid && order.status !== "cancelled" && !stuck;
 
   const tenderedNumber = Number(tendered);
   const change =
@@ -90,66 +111,96 @@ export function PaymentPanel({
     order.total_amount,
     ...[100, 200, 500, 1000].filter((amount) => amount > order.total_amount),
   ].slice(0, 4);
-  const locked = pending || confirmPayment || confirmRefund || confirmVoid;
+  const locked = pending || confirmRefund || confirmVoid;
 
-  function run(fn: () => Promise<{ error: string | null }>, success: string) {
-    setError(null);
+  const paidWord =
+    method === "cash" ? `Paid ${total}` : "Transfer received";
+  const primaryLabel = then ? `${paidWord} · ${THEN_COPY[then].action}` : paidWord;
+
+  // Failures are a pop-up only; the one exception is `stuck` below, which
+  // stays on screen because it carries the "Try again" that finishes the job.
+  function fail(message: string) {
+    toast.error(message);
+  }
+
+  /** Move the order on after a recorded payment. */
+  async function move(to: PaymentThen) {
+    const moved = await advanceOrderStatus(order.id, to);
+    if (moved.error) {
+      const message = `Payment of ${total} is recorded. ${code} couldn't be ${THEN_COPY[to].failed}: ${moved.error}`;
+      setStuck(message);
+      toast.error(message);
+      return false;
+    }
+    return true;
+  }
+
+  function pay(carryOn: boolean) {
     startTransition(async () => {
       try {
-        const { error } = await fn();
-        if (error) {
-          setError(error);
-          toast.error(error);
-          return;
+        const paid = await takePayment(order.id, method, null, "");
+        if (paid.error) return fail(paid.error);
+        const how = PAYMENT_METHOD_LABELS[method].toLowerCase();
+        if (carryOn && then) {
+          if (!(await move(then))) return;
+          toast.success(`${code} · paid ${total} ${how} · ${THEN_COPY[then].done}`);
+        } else {
+          toast.success(`${code} · paid ${total} ${how}`);
         }
-        toast.success(success);
-        setTendered("");
-        setDiscount("");
-        setDiscountReason("");
-        setRefundReason("");
+        onDone?.();
       } catch {
-        setError(
-          "Couldn't record the change. Refresh the order before trying again.",
-        );
-        toast.error(
-          "Couldn't record the change. Refresh the order before trying again.",
-        );
+        fail("Couldn't record the payment. Refresh the order before trying again.");
       }
     });
   }
 
+  function retryMove() {
+    if (!then) return;
+    startTransition(async () => {
+      try {
+        if (!(await move(then))) return;
+        setStuck(null);
+        toast.success(`${code} · ${THEN_COPY[then].done}`);
+        onDone?.();
+      } catch {
+        fail("Couldn't reach the server. Try again in a moment.");
+      }
+    });
+  }
+
+  function run(fn: () => Promise<{ error: string | null }>, success: string) {
+    startTransition(async () => {
+      try {
+        const { error } = await fn();
+        if (error) return fail(error);
+        toast.success(success);
+        setDiscount("");
+        setDiscountReason("");
+        setRefundReason("");
+      } catch {
+        fail("Couldn't record the change. Refresh the order before trying again.");
+      }
+    });
+  }
+
+  // Inputs on this panel share one edge and size: a visible 3.39:1 border
+  // (line-strong) and the 44px control height.
+  const field =
+    "min-h-11 rounded-md border border-line-strong bg-card px-3 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft";
+
   return (
     <article className="py-4">
-      {error && (
-        <p
-          role="alert"
-          className="mb-3 rounded-md bg-danger-soft-bg p-3 text-sm text-danger-soft-fg"
-        >
-          {error}
-        </p>
-      )}
       <fieldset disabled={locked} className="min-w-0">
-        <legend className="sr-only">Payment for {orderCode(order.id)}</legend>
-        {/* ---------- Top row: code + customer + status ---------- */}
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="min-w-0 flex-1">
-            <span className="display text-2xl text-ink">
-              {orderCode(order.id)}
-            </span>
-            <span className="mt-1 block break-words text-sm text-muted">
-              {customer}
-              {order.table_label && ` · ${order.table_label}`}
-            </span>
-          </div>
-          <OrderStatusBadge status={order.status} />
-        </div>
+        <legend className="sr-only">Payment for {code}</legend>
 
-        {/* ---------- The bill ---------- */}
-        <ul className="mt-3 flex flex-col gap-0.5">
+        {/* ---------- What they ordered ----------
+            Who and which order live in the dialog's title row, so the panel
+            starts at the bill instead of repeating the code. */}
+        <ul className="flex flex-col gap-1">
           {order.order_items.map((item) => (
             <li key={item.id} className="flex justify-between gap-4 text-sm">
               <span className="min-w-0 text-ink-soft">
-                <span className="text-muted">{item.quantity}&times;</span>{" "}
+                <span className="numeric text-muted">{item.quantity}&times;</span>{" "}
                 {item.item_name}
                 {item.size && (
                   <span className="text-xs text-muted">
@@ -158,27 +209,42 @@ export function PaymentPanel({
                   </span>
                 )}
               </span>
-              <span className="shrink-0 text-ink">
+              <span className="numeric shrink-0 text-ink">
                 {formatPrice(item.subtotal)}
               </span>
             </li>
           ))}
         </ul>
 
-        <div className="mt-2 flex justify-between border-t border-line pt-2">
-          <span className="text-xs text-muted">Total</span>
-          <span className="numeric text-2xl font-semibold text-ink">
-            {formatPrice(order.total_amount)}
+        {/* The amount owed is the one number the barista reads aloud, so it
+            is the largest thing in the panel. */}
+        <div className="mt-3 flex items-baseline justify-between border-t border-dashed border-line-strong pt-3">
+          <span className="text-sm text-ink-soft">
+            {canPay ? "To pay" : "Total"}
           </span>
+          <span className="numeric text-4xl font-semibold text-ink">{total}</span>
         </div>
 
-        {/* ---------- Take the money ---------- */}
-        {canPay ? (
+        {stuck ? (
+          /* ---------- Paid, but the move failed ---------- */
+          <div className="mt-4 grid gap-3">
+            <p
+              role="alert"
+              className="rounded-md bg-warning-soft-bg p-3 text-sm text-warning-soft-fg"
+            >
+              {stuck}
+            </p>
+            <Button size="lg" className="min-h-14 w-full" loading={pending} onClick={retryMove}>
+              {pending ? "Trying again…" : "Try again"}
+            </Button>
+          </div>
+        ) : canPay ? (
+          /* ---------- Take the money ---------- */
           <div className="mt-4">
             <div
               role="group"
               aria-label="Payment method"
-              className="grid grid-cols-2 gap-1.5"
+              className="grid grid-cols-2 gap-2"
             >
               {METHODS.map((m) => (
                 <button
@@ -186,10 +252,10 @@ export function PaymentPanel({
                   type="button"
                   onClick={() => setMethod(m)}
                   aria-pressed={method === m}
-                  className={`rounded-md border px-2 py-3 text-xs font-medium transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+                  className={`min-h-12 rounded-md border text-sm font-medium transition-colors ${
                     method === m
                       ? "border-cta bg-cta text-cta-fg"
-                      : "border-line bg-transparent text-ink-soft hover:border-ink-soft hover:text-ink"
+                      : "border-line-strong bg-card text-ink-soft hover:border-ink hover:text-ink"
                   }`}
                 >
                   {PAYMENT_METHOD_LABELS[m]}
@@ -199,8 +265,11 @@ export function PaymentPanel({
 
             {method === "cash" && (
               <>
+                {/* As many columns as there are amounts, so a large total
+                    (fewer notes above it) never leaves an empty slot. */}
                 <div
-                  className="mt-3 grid grid-cols-4 gap-1.5"
+                  className="mt-3 grid gap-2"
+                  style={{ gridTemplateColumns: `repeat(${quickCash.length}, minmax(0, 1fr))` }}
                   role="group"
                   aria-label="Quick cash received"
                 >
@@ -210,91 +279,99 @@ export function PaymentPanel({
                       type="button"
                       aria-pressed={tendered === String(amount)}
                       onClick={() => setTendered(String(amount))}
-                      className={`numeric min-h-11 rounded-md border px-1 text-xs transition-colors ${tendered === String(amount) ? "border-ink bg-ink text-surface" : "border-line-strong text-ink hover:bg-raised"}`}
+                      className={`numeric min-h-12 rounded-md border px-1 text-sm transition-colors ${
+                        tendered === String(amount)
+                          ? "border-ink bg-ink text-surface"
+                          : "border-line-strong bg-card text-ink hover:bg-raised"
+                      }`}
                     >
-                      {i === 0
-                        ? "Exact"
-                        : formatPrice(amount).replace(".00", "")}
+                      {i === 0 ? "Exact" : formatPrice(amount).replace(".00", "")}
                     </button>
                   ))}
                 </div>
-                <div className="mt-3 flex flex-wrap items-end gap-3">
-                  <div className="flex-1">
-                    <label
-                      htmlFor={`tendered-${order.id}`}
-                      className="mb-1 block text-xs text-muted"
-                    >
-                      Cash received
-                    </label>
-                    <input
-                      id={`tendered-${order.id}`}
-                      type="number"
-                      inputMode="decimal"
-                      min="0"
-                      step="0.01"
-                      value={tendered}
-                      onChange={(e) => setTendered(e.target.value)}
-                      placeholder="Enter cash received"
-                      aria-invalid={tendered !== "" && !cashValid}
-                      className="min-h-11 w-full rounded-md border border-line-strong bg-transparent px-2.5 py-2 text-sm text-ink placeholder:text-muted"
-                    />
-                  </div>
-                  <p
-                    aria-live="polite"
-                    className="numeric w-full text-lg font-semibold"
-                  >
-                    {change === null ? (
-                      <span className="text-muted">Change</span>
-                    ) : change < 0 ? (
-                      <span className="text-danger">
-                        Short {formatPrice(Math.abs(change))}
+
+                <label
+                  htmlFor={`tendered-${order.id}`}
+                  className="mt-3 block text-sm text-ink-soft"
+                >
+                  Cash received
+                </label>
+                <input
+                  id={`tendered-${order.id}`}
+                  type="number"
+                  inputMode="decimal"
+                  min="0"
+                  step="0.01"
+                  value={tendered}
+                  onChange={(e) => setTendered(e.target.value)}
+                  placeholder="0.00"
+                  aria-invalid={tendered !== "" && !cashValid}
+                  aria-describedby={`change-${order.id}`}
+                  className={`${field} numeric mt-1 w-full text-base`}
+                />
+
+                {/* Words carry the state ("Short"), not only the colour. */}
+                <p
+                  id={`change-${order.id}`}
+                  aria-live="polite"
+                  className="mt-3 flex items-baseline justify-between gap-3"
+                >
+                  {change === null ? (
+                    <>
+                      <span className="text-sm text-ink-soft">Change</span>
+                      <span className="numeric text-lg font-semibold text-muted">—</span>
+                    </>
+                  ) : change < 0 ? (
+                    <>
+                      <span className="text-sm text-danger">
+                        Short · ask for {formatPrice(Math.abs(change))} more
                       </span>
-                    ) : (
-                      <span className="text-success">
-                        Change {formatPrice(change)}
+                      <span className="numeric text-lg font-semibold text-danger">
+                        {formatPrice(Math.abs(change))}
                       </span>
-                    )}
-                  </p>
-                </div>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-sm text-ink-soft">Change</span>
+                      <span className="numeric text-lg font-semibold text-success">
+                        {formatPrice(change)}
+                      </span>
+                    </>
+                  )}
+                </p>
               </>
             )}
+
             {method === "ewallet" && (
-              <p className="mt-3 text-sm text-muted">
+              <p className="mt-3 text-sm text-ink-soft">
                 Check that the transfer arrived before recording payment.
               </p>
             )}
 
             <Button
-              size="md"
-              className="mt-3 w-full"
-              disabled={pending || !cashValid}
-              onClick={() => setConfirmPayment(true)}
+              size="lg"
+              className="mt-4 min-h-14 w-full"
+              loading={pending}
+              disabled={!cashValid}
+              onClick={() => pay(true)}
             >
-              {pending
-                ? "Recording…"
-                : `Take ${formatPrice(order.total_amount)}`}
+              {pending ? "Recording…" : primaryLabel}
             </Button>
 
-            <Modal
-              open={confirmPayment}
-              title="Take payment"
-              body={`Record ${formatPrice(order.total_amount)} for ${orderCode(order.id)} · ${customer} via ${PAYMENT_METHOD_LABELS[method]}?${method === "cash" ? ` Cash received ${formatPrice(tenderedNumber)}. Change ${formatPrice(Math.max(0, tenderedNumber - order.total_amount))}.` : " Confirm the transfer has arrived."}`}
-              confirmLabel="Take payment"
-              cancelLabel="Cancel"
-              onConfirm={() => {
-                if (pending || !cashValid || !canPay) return;
-                setConfirmPayment(false);
-                run(
-                  () => takePayment(order.id, method, null, ""),
-                  `${orderCode(order.id)} paid · ${PAYMENT_METHOD_LABELS[method]}`,
-                );
-              }}
-              onCancel={() => setConfirmPayment(false)}
-            />
+            {then && (
+              <button
+                type="button"
+                onClick={() => pay(false)}
+                disabled={pending || !cashValid}
+                className="mt-1 min-h-11 w-full text-sm text-ink-soft underline underline-offset-4 transition-colors hover:text-ink disabled:no-underline disabled:opacity-45"
+              >
+                Record payment only
+              </button>
+            )}
           </div>
         ) : (
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
-            <p className="text-xs text-muted">
+            <p className="text-sm text-ink-soft">
               {order.status === "cancelled" && isUnpaid
                 ? "Cancelled · no payment due"
                 : PAYMENT_STATUS_LABELS[order.payment_status]}{" "}
@@ -303,9 +380,7 @@ export function PaymentPanel({
                 <>
                   {" "}
                   at{" "}
-                  <time dateTime={order.paid_at}>
-                    {formatTime(order.paid_at)}
-                  </time>
+                  <time dateTime={order.paid_at}>{formatTime(order.paid_at)}</time>
                 </>
               )}
             </p>
@@ -314,7 +389,7 @@ export function PaymentPanel({
                 href={`/staff/pos/receipt/${order.id}`}
                 target="_blank"
                 rel="noreferrer"
-                className="ui-caps rounded-md border border-line-strong px-3 py-2 text-2xs text-ink-soft transition-colors hover:border-ink hover:text-ink"
+                className="ui-caps inline-flex min-h-11 items-center rounded-md border border-line-strong px-3 text-2xs text-ink-soft transition-colors hover:border-ink hover:text-ink"
               >
                 Issue receipt
               </a>
@@ -322,40 +397,35 @@ export function PaymentPanel({
           </div>
         )}
 
-        {/* ---------- Adjustments (folded away) ---------- */}
-        {(canPay || order.payment_status === "paid") && (
-          <div className="mt-3">
+        {/* ---------- Corrections (folded away) ---------- */}
+        {!stuck && (canPay || order.payment_status === "paid") && (
+          <div className="mt-4 border-t border-line pt-2">
             <button
               type="button"
               onClick={() => setShowAdjust((v) => !v)}
               aria-expanded={showAdjust}
-              className="min-h-11 text-xs text-muted underline underline-offset-2 transition-colors hover:text-ink"
+              aria-controls={`adjust-${order.id}`}
+              className="min-h-11 text-sm text-ink-soft underline underline-offset-4 transition-colors hover:text-ink"
             >
-              {showAdjust ? "Hide" : "Discount, refund or void"}
+              {showAdjust ? "Hide corrections" : "Discount, refund or void"}
             </button>
 
             {showAdjust && (
-              <div className="mt-2 flex flex-col gap-2">
+              <div id={`adjust-${order.id}`} className="mt-2 grid gap-3">
                 {canPay && (
                   <form
-                    className="flex flex-col gap-1.5 rounded-md border border-line p-2.5"
+                    className="grid gap-2 rounded-md border border-line-strong p-3"
                     onSubmit={(e) => {
                       e.preventDefault();
                       run(
                         () =>
-                          applyManualDiscount(
-                            order.id,
-                            Number(discount),
-                            discountReason,
-                          ),
-                        "Discount applied",
+                          applyManualDiscount(order.id, Number(discount), discountReason),
+                        `${code} · discount applied`,
                       );
                     }}
                   >
-                    <p className="text-[10px] font-medium text-ink-soft">
-                      Discount
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
+                    <p className="text-sm font-medium text-ink">Discount</p>
+                    <div className="flex flex-wrap gap-2">
                       <input
                         type="number"
                         min="0.01"
@@ -366,7 +436,7 @@ export function PaymentPanel({
                         onChange={(e) => setDiscount(e.target.value)}
                         placeholder="Amount"
                         aria-label="Discount amount"
-                        className="w-20 rounded-md border border-line px-2 py-1 text-xs text-ink placeholder:text-muted"
+                        className={`${field} numeric w-28`}
                       />
                       <input
                         required
@@ -374,78 +444,72 @@ export function PaymentPanel({
                         onChange={(e) => setDiscountReason(e.target.value)}
                         placeholder="Reason"
                         aria-label="Reason for the discount"
-                        className="min-w-0 flex-1 rounded-md border border-line px-2 py-1 text-xs text-ink placeholder:text-muted"
+                        className={`${field} min-w-0 flex-1`}
                       />
-                      <Button
-                        type="submit"
-                        size="sm"
-                        variant="outline"
-                        disabled={pending}
-                      >
+                      <Button type="submit" variant="outline" disabled={pending}>
                         Apply
                       </Button>
                     </div>
                   </form>
                 )}
 
+                {order.payment_status === "paid" && (
+                  <form
+                    className="grid gap-2 rounded-md border border-line-strong p-3"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      setConfirmRefund(true);
+                    }}
+                  >
+                    <label htmlFor={`refund-reason-${order.id}`} className="text-sm font-medium text-ink">
+                      Refund
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      <input
+                        id={`refund-reason-${order.id}`}
+                        value={refundReason}
+                        required
+                        maxLength={280}
+                        onChange={(e) => setRefundReason(e.target.value)}
+                        placeholder="Reason"
+                        className={`${field} min-w-0 flex-1`}
+                      />
+                      <Button type="submit" variant="danger" disabled={pending}>
+                        Refund
+                      </Button>
+                    </div>
+                  </form>
+                )}
+
                 <form
-                  className="flex flex-col gap-1.5 rounded-md border border-line p-2.5"
+                  className="grid gap-2 rounded-md border border-danger/50 p-3"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    setConfirmRefund(true);
+                    setConfirmVoid(true);
                   }}
                 >
-                  <p className="text-[10px] font-medium text-ink-soft">
-                    Refund
-                  </p>
-                  <div className="flex flex-wrap gap-1.5">
+                  <label htmlFor={`void-reason-${order.id}`} className="text-sm font-medium text-danger-soft-fg">
+                    Void order
+                  </label>
+                  <div className="flex flex-wrap gap-2">
                     <input
-                      value={refundReason}
+                      id={`void-reason-${order.id}`}
+                      value={voidReason}
                       required
                       maxLength={280}
-                      onChange={(e) => setRefundReason(e.target.value)}
+                      onChange={(e) => setVoidReason(e.target.value)}
                       placeholder="Reason"
-                      aria-label="Reason for the refund"
-                      className="min-w-0 flex-1 rounded-md border border-line px-2 py-1 text-xs text-ink placeholder:text-muted"
+                      className={`${field} min-w-0 flex-1`}
                     />
                     <Button
                       type="submit"
-                      size="sm"
                       variant="danger"
-                      disabled={pending || order.payment_status !== "paid"}
+                      disabled={pending || !voidReason.trim()}
                     >
-                      Refund
+                      Void
                     </Button>
                   </div>
                 </form>
-
-                <div className="rounded-md border border-danger/30 p-2.5">
-                  <p className="text-[10px] font-medium text-danger-soft-fg">
-                    Void
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    className="mt-1"
-                    disabled={pending || !voidReason.trim()}
-                    onClick={() => setConfirmVoid(true)}
-                  >
-                    Void order
-                  </Button>
-                  <label
-                    htmlFor={`void-reason-${order.id}`}
-                    className="mt-2 block text-xs text-muted"
-                  >
-                    Void reason
-                  </label>
-                  <input
-                    id={`void-reason-${order.id}`}
-                    value={voidReason}
-                    onChange={(e) => setVoidReason(e.target.value)}
-                    maxLength={280}
-                    className="mt-1 min-h-11 w-full rounded-md border border-line-strong px-2 text-sm"
-                  />
-                </div>
               </div>
             )}
           </div>
@@ -455,16 +519,13 @@ export function PaymentPanel({
       <Modal
         open={confirmRefund}
         title="Refund order"
-        body={`Refund ${orderCode(order.id)}? Return ${formatPrice(order.total_amount)} via ${PAYMENT_METHOD_LABELS[order.payment_method]}. Reason: ${refundReason}`}
+        body={`Refund ${code}? Return ${total} via ${PAYMENT_METHOD_LABELS[order.payment_method]}. Reason: ${refundReason}`}
         confirmLabel="Refund"
         cancelLabel="Cancel"
         danger
         onConfirm={() => {
           setConfirmRefund(false);
-          run(
-            () => refundOrder(order.id, null, refundReason),
-            "Refund recorded",
-          );
+          run(() => refundOrder(order.id, null, refundReason), `${code} · refund recorded`);
         }}
         onCancel={() => setConfirmRefund(false)}
       />
@@ -472,13 +533,13 @@ export function PaymentPanel({
       <Modal
         open={confirmVoid}
         title="Void order"
-        body={`Void ${orderCode(order.id)}? ${isUnpaid ? "No money is returned for an unpaid order." : `Return ${formatPrice(order.total_amount)} via ${PAYMENT_METHOD_LABELS[order.payment_method]}.`} Reason: ${voidReason}`}
+        body={`Void ${code}? ${isUnpaid ? "No money is returned for an unpaid order." : `Return ${total} via ${PAYMENT_METHOD_LABELS[order.payment_method]}.`} Reason: ${voidReason}`}
         confirmLabel="Void order"
         cancelLabel="Cancel"
         danger
         onConfirm={() => {
           setConfirmVoid(false);
-          run(() => voidOrder(order.id, voidReason), "Order voided");
+          run(() => voidOrder(order.id, voidReason), `${code} · voided`);
         }}
         onCancel={() => setConfirmVoid(false)}
       />

@@ -409,11 +409,7 @@ html::-webkit-scrollbar {
 }
 
 body {
-   background-color: var(--hi-surface);
-   background-image:
-      linear-gradient(rgb(255 255 255 / 0.035) 1px, transparent 1px),
-      linear-gradient(90deg, rgb(255 255 255 / 0.025) 1px, transparent 1px);
-   background-size: 32px 32px;
+  background-color: var(--hi-surface);
   color: var(--hi-ink);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
@@ -657,6 +653,12 @@ body:has(.admin-workspace) #main {
   -ms-overflow-style: none;
 }
 .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* An open dialog shows pop-ups itself (AppToaster inDialog); the page copy
+   would only show through the backdrop as a dimmed duplicate. */
+body:has(dialog[open] .dialog-toaster) .page-toaster {
   display: none;
 }
 

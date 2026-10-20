@@ -1,14 +1,38 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { ReactNode } from "react";
+import { BrandMark } from "./brand";
 import { SignOutButton } from "./sign-out-button";
 
-const SECTIONS = [
-  { href: "/staff", label: "Counter", detail: "Orders & payments" },
-  { href: "/staff/menu", label: "Availability", detail: "What's brewing" },
-  { href: "/staff/shift", label: "My shift", detail: "Time & cash drawer" },
+/** Icon + label, the same marks the mobile StaffNav uses. */
+const SECTIONS: { href: string; label: string; icon: ReactNode }[] = [
+  {
+    href: "/staff",
+    label: "Counter",
+    icon: <path d="M4 6h16M4 12h16M4 18h10" />,
+  },
+  {
+    href: "/staff/menu",
+    label: "Availability",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M6 6l12 12" />
+      </>
+    ),
+  },
+  {
+    href: "/staff/shift",
+    label: "My shift",
+    icon: (
+      <>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 7v5l3 2" />
+      </>
+    ),
+  },
 ];
 
 export function StaffSidebar({
@@ -21,26 +45,16 @@ export function StaffSidebar({
   const pathname = usePathname();
   return (
     <div className="counter-sidebar-inner">
+      {/* The welcome page's mark; it is the word, so no text sits beside it. */}
       <Link
         href="/staff"
-        className="counter-brand"
+        className="counter-brand group"
         aria-label="Hiatus staff counter"
       >
-        <Image
-          src="/logo.png"
-          alt=""
-          width={44}
-          height={44}
-          className="rounded-2xl bg-white"
-        />
-        <span>
-          <span className="display counter-wordmark">Hiatus</span>
-          <span className="counter-brand-caption">The coffee counter</span>
-        </span>
+        <BrandMark />
       </Link>
       <nav aria-label="Staff sections" className="counter-navigation">
-        <p className="ui-caps counter-nav-label">Your workspace</p>
-        {SECTIONS.map((section, index) => {
+        {SECTIONS.map((section) => {
           const active =
             section.href === "/staff"
               ? pathname === "/staff" || pathname.startsWith("/staff/pos")
@@ -52,13 +66,14 @@ export function StaffSidebar({
               className="counter-nav-link"
               aria-current={active ? "page" : undefined}
             >
-              <span className="numeric counter-nav-number">
-                {String(index + 1).padStart(2, "0")}
-              </span>
-              <span>
-                <strong>{section.label}</strong>
-                <small>{section.detail}</small>
-              </span>
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                className="counter-nav-icon"
+              >
+                {section.icon}
+              </svg>
+              {section.label}
             </Link>
           );
         })}
