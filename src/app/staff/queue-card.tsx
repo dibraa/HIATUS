@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -19,6 +19,12 @@ import {
 import { getSizeOption } from "@/lib/sizes";
 import type { QueueOrder } from "@/types/staff";
 
+/**
+ * One order on the counter. Every ticket is the same height (see staff.css):
+ * header, a reserved tag row, the items, and a footer pinned to the bottom.
+ * A ticket with more than two items shows the first and "+N more items",
+ * which opens the full order, so nothing is cut off silently.
+ */
 export function QueueCard({
   order,
   now,
@@ -37,121 +43,180 @@ export function QueueCard({
   onMore: () => void;
 }) {
   const [pending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
   const code = orderCode(order.id);
   const minutes = Math.max(
     0,
     Math.floor((now - new Date(order.created_at).getTime()) / 60000),
   );
-  const paid = order.payment_status === "paid";
   const unpaid =
     order.payment_status === "unpaid" && order.status !== "cancelled";
   const reversed =
     order.payment_status === "refunded" || order.payment_status === "voided";
   const next = !reversed ? NEXT_STATUS[order.status] : undefined;
   const waiting = order.status === "pending" || order.status === "preparing";
+  // Amber is reserved for this one state, so it stays readable at a glance.
+  const late = waiting && minutes >= lateAfter;
+  const overdue = waiting && minutes >= overAfter;
+  // Customers pay before their drink is made, so an unpaid New order's next
+  // step IS payment ("Pay & start"); an unpaid Ready order, the rare one that
+  // slipped through, pays and hands over in the same press.
+  const payFirst =
+    unpaid && (order.status === "pending" || order.status === "ready");
+  const payLabel = order.status === "pending" ? "Pay & start" : "Pay & hand over";
+  const shown = order.order_items.length > 2
+    ? order.order_items.slice(0, 1)
+    : order.order_items;
+  const hidden = order.order_items.length - shown.length;
+  // "Not paid" only where it is the exception. In New, unpaid is the normal
+  // state and the "Pay & start" button already says so.
+  const tags = [
+    unpaid && order.status !== "pending" && "Not paid",
+    reversed && PAYMENT_STATUS_LABELS[order.payment_status],
+    order.status === "cancelled" && "Cancelled",
+    order.priority > 0 && "Priority",
+  ].filter((tag): tag is string => Boolean(tag));
+
   async function run(
     action: () => Promise<{ error: string | null }>,
     success: string,
   ) {
-    setError(null);
+    // Failures show as a pop-up only; the ticket keeps its fixed layout.
     startTransition(async () => {
       const result = await action();
-      if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
-      } else toast.success(success);
+      if (result.error) toast.error(result.error);
+      else toast.success(success);
     });
   }
+
+  // One contextual link beside "More actions", so the row never wraps.
+  let link: { label: string; onClick: () => void } | null = null;
+  if (unpaid && order.status === "preparing")
+    link = { label: "Take payment", onClick: onPayment };
+  else if (order.status === "pending" && !reversed)
+    link =
+      order.priority > 0
+        ? {
+            label: "Remove priority",
+            onClick: () =>
+              run(
+                () => prioritizeOrder(order.id, false),
+                `${code} priority removed`,
+              ),
+          }
+        : {
+            label: "Move to front",
+            onClick: () =>
+              run(
+                () => prioritizeOrder(order.id, true),
+                `${code} moved to the front`,
+              ),
+          };
+  else if (order.status === "ready")
+    link = {
+      label: "Notify customer",
+      onClick: () =>
+        run(
+          () => notifyCustomerReady(order.id),
+          `${code} · customer notified`,
+        ),
+    };
+
   return (
-    <article className="counter-ticket" aria-label={`Order ${code}`}>
-      <div className="counter-ticket-heading">
-        <h3 className="display">{code}</h3>
-        <span
-          className={`numeric ${waiting && minutes >= lateAfter ? "text-warning" : "text-muted"}`}
-          aria-label={`Waiting ${minutes} minutes`}
-        >
-          {minutes}m{waiting && minutes >= overAfter ? " · Overdue" : ""}
-        </span>
-      </div>
-      <p className="counter-ticket-customer">
-        {order.profiles?.full_name?.trim() || "Walk-in"} ·{" "}
-        {ORDER_TYPE_LABELS[order.order_type]}
-        {order.table_label ? ` · ${order.table_label}` : ""}
-      </p>
-      <div className="counter-ticket-badges">
-        <span
-          className={`ui-caps counter-ticket-badge ${paid ? "bg-success-soft-bg text-success-soft-fg" : "bg-warning-soft-bg text-warning-soft-fg"}`}
-        >
-          {order.status === "cancelled" && order.payment_status === "unpaid"
-            ? "Cancelled"
-            : PAYMENT_STATUS_LABELS[order.payment_status]}
-        </span>
-        {order.priority > 0 && (
-          <span className="ui-caps counter-ticket-badge bg-warning-soft-bg text-warning-soft-fg">
-            Priority
-          </span>
-        )}
-        {order.special_request_flag && (
-          <span className="ui-caps counter-ticket-badge bg-warning-soft-bg text-warning-soft-fg">
-            Special request
-          </span>
-        )}
-        {!next && order.status !== "cancelled" && (
-          <span className="ui-caps counter-ticket-badge bg-raised text-ink-soft">
-            {STATUS_LABELS[order.status]}
-          </span>
-        )}
-      </div>
-      <ul className="counter-ticket-items">
-        {order.order_items.map((item) => (
-          <li key={item.id}>
-            <span className="numeric counter-item-quantity">
-              {item.quantity}×
-            </span>
-            <div>
-              <strong>{item.item_name}</strong>
-              {(item.size || item.flavor) && (
-                <p>
-                  {[
-                    item.size ? getSizeOption(item.size).label : null,
-                    item.flavor,
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
-      {(order.pickup_note || order.special_request_flag) && (
-        <div className="counter-customer-request">
-          <strong>Customer request</strong>
-          <p>
-            {order.pickup_note ||
-              "Flagged for special handling. Check with the customer."}
+    <article
+      className={`counter-ticket ticket-edges${late ? " is-late" : ""}`}
+      aria-label={`Order ${code}, waiting ${minutes} minutes${late ? ", late" : ""}`}
+    >
+      <div className="counter-ticket-top">
+        <div className="counter-ticket-id">
+          <h3 className="display">{code}</h3>
+          <p
+            title={order.profiles?.full_name?.trim() || "Walk-in"}
+          >
+            {order.profiles?.full_name?.trim() || "Walk-in"} ·{" "}
+            {ORDER_TYPE_LABELS[order.order_type]}
+            {order.table_label ? ` · ${order.table_label}` : ""}
           </p>
         </div>
-      )}
-      <div className="counter-ticket-total">
-        <span>Order total</span>
-        <strong className="numeric">{formatPrice(order.total_amount)}</strong>
-      </div>
-      {error && (
-        <p
-          role="alert"
-          className="mb-3 rounded-md bg-danger-soft-bg p-3 text-sm text-danger-soft-fg"
-        >
-          {error}
+        <p className="counter-wait">
+          <b>{minutes}</b>
+          <span>
+            min{late ? (overdue ? " · Overdue" : " · Late") : ""}
+          </span>
         </p>
-      )}
-      <div className="counter-ticket-actions">
-        {next && (
+      </div>
+
+      <div className="counter-ticket-tags">
+        {tags.map((tag) => (
+          <span key={tag} className="counter-tag">
+            {tag}
+          </span>
+        ))}
+      </div>
+
+      <div className="counter-ticket-body">
+        <ul className="counter-ticket-items">
+          {shown.map((item) => (
+            <li key={item.id}>
+              <span
+                className={`counter-q${item.quantity > 1 ? " is-many" : ""}`}
+              >
+                {item.quantity}×
+              </span>
+              <div>
+                <strong title={item.item_name}>{item.item_name}</strong>
+                {(item.size || item.flavor) && (
+                  <small>
+                    {[
+                      item.size ? getSizeOption(item.size).label : null,
+                      item.flavor,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </small>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+        {hidden > 0 && (
+          <button
+            type="button"
+            className="counter-more-items"
+            disabled={disabled || pending}
+            onClick={onMore}
+          >
+            +{hidden} more {hidden === 1 ? "item" : "items"}
+          </button>
+        )}
+        {(order.pickup_note || order.special_request_flag) && (
+          <div className="counter-customer-request">
+            <strong>Customer request</strong>
+            <p>
+              {order.pickup_note ||
+                "Flagged for special handling. Check with the customer."}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="counter-ticket-foot">
+        <div className="counter-ticket-total">
+          <span>Order total</span>
+          <strong className="numeric">{formatPrice(order.total_amount)}</strong>
+        </div>
+        {payFirst ? (
           <Button
-            className="w-full"
+            className="counter-go"
+            disabled={disabled || pending}
+            onClick={onPayment}
+          >
+            {payLabel}
+          </Button>
+        ) : next ? (
+          <Button
+            className="counter-go"
             loading={pending}
-            disabled={disabled || (next === "completed" && !paid)}
+            disabled={disabled}
             onClick={() =>
               run(
                 () => advanceOrderStatus(order.id, next),
@@ -161,81 +226,28 @@ export function QueueCard({
           >
             {ADVANCE_LABELS[order.status]}
           </Button>
+        ) : (
+          <p className="counter-ticket-state">{STATUS_LABELS[order.status]}</p>
         )}
-        {unpaid && (
-          <Button
-            className="w-full"
-            variant={order.status === "ready" ? "primary" : "outline"}
-            disabled={disabled || pending}
-            onClick={onPayment}
-          >
-            Take payment
-          </Button>
-        )}
-      </div>
-      {order.status === "ready" && unpaid && (
-        <p className="counter-payment-hint">
-          Payment must be confirmed before handover.
-        </p>
-      )}
-      <div className="counter-ticket-links">
-        {order.status === "pending" && !reversed && (
-          <>
+        <div className="counter-ticket-links">
+          {link && (
             <button
               type="button"
               disabled={disabled || pending}
-              onClick={() =>
-                run(
-                  () => prioritizeOrder(order.id, true),
-                  `${code} moved to the front`,
-                )
-              }
+              onClick={link.onClick}
             >
-              Move to front
+              {link.label}
             </button>
-            {order.priority > 0 && (
-              <button
-                type="button"
-                disabled={disabled || pending}
-                onClick={() =>
-                  run(
-                    () => prioritizeOrder(order.id, false),
-                    `${code} priority removed`,
-                  )
-                }
-              >
-                Remove priority
-              </button>
-            )}
-          </>
-        )}
-        <button type="button" disabled={disabled || pending} onClick={onMore}>
-          More actions
-        </button>
-        {(paid || reversed) && (
-          <a
-            href={`/staff/pos/receipt/${order.id}`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            {reversed ? "Transaction record" : "Receipt"}{" "}
-            <span aria-hidden="true">↗</span>
-          </a>
-        )}
-        {order.status === "ready" && (
+          )}
           <button
             type="button"
+            className="counter-ticket-more"
             disabled={disabled || pending}
-            onClick={() =>
-              run(
-                () => notifyCustomerReady(order.id),
-                `${code} · customer notified`,
-              )
-            }
+            onClick={onMore}
           >
-            Notify customer
+            More actions
           </button>
-        )}
+        </div>
       </div>
     </article>
   );

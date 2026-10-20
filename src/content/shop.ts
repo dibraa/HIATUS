@@ -57,6 +57,33 @@ export const SHOP_QUOTE = {
   translation: "Thank you for dropping by.",
 };
 
+/** Where "Get directions" goes, on the hero's door sign and in the footer. A
+ *  Maps SEARCH for now; swap in the shop's own Maps listing link once known. */
+export const SHOP_DIRECTIONS_URL =
+  "https://www.google.com/maps/search/?api=1&query=Hiatus+Coffee+Malaybalay";
+
+/** The brand line between the menu peek and the tour. `coordinates` is the
+ *  shop's own map pin (e.g. "8.15° N, 125.13° E"); null hides it, and the
+ *  line shows only the town. */
+export const SHOP_PLACE = {
+  town: "Malaybalay, Bukidnon",
+  coordinates: null as string | null,
+};
+
+/** "How Hiatus started", closing the guest welcome. The section renders only
+ *  once `lines` has text — every word here comes from the shop, never a guess.
+ *  `since` is the founding year ("2021"); `photo` is an optional picture of the
+ *  people behind the counter (add it under src/assets/shop/ and import it). */
+export const SHOP_STORY: {
+  since: string | null;
+  lines: string[];
+  photo: { image: StaticImageData; alt: string } | null;
+} = {
+  since: null,
+  lines: [],
+  photo: null,
+};
+
 /** Only handles printed on the shop's own material. The Facebook page is named
  *  "Hiatus Coffee" there but its URL is not, so it is left out until known. */
 export const SHOP_SOCIALS = [

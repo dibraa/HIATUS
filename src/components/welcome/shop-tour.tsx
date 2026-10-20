@@ -20,16 +20,25 @@ import { SHOP_QUOTE, SHOP_TOUR } from "@/content/shop";
  * dark mode, where `inverse-card` sits a shade BELOW the page (it was tuned
  * for a caption card on the pine panel) and would otherwise lose its edge; on
  * cream the same ring is all but invisible and the espresso fill does the work.
+ *
+ * The panel sits closer to its neighbours than a plain section gap: a third of
+ * the `section` step comes off the gap above (120 -> 80px on desktop). Below,
+ * while it is the page's last section (the story is hidden until written), it
+ * also takes back main's bottom padding, so the footer lands about as close
+ * as the brand line above (160 -> 88px). With the story after it, the normal
+ * section gap stands.
  */
 export function ShopTour() {
   return (
     <section
       id="inside"
       aria-labelledby="tour-heading"
-      className="scroll-mt-20"
+      className="-mt-[calc(var(--hi-space-section)/3)] scroll-mt-20 last:-mb-[calc(var(--hi-space-section)/3+2rem)]"
     >
       <div className="rounded-2xl bg-inverse-card py-band text-inverse-card-fg ring-1 ring-line">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        {/* Side inset grows with the band: a 24px side under 104px of headroom
+            left the heading pinned to the panel's edge on desktop. */}
+        <div className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-12">
           <h2 id="tour-heading" className="display text-6xl">
             Look around
           </h2>
@@ -49,7 +58,7 @@ export function ShopTour() {
                 </div>
                 <figcaption className="mt-4">
                   <span className="ui-caps block text-2xs">{spot.title}</span>
-                  <span className="mt-1 block text-sm text-inverse-card-muted">{spot.caption}</span>
+                  <span className="mt-1 block text-pretty text-sm text-inverse-card-muted">{spot.caption}</span>
                 </figcaption>
               </figure>
             ))}

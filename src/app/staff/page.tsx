@@ -2,16 +2,15 @@ import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { getSettings } from "@/lib/settings";
-import { formatPrice } from "@/lib/format";
 import { DataError } from "@/components/ui/data-error";
-import { ACTIVE_STATUSES } from "@/lib/order-meta";
 import { USE_MOCKS, MOCK_QUEUE } from "@/lib/mock-staff-data";
 import type { OrderItem } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 import { QueueBoard } from "./queue-board";
 import { AutoRefresh } from "@/components/auto-refresh";
+import { StaffPageHeading } from "./staff-page-heading";
 
-export const metadata: Metadata = { title: "The Counter" };
+export const metadata: Metadata = { title: "Counter" };
 export const dynamic = "force-dynamic";
 
 export default async function StaffQueuePage({
@@ -65,66 +64,28 @@ export default async function StaffQueuePage({
       }));
     } catch {
       return (
-        <div>
+        <div className="counter-page">
           <AutoRefresh seconds={15} />
-          <DataError
-            title="Couldn't load Queue & POS"
-            body="Check your connection and try again."
-            showRetry
-          />
+          <StaffPageHeading title="Counter" />
+          <div className="pt-4">
+            <DataError
+              title="Couldn't load the counter"
+              body="Check your connection and try again."
+              showRetry
+            />
+          </div>
         </div>
       );
     }
   }
 
-  const open = allOrders.filter(
-    (o) =>
-      ACTIVE_STATUSES.includes(o.status) &&
-      o.payment_status !== "refunded" &&
-      o.payment_status !== "voided",
-  );
   const renderedAt = new Date();
-  const toCollect = allOrders
-    .filter((o) => o.status !== "cancelled" && o.payment_status === "unpaid")
-    .reduce((s, o) => s + o.total_amount, 0);
 
   return (
-    <div>
+    <div className="counter-page">
       <AutoRefresh seconds={15} />
-      <div className="counter-page-heading">
-        <div>
-          <p className="ui-caps counter-page-kicker">
-            Made for the morning rush
-          </p>
-          <h1 className="display">The Counter</h1>
-          <p className="counter-page-description">
-            Make it. Settle it. Hand it over.
-          </p>
-        </div>
-        <dl className="counter-summary">
-          <div>
-            <dd className="display">{open.length}</dd>
-            <dt>Active orders</dt>
-          </div>
-          <div>
-            <dd className="display text-accent-ink">
-              {
-                allOrders.filter(
-                  (o) =>
-                    o.status !== "cancelled" && o.payment_status === "unpaid",
-                ).length
-              }
-            </dd>
-            <dt>Awaiting payment</dt>
-          </div>
-          <div>
-            <dd className="numeric counter-outstanding">
-              {formatPrice(toCollect)}
-            </dd>
-            <dt>Outstanding</dt>
-          </div>
-        </dl>
-      </div>
+      {/* One header row; each lane carries its own count. */}
+      <StaffPageHeading title="Counter" />
       <QueueBoard
         orders={allOrders}
         renderedAt={renderedAt.toISOString()}
