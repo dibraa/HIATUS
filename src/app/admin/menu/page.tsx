@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { AdminPagination } from "@/components/admin-pagination";
 import type { AdminSearch } from "@/lib/activity";
 import { AddMenuItemButton } from "./add-menu-item-button";
+import { CategoryManager, ItemToggles, type Category } from "./menu-management";
 
 export const metadata: Metadata = { title: "Menu items" };
 export const dynamic = "force-dynamic";
@@ -44,6 +45,10 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
   }
 
   const menuItems = result.items.map((m) => ({ ...m, id: m._id ?? m.id }));
+  let categories: Category[] = [];
+  let categoriesError = false;
+  try { categories = await apiJson<Category[]>("/menu/categories", { cache: "no-store" }); }
+  catch { categoriesError = true; }
 
   return (
     <div>
@@ -56,11 +61,12 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
       {search.saved === "1" && <div className="mb-4"><FormSuccess>Menu item saved.</FormSuccess></div>}
       <form action="/admin/menu" className="admin-panel mb-5 grid items-end gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Menu filters">
         <TextField id="menu-search" name="search" label="Search menu" type="search" maxLength={100} placeholder="Item name" defaultValue={query.get("search") || ""} />
-        <TextField id="menu-category" name="category" label="Category" maxLength={80} placeholder="All categories" defaultValue={query.get("category") || ""} />
+        <SelectField id="menu-category" name="category" label="Category" defaultValue={query.get("category") || ""}><option value="">All categories</option>{categories.map(category => <option key={category.name} value={category.name}>{category.name}</option>)}</SelectField>
         <SelectField id="menu-available" name="available" label="Availability" defaultValue={query.get("available") || ""}><option value="">All items</option><option value="true">Available</option><option value="false">Unavailable</option></SelectField>
         <div className="flex flex-wrap gap-2"><Button type="submit">Apply filters</Button><Link href="/admin/menu" className="admin-secondary-link">Reset</Link></div>
       </form>
 
+      {categoriesError ? <p role="alert" className="mb-5 text-danger">Categories could not load. Reload to try again.</p> : <CategoryManager categories={categories} />}
       {menuItems.length === 0 ? (
         <EmptyState
           title="No menu items found"
@@ -81,6 +87,7 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
                 <p className="admin-menu-flavor">{item.flavor}</p>
                 <p className="mt-1 text-xs text-muted">{item.category}</p>
                 {item.description && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{item.description}</p>}
+                <ItemToggles item={item} />
               </div>
               <p className="admin-menu-availability"><span data-available={item.is_available}>{item.is_available ? "Available" : "Sold out"}</span></p>
               <p className="admin-menu-price">{formatPrice(item.price)} <small>Medium</small></p>
