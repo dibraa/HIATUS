@@ -71,28 +71,7 @@ export default async function SettingsPage() {
           <section id="settings-messages" aria-label="Order message settings"><TemplatesForm templates={templates} /></section>
           <section id="settings-authentication" aria-label="Sign-in and security settings"><AuthenticationSettingsForm settings={authentication} error={authenticationError} /></section>
 
-          {/* ---------- Access control reference ---------- */}
-          <section
-            id="settings-access"
-            aria-labelledby="access-heading"
-            className="admin-settings-card"
-          >
-            <h2
-              id="access-heading"
-              className="display text-xl text-ink"
-            >
-              Roles and access
-            </h2>
-            <dl className="mt-4 flex flex-col gap-3">
-              {(["customer", "staff", "admin"] as Role[]).map((role) => (
-                <div key={role} className="rounded-md border border-line bg-raised p-3">
-                  <dt className="text-sm font-semibold text-ink">
-                    {ROLE_LABELS[role]}
-                  </dt>
-                </div>
-              ))}
-            </dl>
-          </section>
+
         </div>
       </div>
     </div>

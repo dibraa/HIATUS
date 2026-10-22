@@ -36,6 +36,10 @@ function AccountDialog({ title, description, pending, onClose, children, confirm
     };
   }, []);
 
+  useEffect(() => {
+    ref.current?.querySelector<HTMLElement>("input:not([disabled]), button:not([disabled])")?.focus();
+  }, [confirmation]);
+
   return (
     <dialog
       ref={ref}
@@ -48,6 +52,22 @@ function AccountDialog({ title, description, pending, onClose, children, confirm
       onCancel={(event) => {
         event.preventDefault();
         if (!pending) onClose();
+      }}
+      onKeyDown={(event) => {
+        if (event.key !== "Tab") return;
+        const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
+          'input:not(:disabled), button:not(:disabled), select:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])',
+        )).filter((element) => element.getClientRects().length > 0);
+        const first = controls[0];
+        const last = controls[controls.length - 1];
+        if (!first) { event.preventDefault(); return; }
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
       }}
       onClick={(event) => {
         if (event.target === event.currentTarget && !pending) {
