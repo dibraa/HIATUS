@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ReceiptSettingsForm } from "./receipt-settings";
 import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
 import { Badge } from "@/components/ui/badge";
 import { getSettings, isOpenNow } from "@/lib/settings";
@@ -25,6 +26,8 @@ export default async function SettingsPage() {
     await getSettings();
 
   const { open } = isOpenNow(businessHours);
+  let receiptEnabled: boolean | null = null;
+  try { receiptEnabled = (await apiJson<{ enabled: boolean }>("/settings/receipts", { token: (await getServerToken()) ?? undefined, cache: "no-store" })).enabled; } catch { /* Show an unavailable state without guessing the saved switch. */ }
   let authentication: AuthenticationSettings | null = null;
   let authenticationError: string | null = null;
   try {
@@ -57,6 +60,7 @@ export default async function SettingsPage() {
         <nav className="admin-settings-nav" aria-label="Settings sections">
           <a href="#settings-ordering">Ordering</a>
           <a href="#settings-payments">Payments</a>
+          <a href="#settings-receipts">Email receipts</a>
           <a href="#settings-hours">Opening hours</a>
           <a href="#settings-shop">Shop details</a>
           <a href="#settings-messages">Order messages</a>
@@ -66,6 +70,7 @@ export default async function SettingsPage() {
         <div className="admin-settings-sections">
           <section id="settings-ordering" aria-label="Ordering settings"><OrderingForm ordering={ordering} /></section>
           <section id="settings-payments" aria-label="Payment settings"><PaymentMethodsForm methods={paymentMethods} /></section>
+          <section id="settings-receipts" aria-label="Email receipt settings"><ReceiptSettingsForm key={String(receiptEnabled)} enabled={receiptEnabled} /></section>
           <section id="settings-hours" aria-label="Opening hours settings"><BusinessHoursForm hours={businessHours} /></section>
           <section id="settings-shop" aria-label="Shop details settings"><ShopInfoForm info={shopInfo} /></section>
           <section id="settings-messages" aria-label="Order message settings"><TemplatesForm templates={templates} /></section>

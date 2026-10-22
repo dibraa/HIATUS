@@ -7,6 +7,10 @@ import type { BusinessHours } from "@/types/database";
 
 export type SettingsState = { error: string | null; success: string | null };
 
+export async function saveReceiptSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  return writeSetting("receipts", { enabled: formData.get("enabled") === "on" });
+}
+
 export async function saveAuthenticationSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   return writeSetting("authentication", {
     google_enabled: formData.get("google_enabled") === "on",
