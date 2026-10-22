@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  logging: { serverFunctions: false, incomingRequests: false },
+  experimental: { serverActions: { bodySizeLimit: "6mb" } },
   reactCompiler: true,
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }, { protocol: "http", hostname: "**" }],

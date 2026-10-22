@@ -40,19 +40,19 @@
 .admin-sidebar {
   --hi-focus: var(--hi-inverse-fg);
   position: fixed; inset: 0 auto 0 0; z-index: 30;
-  display: flex; flex-direction: column; gap: 2.5rem;
+  display: flex; flex-direction: column; gap: 1.25rem;
   width: var(--admin-sidebar-width); height: 100dvh;
-  padding: 2rem 1rem 1.25rem; overflow-y: auto;
+  padding: 1.25rem 1rem 1rem; overflow-y: auto;
   color: var(--hi-inverse-fg); background: var(--hi-inverse-bg);
 }
 .admin-brand { display: flex; align-items: center; gap: .75rem; padding: 0 .625rem; }
 .admin-brand-logo { width: 2.75rem; height: 2.75rem; border-radius: .75rem; background: white; object-fit: contain; }
 .admin-brand-name { display: block; font-family: var(--font-anton), sans-serif; font-size: 1.75rem; line-height: 1.15; }
 .admin-brand-caption { display: block; margin-top: .35rem; font-size: .8125rem; color: var(--hi-inverse-muted); }
-.admin-nav-list { display: grid; gap: .375rem; }
+.admin-nav-list { display: grid; gap: .25rem; }
 .admin-nav-link {
-  display: flex; align-items: center; gap: .875rem; min-height: 3.125rem;
-  padding: .75rem .875rem; border-radius: .625rem;
+  display: flex; align-items: center; gap: .875rem; min-height: 2.75rem;
+  padding: .625rem .875rem; border-radius: .625rem;
   font-size: .9375rem; font-weight: 500; color: var(--hi-inverse-fg);
   transition: background-color 150ms ease-out;
 }
@@ -61,11 +61,11 @@
 .admin-nav-link[aria-current="page"] { background: var(--hi-inverse-fg); color: var(--hi-inverse-card); font-weight: 650; }
 .admin-nav-link[aria-current="page"]:focus-visible { outline-color: var(--hi-inverse-fg); }
 .admin-nav-current { margin-left: auto; width: .375rem; height: .375rem; border-radius: 50%; background: var(--hi-inverse-bg); }
-.admin-account { margin-top: auto; padding: 1.25rem .625rem 0; border-top: 1px solid color-mix(in srgb, var(--hi-inverse-line) 45%, transparent); overflow-wrap: anywhere; }
+.admin-account { margin-top: auto; padding: .875rem .625rem 0; border-top: 1px solid color-mix(in srgb, var(--hi-inverse-line) 45%, transparent); min-width: 0; }
 .admin-account-role { font-size: .75rem; color: var(--hi-inverse-muted); }
-.admin-account-name { margin-top: .375rem; font-size: .875rem; font-weight: 650; }
-.admin-account-email { margin-top: .25rem; font-size: .75rem; color: var(--hi-inverse-muted); }
-.admin-account > button { margin-top: 1rem; justify-content: center; width: 100%; border: 1px solid var(--hi-inverse-line); border-radius: .5rem; color: var(--hi-inverse-fg); }
+.admin-account-name { margin-top: .375rem; font-size: .875rem; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-account-email { margin-top: .25rem; font-size: .75rem; color: var(--hi-inverse-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.admin-account > button { margin-top: .75rem; justify-content: center; width: 100%; border: 1px solid var(--hi-inverse-line); border-radius: .5rem; color: var(--hi-inverse-fg); }
 .admin-account > button:hover { color: var(--hi-inverse-card); background: var(--hi-inverse-fg); }
 .admin-main { min-width: 0; margin-left: var(--admin-sidebar-width); }
 .admin-content { max-width: 90rem; min-width: 0; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
@@ -129,6 +129,15 @@
 .admin-menu-actions { display: flex; align-items: center; justify-content: flex-end; gap: .5rem; }
 .admin-menu-actions :is(a, button) { display: inline-flex; align-items: center; justify-content: center; min-height: 2.75rem; padding: .5rem; font-size: .8125rem; }
 .admin-menu-form { display: grid; gap: 1.5rem; }
+.admin-menu-dialog { position: fixed; inset: 0; margin: auto; width: calc(100% - 2rem); max-width: 56rem; max-height: calc(100dvh - 2rem); overflow-y: auto; padding: 0; border: 1px solid var(--hi-line); border-radius: .75rem; color: var(--hi-ink); background: var(--hi-card); text-align: left; }
+.admin-menu-dialog::backdrop { background: var(--hi-scrim); }
+.admin-menu-dialog-header { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.5rem; border-bottom: 1px solid var(--hi-line); background: var(--hi-card); }
+.admin-menu-dialog .admin-menu-form { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 1.5rem 2rem; padding: 1.5rem; }
+.admin-menu-dialog .admin-form-section { min-width: 0; border: 0; border-radius: 0; padding: 0; background: transparent; }
+.admin-menu-dialog [aria-labelledby="product-details-heading"] { grid-column: 1; grid-row: 1 / span 2; }
+.admin-menu-dialog .admin-form-fields { grid-template-columns: minmax(0, 1fr); gap: 1rem; margin-top: 1rem; }
+.admin-menu-dialog .admin-menu-form > [role="alert"], .admin-menu-dialog .admin-form-footer { grid-column: 1 / -1; }
+.admin-menu-dialog .admin-form-footer { justify-content: flex-end; border-top: 1px solid var(--hi-line); padding-top: 1rem; }
 .admin-form-section { border: 1px solid var(--hi-line); border-radius: .75rem; background: var(--hi-card); padding: 1.5rem; min-width: 0; }
 .admin-form-section h2 { font-size: 1rem; font-weight: 650; }
 .admin-form-section > p { margin-top: .375rem; font-size: .8125rem; color: var(--hi-muted); }
@@ -147,12 +156,12 @@
 .admin-team-toolbar-actions { display: flex; align-items: center; gap: .75rem; }
 .admin-team-toolbar-actions > :is(button, a) { white-space: nowrap; }
 .admin-team-count { margin-bottom: .5rem; color: var(--hi-muted); font-size: .75rem; }
-.admin-team-table { position: relative; min-width: 45rem; table-layout: fixed; }
-.admin-team-table th:first-child { width: 34%; }
-.admin-team-table th:nth-child(2) { width: 19%; }
+.admin-team-table { position: relative; min-width: 52rem; table-layout: fixed; }
+.admin-team-table th:first-child { width: 30%; }
+.admin-team-table th:nth-child(2) { width: 18%; }
 .admin-team-table th:nth-child(3) { width: 20%; }
 .admin-team-table th:nth-child(4) { width: 16%; }
-.admin-team-table th:last-child { width: 11%; }
+.admin-team-table th:last-child { width: 16%; }
 .admin-team-table :is(th, td) { vertical-align: middle; }
 .admin-team-member { overflow-wrap: anywhere; }
 .admin-team-inline-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .5rem; }
@@ -197,7 +206,7 @@
   .admin-team-toolbar { grid-template-columns: minmax(12rem, 1fr) 8rem 9rem; }
   .admin-team-toolbar-actions { grid-column: 1 / -1; justify-content: flex-end; }
 }
-@media (max-width: 1023px) {
+@media (max-width: 1023px), (max-height: 599px) {
   .admin-sidebar { display: none; }
   .admin-main { margin-left: 0; }
   .admin-mobile-bar { display: flex; align-items: center; justify-content: space-between; min-height: 4.25rem; padding: .5rem 1.5rem; border-bottom: 1px solid var(--hi-line); background: var(--hi-surface); }
@@ -209,6 +218,9 @@
   .admin-stats-three { grid-template-columns: repeat(3, minmax(0,1fr)); }
 }
 @media (max-width: 767px) {
+  .admin-menu-dialog .admin-menu-form { grid-template-columns: minmax(0, 1fr); padding: 1.25rem; }
+  .admin-menu-dialog [aria-labelledby="product-details-heading"] { grid-column: auto; grid-row: auto; }
+  .admin-menu-dialog-header { padding-inline: 1.25rem; }
   .admin-content { padding: 1.5rem 1rem 3rem; }
   .admin-mobile-bar { padding-inline: 1rem; }
   .admin-page-header { align-items: flex-start; flex-wrap: wrap; gap: 1rem; padding-bottom: 1.25rem; margin-bottom: 1.5rem; }
@@ -247,5 +259,16 @@
   .admin-stats:not(.admin-stats-three) .admin-stat { padding: 1rem; }
   .admin-stats:not(.admin-stats-three) .admin-stat-value { font-size: 1.375rem; }
   .admin-workspace :is(input:not([type="checkbox"]):not([type="radio"]), select, textarea) { font-size: 1rem; }
+}
+@media (max-height: 700px) {
+  .admin-sidebar { gap: .75rem; padding-block: .75rem; }
+  .admin-nav-list { gap: .125rem; }
+  .admin-account { padding-top: .625rem; }
+  .admin-account-role { display: none; }
+  .admin-account-name { margin-top: 0; }
+  .admin-account-email { margin-top: .125rem; }
+  .admin-account > button { margin-top: .5rem; }
+  .admin-sidebar .admin-brand-caption { display: none; }
+  .admin-drawer-content { gap: .75rem; padding: 3.5rem 1rem .75rem; }
 }
 @media (prefers-reduced-motion: reduce) { .admin-workspace * { scroll-behavior: auto; transition-duration: 0ms; } }

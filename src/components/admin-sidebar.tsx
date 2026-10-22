@@ -18,8 +18,8 @@ function SidebarContent({ account, onNavigate }: { account: AdminAccount; onNavi
       <AdminNav onNavigate={onNavigate} />
       <div className="admin-account">
         <span className="admin-account-role">Admin account</span>
-        <p className="admin-account-name">{account.full_name || "Administrator"}</p>
-        {account.email && <p className="admin-account-email">{account.email}</p>}
+        <p className="admin-account-name" title={account.full_name || "Administrator"}>{account.full_name || "Administrator"}</p>
+        {account.email && <p className="admin-account-email" title={account.email}>{account.email}</p>}
         <SignOutButton />
       </div>
     </>
@@ -35,7 +35,7 @@ export function AdminSidebar({ account }: { account: AdminAccount }) {
   function close() { drawer.current?.close(); }
 
   useEffect(() => {
-    const desktop = window.matchMedia("(min-width: 1024px)");
+    const desktop = window.matchMedia("(min-width: 1024px) and (min-height: 600px)");
     const dialog = drawer.current;
     const onResize = () => { if (desktop.matches) dialog?.close(); };
     desktop.addEventListener("change", onResize);
@@ -60,7 +60,7 @@ export function AdminSidebar({ account }: { account: AdminAccount }) {
       <dialog ref={drawer} id="admin-navigation-drawer" aria-label="Admin navigation" className="admin-drawer" onClick={(event) => { if (event.target === event.currentTarget) close(); }} onClose={() => {
         document.body.style.overflow = previousOverflow.current;
         setIsOpen(false);
-        if (window.innerWidth < 1024) menuButton.current?.focus();
+        if (menuButton.current?.getClientRects().length) menuButton.current.focus();
       }}>
         <div className="admin-drawer-content">
           <button type="button" className="admin-drawer-close" onClick={close} aria-label="Close navigation"><AdminIcon name="close" /></button>

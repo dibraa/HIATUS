@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 
-export type AdminIconName = "dashboard" | "orders" | "menu" | "reports" | "team" | "settings" | "close" | "bars" | "back";
+export type AdminIconName = "dashboard" | "orders" | "menu" | "reports" | "team" | "settings" | "close" | "bars" | "back" | "activity";
 
 const paths: Record<AdminIconName, ReactNode> = {
+  activity: <><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></>,
   dashboard: <><rect x="3" y="3" width="7" height="7" rx="1.5" /><rect x="14" y="3" width="7" height="7" rx="1.5" /><rect x="3" y="14" width="7" height="7" rx="1.5" /><rect x="14" y="14" width="7" height="7" rx="1.5" /></>,
   orders: <><path d="M9 4H6a2 2 0 0 0-2 2v14a1 1 0 0 0 1.6.8L8 19l4 2 4-2 2.4 1.8A1 1 0 0 0 20 20V6a2 2 0 0 0-2-2h-3" /><rect x="9" y="2" width="6" height="5" rx="1" /><path d="M8 11h8M8 15h5" /></>,
   menu: <><path d="M4 8h13v9a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4ZM17 9h2a3 3 0 0 1 0 6h-2M7 2v2m4-2v2m4-2v2" /></>,

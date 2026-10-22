@@ -10,6 +10,8 @@ const LINKS: { href: string; label: string; icon: AdminIconName }[] = [
   { href: "/admin/menu", label: "Menu", icon: "menu" },
   { href: "/admin/reports", label: "Reports", icon: "reports" },
   { href: "/admin/team", label: "Users", icon: "team" },
+  { href: "/admin/activity", label: "Activity logs", icon: "activity" },
+  { href: "/admin/performance", label: "Staff activity", icon: "reports" },
   { href: "/admin/settings", label: "Settings", icon: "settings" },
 ];
 

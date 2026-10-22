@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { FormError, SelectField, TextField } from "@/components/ui/field";
-import { setAccountActive, updateStaffCredentials, updateUserRole } from "@/app/actions/admin";
+import { deleteUserAccount, setAccountActive, updateStaffCredentials, updateUserRole } from "@/app/actions/admin";
+import { PhoneField } from "@/components/ui/phone-field";
 import { ROLE_LABELS } from "@/lib/roles";
 import type { Role, TeamMember } from "@/types/database";
 
@@ -234,7 +235,7 @@ function EditUserForm({ member, isMe, onClose }: { member: Account; isMe: boolea
               <legend className="sr-only">Account credentials</legend>
               <TextField id={`user-name-${member.id}`} label="Name" value={name} onChange={(event) => setName(event.target.value)} required autoComplete="off" />
               <TextField id={`user-email-${member.id}`} label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="off" />
-              <TextField id={`user-phone-${member.id}`} label="Phone number" type="tel" value={phone} onChange={(event) => setPhone(event.target.value)} autoComplete="off" />
+              <PhoneField id={`user-phone-${member.id}`} label="Phone number" value={phone} onValueChange={setPhone} autoComplete="off" />
               <TextField id={`user-password-${member.id}`} label="New password" type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} hint="Leave blank to keep the current password. Use at least 8 characters for a new password." autoComplete="new-password" />
               {changingSignIn && <p className="text-sm text-muted sm:col-span-2">{isMe ? "You will need to sign in again after changing your email or password." : "Changing the email or password signs this user out of existing sessions."}</p>}
               {error && <div className="sm:col-span-2"><FormError>{error}</FormError></div>}
@@ -254,4 +255,34 @@ function EditUserForm({ member, isMe, onClose }: { member: Account; isMe: boolea
       )}
     </AccountDialog>
   );
+}
+
+export function DeleteUserButton({ member, isMe }: { member: Account; isMe: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  return <>
+    <button type="button" className="admin-team-action-btn admin-team-action-danger" disabled={isMe}
+      title={isMe ? "You cannot delete your own active account." : undefined}
+      aria-label={`Delete account for ${member.email}`} onClick={() => { setError(null); setOpen(true); }}>Delete</button>
+    {open && <AccountDialog title="Permanently delete account?" description={`${member.full_name || "Unnamed account"} (${member.email})`} confirmation pending={pending} onClose={() => setOpen(false)}>
+      <p className="text-sm text-ink-soft">This action cannot be undone. The sign-in account and personal preferences will be permanently deleted. Financial records and activity history will be retained without a link to the account.</p>
+      {error && <div className="mt-4"><FormError>{error}</FormError></div>}
+      <div className="mt-6 flex flex-wrap justify-end gap-2">
+        <Button variant="ghost" disabled={pending} onClick={() => setOpen(false)}>Cancel</Button>
+        <Button variant="danger" disabled={pending} onClick={() => {
+          if (pending) return;
+          setError(null);
+          startTransition(async () => {
+            try {
+              const result = await deleteUserAccount(member.id);
+              if (result.error) { setError(result.error); return; }
+              toast.success("Account permanently deleted.");
+              setOpen(false);
+            } catch { setError("The account could not be deleted. Try again."); }
+          });
+        }}>{pending ? "Deleting…" : "Confirm Delete"}</Button>
+      </div>
+    </AccountDialog>}
+  </>;
 }
