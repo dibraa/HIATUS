@@ -23,6 +23,7 @@ import {
   updateStaffCredentials,
 } from "@/app/actions/admin";
 import type { TeamMember } from "@/types/database";
+import { PhoneField } from "@/components/ui/phone-field";
 
 /**
  * Granting a role.
@@ -309,6 +310,7 @@ function CloseIcon() {
 
 export function CreateStaffForm() {
   const [open, setOpen] = useState(false);
+  const [phone, setPhone] = useState("");
   const [state, formAction, pending] = useActionState(createStaffAccount, {
     error: null,
     success: null,
@@ -320,8 +322,10 @@ export function CreateStaffForm() {
   const [formResetKey, setFormResetKey] = useState(0);
 
   function close() {
+    if (pending) return;
     setOpen(false);
     setLastEmail(null);
+    setPhone("");
     openButtonRef.current?.focus();
   }
 
@@ -407,13 +411,12 @@ export function CreateStaffForm() {
                 <CloseIcon />
               </button>
             </div>
-            {state.success && lastEmail ? (
+            {!pending && state.success && lastEmail ? (
               <div className="mt-5 flex flex-col gap-4">
                 <FormSuccess>
-                  Account created for {lastEmail}. Share the temporary password
-                  you entered with them securely — they should change it on
-                  first login.
+                  Account created for {lastEmail}.
                 </FormSuccess>
+                {state.warning ? <FormError>{state.warning}</FormError> : <p className="text-sm text-muted">A one-time setup link was sent by email so they can choose their own password.</p>}
                 <div className="flex justify-end gap-2">
                   <Button
                     type="button"
@@ -421,6 +424,7 @@ export function CreateStaffForm() {
                     onClick={() => {
                       setFormResetKey((key) => key + 1);
                       setLastEmail(null);
+                      setPhone("");
                     }}
                   >
                     Create another
@@ -437,6 +441,7 @@ export function CreateStaffForm() {
                   id="new-staff-name"
                   name="full_name"
                   label="Full name"
+                  maxLength={120}
                   required
                   autoComplete="off"
                 />
@@ -445,26 +450,19 @@ export function CreateStaffForm() {
                   name="email"
                   type="email"
                   label="Email address"
+                  maxLength={254}
                   required
                   autoComplete="off"
                 />
-                <TextField
+                <PhoneField
                   id="new-staff-phone"
                   name="phone"
-                  type="tel"
                   label="Phone"
+                  value={phone}
+                  onValueChange={setPhone}
                   autoComplete="off"
                 />
-                <TextField
-                  id="new-staff-password"
-                  name="password"
-                  type="password"
-                  label="Temporary password"
-                  minLength={8}
-                  required
-                  hint="At least 8 characters. Share it with them securely."
-                  autoComplete="new-password"
-                />
+                <p className="text-sm text-muted">The user will receive a one-time email link to choose their own password.</p>
                 <SelectField
                   id="new-staff-role"
                   name="role"
@@ -756,12 +754,12 @@ export function MemberControls({ member }: { member: TeamMember }) {
                 required
                 autoComplete="off"
               />
-              <TextField
+              <PhoneField
                 id={`edit-phone-${member.id}`}
                 disabled={pending}
                 label="Phone"
                 value={phone}
-                onChange={(event) => setPhone(event.target.value)}
+                onValueChange={setPhone}
                 autoComplete="off"
               />
               <TextField

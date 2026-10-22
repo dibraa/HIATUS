@@ -26,7 +26,7 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
       <Modal
         open={confirmOpen}
         title={`Delete "${name}"?`}
-        body="This cannot be undone. The drink will be removed from the storefront immediately."
+        body="The drink will be removed from the storefront. Past orders and receipts will be preserved."
         confirmLabel="Delete"
         cancelLabel="Keep it"
         danger

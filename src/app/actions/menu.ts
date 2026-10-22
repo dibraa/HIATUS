@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { getServerToken } from "@/lib/server-token";
 import { apiFetch, apiJson } from "@/lib/api-client";
 
-export type MenuFormState = { error: string | null };
+export type MenuFormState = { error: string | null; success?: boolean };
 
 export async function saveMenuItem(
   _prevState: MenuFormState,
@@ -21,7 +21,7 @@ export async function saveMenuItem(
   const photo = formData.get("photo");
   const isAvailable = formData.get("is_available") === "on";
 
-  if (!name || !flavor || Number.isNaN(price) || price < 0)
+  if (!name || !flavor || !category || !String(formData.get("price") ?? "").trim() || !Number.isFinite(price) || price < 0 || price > 1000000 || Math.abs(price * 100 - Math.round(price * 100)) > 0.000001)
     return { error: "Name, flavor, and a valid price are required." };
 
   const token = await getServerToken();
@@ -29,6 +29,7 @@ export async function saveMenuItem(
   // Server actions can receive a File from a different runtime realm, so an
   // instanceof File check can silently skip a valid uploaded photo.
   if (photo && typeof photo !== "string" && photo.size > 0) {
+    if (photo.size > 5 * 1024 * 1024 || !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(photo.type)) return { error: "Choose a JPG, PNG, WEBP, or GIF image up to 5 MB." };
     const uploadData = new FormData();
     uploadData.append("photo", photo);
     try {
@@ -59,7 +60,11 @@ export async function saveMenuItem(
 
   revalidatePath("/admin/menu");
   revalidatePath("/");
-  redirect("/admin/menu");
+  revalidatePath("/menu");
+  revalidatePath("/staff");
+  revalidatePath("/admin/activity");
+  if (formData.get("presentation") === "dialog") return { error: null, success: true };
+  redirect("/admin/menu?saved=1");
 }
 
 export async function deleteMenuItem(id: string): Promise<{ error: string | null }> {
@@ -68,6 +73,8 @@ export async function deleteMenuItem(id: string): Promise<{ error: string | null
     await apiJson(`/menu/${id}`, { method: "DELETE", token: token ?? undefined });
     revalidatePath("/admin/menu");
     revalidatePath("/");
+    revalidatePath("/menu");
+    revalidatePath("/staff");
     return { error: null };
   } catch (err: unknown) {
     return { error: (err as Error).message };

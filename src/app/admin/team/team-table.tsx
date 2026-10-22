@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { TextField, SelectField } from "@/components/ui/field";
 import type { Role } from "@/types/database";
 import { CreateStaffForm } from "./team-controls";
-import { UserRoleSelect, EditUserButton } from "./user-controls";
+import { UserRoleSelect, EditUserButton, DeleteUserButton } from "./user-controls";
 
 type TableMember = {
   id: string;
@@ -108,7 +108,7 @@ export function TeamTable({
                   <th scope="col" className="px-2 py-3 font-medium">Phone number</th>
                   <th scope="col" className="px-2 py-3 font-medium">Role</th>
                   <th scope="col" className="px-2 py-3 font-medium">Status</th>
-                  <th scope="col" className="px-2 py-3 text-right font-medium">Edit</th>
+                  <th scope="col" className="px-2 py-3 text-right font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
@@ -142,7 +142,10 @@ export function TeamTable({
                         ) : <Badge tone="danger">Suspended</Badge>}
                       </td>
                       <td className="px-2 py-4 text-right">
-                        <EditUserButton member={member} isMe={isMe} />
+                        <div className="flex justify-end gap-2">
+                          <EditUserButton member={member} isMe={isMe} />
+                          <DeleteUserButton member={member} isMe={isMe} />
+                        </div>
                       </td>
                     </tr>
                   );

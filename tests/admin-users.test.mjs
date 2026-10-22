@@ -5,6 +5,8 @@ import vm from "node:vm";
 import ts from "typescript";
 
 function loadActions(apiJson, revalidatePath) {
+  const phone = {};
+  vm.runInNewContext(ts.transpileModule(readFileSync(new URL("../src/lib/phone.ts", import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS } }).outputText, { exports: phone });
   const source = ts.transpileModule(readFileSync(new URL("../src/app/actions/admin.ts", import.meta.url), "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
   }).outputText;
@@ -13,6 +15,7 @@ function loadActions(apiJson, revalidatePath) {
     "next/cache": { revalidatePath },
     "@/lib/server-token": { getServerToken: async () => "test-admin-session" },
     "@/lib/api-client": { apiJson },
+    "@/lib/phone": phone,
   };
   vm.runInNewContext(source, { exports, require: (name) => {
     assert(name in modules, `Unexpected module ${name}`);
@@ -46,4 +49,51 @@ test("failed account mutations return API errors without reporting success or re
   assert.equal(result.error, "That email is already in use");
   assert.equal((await actions.updateUserRole("test-user", "staff")).error, "That email is already in use");
   assert.deepEqual(refreshes, []);
+});
+
+test("account creation never forwards or returns a frontend-provided temporary password", async () => {
+  const calls = [], refreshed = [];
+  const actions = loadActions(async (path, options) => { calls.push({ path, ...options }); return { setup_email_sent: true }; }, path => refreshed.push(path));
+  const form = new FormData();
+  for (const [key, value] of Object.entries({ full_name: " New account ", email: "new@example.test", role: "staff", phone: " 09123456789 ", password: "MustNeverBeForwarded" })) form.set(key, value);
+  const result = await actions.createStaffAccount({ error: null, success: null }, form);
+  assert.equal(result.error, null);
+  assert.equal(result.success, "Account created.");
+  const payload = JSON.parse(calls[0].body);
+  assert.deepEqual(payload, { full_name: "New account", email: "new@example.test", phone: "09123456789", role: "staff" });
+  assert(!JSON.stringify(result).includes("MustNeverBeForwarded"));
+  assert.deepEqual(refreshed, ["/admin/team"]);
+});
+
+test("invalid phone and required fields fail before contacting the API", async () => {
+  let requests = 0;
+  const actions = loadActions(async () => { requests++; }, () => {});
+  for (const value of ["abc", "+639123456789", "123456", "1234567890123456"]) {
+    const form = new FormData(); form.set("full_name", "Name"); form.set("email", "name@example.test"); form.set("phone", value);
+    assert((await actions.createStaffAccount({ error: null, success: null }, form)).error);
+    assert((await actions.updateStaffCredentials("test", { phone: value })).error);
+  }
+  const blank = new FormData(); blank.set("full_name", " "); blank.set("email", "bad");
+  assert((await actions.createStaffAccount({ error: null, success: null }, blank)).error);
+  assert.equal(requests, 0);
+});
+
+test("email delivery failures distinguish a created account from a failed delivery", async () => {
+  const actions = loadActions(async () => ({ setup_email_sent: false }), () => {});
+  const form = new FormData(); form.set("full_name", "Name"); form.set("email", "name@example.test");
+  const result = await actions.createStaffAccount({ error: null, success: null }, form);
+  assert.equal(result.error, null);
+  assert.equal(result.success, "Account created.");
+  assert.match(result.warning, /setup email could not be delivered/);
+});
+
+test("confirmed account deletion uses the protected endpoint and revalidates affected screens", async () => {
+  let request;
+  const refreshes = [];
+  const actions = loadActions(async (path, options) => { request = { path, ...options }; }, path => refreshes.push(path));
+  assert.equal((await actions.deleteUserAccount("selected-user")).error, null);
+  assert.equal(request.path, "/admin/team/selected-user");
+  assert.equal(request.method, "DELETE");
+  assert.equal(request.token, "test-admin-session");
+  assert.deepEqual(refreshes, ["/admin/team", "/admin/activity", "/admin/performance"]);
 });

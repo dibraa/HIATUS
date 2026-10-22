@@ -11,6 +11,7 @@ import { OrderStatusBadge } from "@/components/order-status-badge";
 import { formatPrice, formatElapsed, orderCode } from "@/lib/format";
 import { ORDER_TYPE_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import type { OrderStatus, PaymentStatus, PopularItemRow, SalesReportRow, TodaySummary } from "@/types/database";
+import type { ActivityMetrics } from "@/lib/activity";
 
 export const metadata: Metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
@@ -73,6 +74,7 @@ export default async function AdminDashboardPage() {
   const recentOrders = recentRaw.slice(0, 8).map((o) => ({ ...o, id: o._id ?? o.id }));
   const topItems = popularRaw.slice(0, 5);
   const openNow = (summary?.pending_now ?? 0) + (summary?.preparing_now ?? 0) + (summary?.ready_now ?? 0);
+  const activity = await apiJson<ActivityMetrics>("/activity/metrics", { token: token ?? undefined, cache: "no-store" }).catch(() => null);
 
   return (
     <div className="admin-dashboard">
@@ -93,6 +95,16 @@ export default async function AdminDashboardPage() {
           <StatCard label="Total orders" value={summary?.orders_today ?? 0} hint={`${openNow} currently open`} />
           <StatCard label="Awaiting payment" value={summary?.unpaid_now ?? 0} tone={(summary?.unpaid_now ?? 0) > 0 ? "attention" : "default"} hint="Across all open orders" />
         </div>
+      </section>
+
+      <section className="admin-panel" aria-labelledby="staff-activity-heading">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div><h2 id="staff-activity-heading" className="text-lg font-semibold">Staff activity</h2>
+            {activity ? <p className="mt-2 text-sm text-muted">{activity.totals.count} recorded actions · {activity.totals.failure} failures · {activity.period.from} to {activity.period.to} (Asia/Manila)</p> : <p role="status" className="mt-2 text-sm text-muted">Activity metrics could not be loaded. Open Staff activity to retry.</p>}
+          </div>
+          <div className="flex flex-wrap gap-2"><Link href="/admin/activity" className="admin-secondary-link">Activity logs</Link><Link href="/admin/performance" className="admin-primary-link">Staff activity</Link></div>
+        </div>
+        <p className="mt-3 text-xs text-muted">Activity counts describe recorded actions. They do not measure work quality.</p>
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.8fr)]">
