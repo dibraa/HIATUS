@@ -7,11 +7,13 @@ import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import type { getAuthenticationOptions } from "@/lib/authentication-options";
+import { useAuthenticationOptions } from "@/lib/use-authentication-options";
 
 const initialState: AuthState = { error: null };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SignupForm({ authentication }: { authentication: Awaited<ReturnType<typeof getAuthenticationOptions>> }) {
+  const { options, error: optionsError, refresh } = useAuthenticationOptions(authentication);
   const [state, formAction, pending] = useActionState(signUp, initialState);
   const [googlePending, setGooglePending] = useState(false);
   const router = useRouter();
@@ -24,11 +26,12 @@ export function SignupForm({ authentication }: { authentication: Awaited<ReturnT
 
   return (
     <div className="flex flex-col gap-5">
-    {authentication.options?.google_enabled && authentication.options.google_client_id && <>
-      <GoogleSignIn clientId={authentication.options.google_client_id} intent="signup" disabled={pending || Boolean(state.success)} onPendingChange={setGooglePending} />
+    {options?.google_enabled && options.google_client_id && <>
+      <GoogleSignIn key={options.google_client_id} clientId={options.google_client_id} intent="signup" disabled={pending || Boolean(state.success)} onPendingChange={setGooglePending} />
       <p className="border-t border-line pt-4 text-center text-sm text-muted">Or create an account with email</p>
     </>}
-    <FormError>{authentication.error}</FormError>
+    <FormError>{optionsError}</FormError>
+    {optionsError && <Button type="button" variant="outline" onClick={refresh}>Refresh sign-in options</Button>}
     <form action={formAction} className="flex flex-col gap-4">
       <TextField
         id="full_name"

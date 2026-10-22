@@ -6,7 +6,7 @@ import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
 import type { Role } from "@/types/database";
 import { TeamTable } from "./team-table";
 
-export const metadata: Metadata = { title: "Team" };
+export const metadata: Metadata = { title: "Users" };
 export const dynamic = "force-dynamic";
 
 type TeamMember = {
@@ -37,7 +37,7 @@ export default async function TeamPage() {
     teamResult.status === "rejected"
       ? teamResult.reason instanceof Error
         ? teamResult.reason.message
-        : "The roster could not be loaded."
+        : "The accounts could not be loaded."
       : null;
   const activeStaffIds = new Set(
     activeShifts.map((shift) =>
@@ -53,11 +53,11 @@ export default async function TeamPage() {
   return (
     <div>
       <PageHeader
-        title="Team"
-        description="Who can work the counter, who can see the books."
+        title="Users"
+        description="Manage every account, its details, and access."
       />
 
-      <section className="admin-panel" aria-label="Team accounts">
+      <section className="admin-panel" aria-label="User accounts">
         <TeamTable
           members={members}
           currentUserId={me?.id}

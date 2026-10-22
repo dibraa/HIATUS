@@ -33,7 +33,16 @@ function configureVapid(): boolean {
     console.warn("[push] VAPID keys are not set; browser push is off.");
     return (vapidReady = false);
   }
-  webpush.setVapidDetails(process.env.VAPID_SUBJECT ?? "mailto:owner@hiatus.example", publicKey, privateKey);
+  const configuredSubject = process.env.VAPID_SUBJECT?.trim() || "mailto:owner@hiatus.example";
+  const subject = configuredSubject.includes("@") && !configuredSubject.includes(":")
+    ? `mailto:${configuredSubject}`
+    : configuredSubject;
+  try {
+    new URL(subject);
+  } catch {
+    throw new Error("VAPID_SUBJECT must be a URL, such as mailto:owner@example.com.");
+  }
+  webpush.setVapidDetails(subject, publicKey, privateKey);
   return (vapidReady = true);
 }
 

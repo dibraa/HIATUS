@@ -9,7 +9,7 @@ const LINKS: { href: string; label: string; icon: AdminIconName }[] = [
   { href: "/admin/orders", label: "Orders", icon: "orders" },
   { href: "/admin/menu", label: "Menu", icon: "menu" },
   { href: "/admin/reports", label: "Reports", icon: "reports" },
-  { href: "/admin/team", label: "Team", icon: "team" },
+  { href: "/admin/team", label: "Users", icon: "team" },
   { href: "/admin/settings", label: "Settings", icon: "settings" },
 ];
 
