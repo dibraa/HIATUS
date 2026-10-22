@@ -147,7 +147,7 @@
 .admin-team-toolbar-actions { display: flex; align-items: center; gap: .75rem; }
 .admin-team-toolbar-actions > :is(button, a) { white-space: nowrap; }
 .admin-team-count { margin-bottom: .5rem; color: var(--hi-muted); font-size: .75rem; }
-.admin-team-table { min-width: 45rem; table-layout: fixed; }
+.admin-team-table { position: relative; min-width: 45rem; table-layout: fixed; }
 .admin-team-table th:first-child { width: 34%; }
 .admin-team-table th:nth-child(2) { width: 19%; }
 .admin-team-table th:nth-child(3) { width: 20%; }

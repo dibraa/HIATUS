@@ -391,10 +391,10 @@ export function CreateStaffForm() {
                   id="create-account-title"
                   className="display text-2xl text-ink"
                 >
-                  Create staff account
+                  Create account
                 </h2>
                 <p className="mt-1.5 text-sm text-muted">
-                  Create login credentials for a new staff member or
+                  Create login credentials for a customer, staff member, or
                   administrator.
                 </p>
               </div>
