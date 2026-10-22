@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { AutoRefresh } from "@/components/auto-refresh";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
@@ -13,6 +14,7 @@ import type { OrderItem, OrderStatus, OrderType, PaymentStatus } from "@/types/d
 import { OrderStatusFilter } from "./order-status-filter";
 
 export const metadata: Metadata = { title: "Orders" };
+export const dynamic = "force-dynamic";
 
 type OrderRow = {
   _id: string; id?: string; status: OrderStatus; order_type: OrderType;
@@ -42,7 +44,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
   let allOrders: OrderRow[];
   try {
-    allOrders = await apiJson<OrderRow[]>("/orders", { token: token ?? undefined });
+    allOrders = await apiJson<OrderRow[]>("/orders", { token: token ?? undefined, cache: "no-store" });
   } catch {
     return (
       <div>
@@ -76,6 +78,8 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
         description="Review orders by status and monitor each order's progress."
       />
 
+      <AutoRefresh seconds={15} />
+      <p className="mb-4 text-sm text-muted">Refreshes every 15 seconds. Choose All to view the full order history.</p>
       <OrderStatusFilter currentTab={tab} tabs={TABS} />
 
       {orderList.length === 0 ? (

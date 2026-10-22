@@ -7,6 +7,28 @@ import { apiFetch, apiJson } from "@/lib/api-client";
 
 export type MenuFormState = { error: string | null; success?: boolean };
 
+export async function manageCategory(_state: MenuFormState, form: FormData): Promise<MenuFormState> {
+  const token = await getServerToken();
+  try {
+    await apiJson("/menu/categories", { method: "POST", token: token ?? undefined, body: JSON.stringify({
+      name: String(form.get("name") || "").trim(), previous: form.get("previous") || undefined,
+      position: Number(form.get("position") || 0), remove: form.get("operation") === "delete",
+    }) });
+    for (const path of ["/admin/menu", "/menu", "/", "/staff", "/admin/activity"]) revalidatePath(path);
+    return { error: null, success: true };
+  } catch (error) { return { error: (error as Error).message }; }
+}
+
+export async function toggleMenuItem(id: string, field: "is_available", enabled: boolean): Promise<MenuFormState> {
+  if (field !== "is_available") return { error: "Invalid control." };
+  const token = await getServerToken();
+  try {
+    await apiJson(`/menu/${id}`, { method: "PUT", token: token ?? undefined, body: JSON.stringify({ [field]: enabled }) });
+    for (const path of ["/admin/menu", "/menu", "/", "/staff", "/admin/activity"]) revalidatePath(path);
+    return { error: null, success: true };
+  } catch (error) { return { error: (error as Error).message }; }
+}
+
 export async function saveMenuItem(
   _prevState: MenuFormState,
   formData: FormData
@@ -46,7 +68,7 @@ export async function saveMenuItem(
     }
   }
 
-  const payload = { name, description: description || null, flavor, category, price, image_url: imageUrl || null, is_available: isAvailable };
+  const payload = { name, description: description || null, flavor, category, price, image_url: imageUrl || null, is_available: isAvailable, position: Number(formData.get("position") || 0) };
 
   try {
     if (id) {

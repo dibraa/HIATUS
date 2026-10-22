@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ProductImage } from "@/components/ui/product-image";
 import { Field } from "@/components/ui/field";
 import type { MenuItem } from "@/types/database";
+import { apiJson } from "@/lib/api-client";
 
 const initialState: MenuFormState = { error: null };
 
@@ -22,9 +23,12 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
   onPendingChange?: (pending: boolean) => void;
 }) {
   const [state, formAction, pending] = useActionState(saveMenuItem, initialState);
+  const [categories, setCategories] = useState<{ name: string }[]>([]);
+  useEffect(() => { let active = true; apiJson<{ name: string }[]>("/menu/categories", { cache: "no-store" }).then(values => { if (active) setCategories(values); }).catch(() => {}); return () => { active = false; }; }, []);
   const [fields, setFields] = useState({
     name: item?.name ?? "", flavor: item?.flavor ?? "", category: item?.category ?? "coffee",
     description: item?.description ?? "", price: item ? String(item.price) : "", is_available: item?.is_available ?? true,
+    position: String(item?.position ?? 0),
   });
   function updateText(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     const { name, value } = event.target;
@@ -48,7 +52,8 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
         <div className="admin-form-fields">
           <TextField id="name" name="name" label="Name" maxLength={120} required value={fields.name} onChange={updateText} placeholder="e.g. Spanish Latte" />
           <TextField id="flavor" name="flavor" label="Flavor" maxLength={80} required placeholder="e.g. Caramel" value={fields.flavor} onChange={updateText} />
-          <TextField id="category" name="category" label="Category" maxLength={80} required value={fields.category} onChange={updateText} />
+          <TextField id="category" name="category" label="Category" list="menu-categories" maxLength={80} required value={fields.category} onChange={updateText} />
+          <datalist id="menu-categories">{categories.map(category => <option key={category.name} value={category.name} />)}</datalist>
           <TextAreaField id="description" name="description" label="Description" maxLength={2000} rows={3} value={fields.description} onChange={updateText} />
         </div>
       </section>
@@ -94,6 +99,12 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
         </div>
       </section>
 
+      <section className="admin-form-section" aria-labelledby="organization-heading">
+        <h2 id="organization-heading">Organization</h2>
+        <div className="admin-form-fields">
+          <TextField id="position" name="position" label="Item position (lower first within category)" type="number" min="0" max="100000" step="1" value={fields.position} onChange={updateText} />
+        </div>
+      </section>
       <FormError>{state.error}</FormError>
 
       <div className="admin-form-footer">

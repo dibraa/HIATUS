@@ -26,7 +26,7 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
       <Modal
         open={confirmOpen}
         title={`Delete "${name}"?`}
-        body="The drink will be removed from the storefront. Past orders and receipts will be preserved."
+        body="This permanently deletes the menu item from the database. Past orders and receipts keep their saved item details."
         confirmLabel="Delete"
         cancelLabel="Keep it"
         danger

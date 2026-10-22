@@ -23,6 +23,7 @@ export type Profile = {
 };
 
 export type MenuItem = {
+  position?: number;
   id: string;
   name: string;
   description: string | null;
