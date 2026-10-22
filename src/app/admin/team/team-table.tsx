@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { TextField, SelectField } from "@/components/ui/field";
-import { ROLE_LABELS } from "@/lib/roles";
 import type { Role } from "@/types/database";
-import { AddToTeamRow, MemberControls, CreateStaffForm, GrantRoleDialog } from "./team-controls";
+import { CreateStaffForm } from "./team-controls";
+import { UserRoleSelect, EditUserButton } from "./user-controls";
 
 type TableMember = {
   id: string;
@@ -25,13 +25,14 @@ const ROLE_FILTERS: { value: RoleFilter; label: string }[] = [
   { value: "all", label: "All roles" },
   { value: "staff", label: "Staff" },
   { value: "admin", label: "Admin" },
+  { value: "customer", label: "Customer" },
 ];
 
 const STATUS_FILTERS: { value: StatusFilter; label: string }[] = [
   { value: "all", label: "All statuses" },
   { value: "on_shift", label: "On shift" },
   { value: "suspended", label: "Suspended" },
-  { value: "available", label: "Available" },
+  { value: "available", label: "Active" },
 ];
 
 export function TeamTable({
@@ -51,11 +52,11 @@ export function TeamTable({
     const needle = query.trim().toLowerCase();
     return members.filter((member) => {
       if (role !== "all" && member.role !== role) return false;
-      if (status === "on_shift" && !member.on_shift) return false;
+      if (status === "on_shift" && (!member.is_active || !member.on_shift)) return false;
       if (status === "suspended" && member.is_active) return false;
-      if (status === "available" && (!member.is_active || member.on_shift)) return false;
+      if (status === "available" && !member.is_active) return false;
       if (!needle) return true;
-      const haystack = `${member.full_name ?? ""} ${member.email}`.toLowerCase();
+      const haystack = `${member.full_name ?? ""} ${member.email} ${member.phone ?? ""}`.toLowerCase();
       return haystack.includes(needle);
     });
   }, [members, query, role, status]);
@@ -71,10 +72,10 @@ export function TeamTable({
       <div className="admin-team-toolbar">
         <TextField
           id="team-search"
-          label="Search team"
+          label="Search users"
           type="search"
           autoComplete="off"
-          placeholder="Name or email"
+          placeholder="Name, email, or phone"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -85,41 +86,41 @@ export function TeamTable({
           {STATUS_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </SelectField>
         <div className="admin-team-toolbar-actions">
-          <GrantRoleDialog />
           <CreateStaffForm />
         </div>
       </div>
 
       {loadError ? (
         <div role="alert" className="rounded-lg border border-danger/40 bg-card px-4 py-8 text-center">
-          <p className="text-sm font-medium text-ink">Could not load the roster.</p>
+          <p className="text-sm font-medium text-ink">Could not load the accounts.</p>
           <p className="mt-1 text-sm text-muted">{loadError}</p>
           <a href="/admin/team" className="mt-4 inline-flex min-h-11 items-center text-sm text-accent-ink underline underline-offset-4 hover:text-ink">Try again</a>
         </div>
       ) : (
         <>
-          <p className="admin-team-count" role="status">{filtered.length === members.length ? members.length : filtered.length + " of " + members.length} member{members.length === 1 ? "" : "s"}</p>
-          <div className="admin-table-scroll" tabIndex={0} role="region" aria-label="Team accounts table">
+          <p className="admin-team-count" role="status">{filtered.length === members.length ? members.length : filtered.length + " of " + members.length} account{members.length === 1 ? "" : "s"}</p>
+          <div className="admin-table-scroll" tabIndex={0} role="region" aria-label="User accounts table">
             <table className="admin-team-table w-full text-left text-sm">
-              <caption className="sr-only">Team members, their role, account status and available actions.</caption>
+              <caption className="sr-only">All users, phone numbers, roles, account status, and account editing.</caption>
               <thead className="border-b border-line text-xs text-muted">
                 <tr>
-                  <th scope="col" className="px-2 py-3 font-medium">Member</th>
+                  <th scope="col" className="px-2 py-3 font-medium">User</th>
+                  <th scope="col" className="px-2 py-3 font-medium">Phone number</th>
                   <th scope="col" className="px-2 py-3 font-medium">Role</th>
                   <th scope="col" className="px-2 py-3 font-medium">Status</th>
-                  <th scope="col" className="px-2 py-3 text-right font-medium">Actions</th>
+                  <th scope="col" className="px-2 py-3 text-right font-medium">Edit</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
                 {members.length === 0 ? (
-                  <tr><td colSpan={4} className="px-4 py-12 text-center">
+                  <tr><td colSpan={5} className="px-4 py-12 text-center">
                     <p className="text-sm text-ink">No accounts yet.</p>
-                    <p className="mt-1 text-sm text-muted">Create the first staff account to get started.</p>
+                    <p className="mt-1 text-sm text-muted">New accounts will appear here.</p>
                   </td></tr>
                 ) : filtered.length === 0 ? (
-                  <tr><td colSpan={4} className="px-4 py-12 text-center">
+                  <tr><td colSpan={5} className="px-4 py-12 text-center">
                     <p className="text-sm text-ink">No matches.</p>
-                    <p className="mt-1 text-sm text-muted">Try a different name, email, or filter.</p>
+                    <p className="mt-1 text-sm text-muted">Try a different name, email, phone, or filter.</p>
                     <button type="button" onClick={clearFilters} className="mt-3 inline-flex min-h-11 items-center text-sm text-accent-ink underline underline-offset-4 hover:text-ink">Clear search and filters</button>
                   </td></tr>
                 ) : filtered.map((member) => {
@@ -133,14 +134,15 @@ export function TeamTable({
                         </span>
                         <span className="mt-1 block text-xs font-normal text-muted">{member.email}</span>
                       </th>
-                      <td className="px-2 py-4 text-xs">{ROLE_LABELS[member.role]}</td>
+                      <td className="px-2 py-4 break-words text-ink-soft">{member.phone?.trim() || <span className="text-muted">Not provided</span>}</td>
+                      <td className="px-2 py-4"><UserRoleSelect member={member} isMe={isMe} /></td>
                       <td className="px-2 py-4">
                         {member.is_active ? (
-                          <Badge tone={member.on_shift ? "success" : "neutral"}>{member.on_shift ? "Active" : "Away"}</Badge>
+                          <Badge tone="success">{member.on_shift ? "On shift" : "Active"}</Badge>
                         ) : <Badge tone="danger">Suspended</Badge>}
                       </td>
                       <td className="px-2 py-4 text-right">
-                        {member.role === "customer" ? <AddToTeamRow member={member} /> : isMe ? <span className="text-xs text-muted">Current account</span> : <MemberControls member={member} />}
+                        <EditUserButton member={member} isMe={isMe} />
                       </td>
                     </tr>
                   );

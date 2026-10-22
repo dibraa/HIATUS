@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { signIn, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { TextLink } from "@/components/ui/text-link";
 import { GoogleSignIn } from "@/components/google-sign-in";
 import { LoginCaptcha } from "@/components/login-captcha";
 import type { getAuthenticationOptions } from "@/lib/authentication-options";
+import { useAuthenticationOptions } from "@/lib/use-authentication-options";
 
 const initialState: AuthState = { error: null };
 
@@ -19,11 +20,17 @@ const NOTICES: Record<string, string> = {
 };
 
 export function LoginForm({ authentication }: { authentication: Awaited<ReturnType<typeof getAuthenticationOptions>> }) {
-  const { options, error: optionsError } = authentication;
-  const router = useRouter();
+  const { options, error: optionsError, refresh } = useAuthenticationOptions(authentication);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaReset, setCaptchaReset] = useState(0);
   const [googlePending, setGooglePending] = useState(false);
+  const captchaPolicy = options?.recaptcha_enabled ? options.recaptcha_site_key : null;
+  const [previousCaptchaPolicy, setPreviousCaptchaPolicy] = useState(captchaPolicy);
+  if (previousCaptchaPolicy !== captchaPolicy) {
+    setPreviousCaptchaPolicy(captchaPolicy);
+    setCaptchaToken(null);
+    setCaptchaReset(value => value + 1);
+  }
   const resetCaptcha = () => { setCaptchaToken(null); setCaptchaReset(value => value + 1); };
   const searchParams = useSearchParams();
 
@@ -37,7 +44,7 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
   const [state, formAction, pending] = useActionState(async (previous: AuthState, data: FormData) => {
     try {
       const result = await signIn(previous, data);
-      if (result.error) router.refresh();
+      if (result.error) refresh();
       return result;
     }
     finally { resetCaptcha(); }
@@ -47,8 +54,9 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
     <div className="flex flex-col gap-5">
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
-      <input type="hidden" name="recaptcha_token" value={captchaToken || ""} />
+      {options?.recaptcha_enabled && <input type="hidden" name="recaptcha_token" value={captchaToken || ""} />}
       <FormError>{optionsError}</FormError>
+      {optionsError && <Button type="button" variant="outline" onClick={refresh}>Refresh sign-in options</Button>}
 
       {notice && <FormError>{notice}</FormError>}
 
@@ -81,7 +89,7 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
           address is registered. */}
       <FormError>{state.error}</FormError>
 
-      <Button type="submit" size="md" loading={pending} disabled={googlePending || !options || (options.recaptcha_enabled && !captchaToken)} className="mt-1 w-full">
+      <Button type="submit" size="md" loading={pending} disabled={googlePending || Boolean(options?.recaptcha_enabled && !captchaToken)} className="mt-1 w-full">
         {pending ? "Signing in…" : "Log in"}
       </Button>
 
@@ -94,7 +102,7 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
     </form>
     {options?.google_enabled && options.google_client_id && <>
       <p className="border-t border-line pt-4 text-center text-sm text-muted">Or continue with Google</p>
-      <GoogleSignIn clientId={options.google_client_id} intent="login" next={next}
+      <GoogleSignIn key={options.google_client_id} clientId={options.google_client_id} intent="login" next={next}
         captchaToken={captchaToken} captchaRequired={options.recaptcha_enabled} disabled={pending} onAttempt={resetCaptcha} onPendingChange={setGooglePending} />
     </>}
     {options?.recaptcha_enabled && options.recaptcha_site_key && (

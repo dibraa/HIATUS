@@ -147,11 +147,12 @@
 .admin-team-toolbar-actions { display: flex; align-items: center; gap: .75rem; }
 .admin-team-toolbar-actions > :is(button, a) { white-space: nowrap; }
 .admin-team-count { margin-bottom: .5rem; color: var(--hi-muted); font-size: .75rem; }
-.admin-team-table { min-width: 42rem; table-layout: fixed; }
+.admin-team-table { min-width: 45rem; table-layout: fixed; }
 .admin-team-table th:first-child { width: 34%; }
-.admin-team-table th:nth-child(2) { width: 14%; }
-.admin-team-table th:nth-child(3) { width: 16%; }
-.admin-team-table th:last-child { width: 36%; }
+.admin-team-table th:nth-child(2) { width: 19%; }
+.admin-team-table th:nth-child(3) { width: 20%; }
+.admin-team-table th:nth-child(4) { width: 16%; }
+.admin-team-table th:last-child { width: 11%; }
 .admin-team-table :is(th, td) { vertical-align: middle; }
 .admin-team-member { overflow-wrap: anywhere; }
 .admin-team-inline-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .5rem; }

@@ -471,6 +471,7 @@ export function CreateStaffForm() {
                   label="Role"
                   defaultValue="staff"
                 >
+                  <option value="customer">Customer</option>
                   <option value="staff">
                     Staff — queue, payments, availability
                   </option>

@@ -25,7 +25,7 @@ export async function createStaffAccount(
       }),
     });
     revalidatePath("/admin/team");
-    return { error: null, success: "Staff account created." };
+    return { error: null, success: "Account created." };
   } catch (err: unknown) {
     return { error: (err as Error).message, success: null };
   }
@@ -73,12 +73,16 @@ export async function setAccountActive(
 }
 
 export async function revokeRole(userId: string): Promise<{ error: string | null }> {
+  return updateUserRole(userId, "customer");
+}
+
+export async function updateUserRole(userId: string, role: Role): Promise<{ error: string | null }> {
   const token = await getServerToken();
   try {
     await apiJson(`/admin/team/${userId}/role`, {
       method: "PUT",
       token: token ?? undefined,
-      body: JSON.stringify({ role: "customer" }),
+      body: JSON.stringify({ role }),
     });
     revalidatePath("/admin/team");
     return { error: null };
@@ -88,7 +92,7 @@ export async function revokeRole(userId: string): Promise<{ error: string | null
 }
 
 export async function updateStaffCredentials(userId: string, data: {
-  full_name: string; email: string; phone: string; password: string;
+  full_name?: string; email?: string; phone?: string; password?: string;
 }): Promise<{ error: string | null }> {
   const token = await getServerToken();
   try {
