@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   TextField,
@@ -43,6 +43,7 @@ function SettingsCard({
   action,
   children,
   submitLabel = "Save",
+  version = 0,
 }: {
   title: string;
   description: string;
@@ -51,9 +52,11 @@ function SettingsCard({
   action: (formData: FormData) => void;
   children: React.ReactNode;
   submitLabel?: string;
+  version?: number;
 }) {
   return (
-    <form action={action} className="admin-settings-card">
+    <form action={action} onReset={event => event.preventDefault()} className="admin-settings-card">
+      <input type="hidden" name="version" value={state.version ?? version} />
       <h2 className="display text-xl text-ink">{title}</h2>
       <p className="mt-1.5 max-w-[60ch] text-sm text-muted">{description}</p>
 
@@ -81,19 +84,22 @@ function SettingsCard({
    Business hours
    ========================================================================== */
 
-export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
+export function BusinessHoursForm({ hours, version = 0 }: { hours: BusinessHours[]; version?: number }) {
+  const [draft, setDraft] = useState(hours);
   const [state, formAction, pending] = useActionState(saveBusinessHours, INITIAL);
 
   return (
     <SettingsCard
+      version={version}
+      submitLabel="Save hours"
       title="Opening hours"
-      description="Closing before opening means the shop stays open past midnight."
+      description="Manila time. Earlier closing times continue into the next day."
       state={state}
       pending={pending}
       action={formAction}
     >
       <div className="flex flex-col gap-3">
-        {hours.map((day) => (
+        {draft.map((day) => (
           <div
             key={day.day}
             className="admin-hours-row"
@@ -107,7 +113,9 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
               <input
                 type="time"
                 name={`open-${day.day}`}
-                defaultValue={day.open}
+                value={day.open}
+                disabled={day.closed}
+                onChange={event => setDraft(rows => rows.map(row => row.day === day.day ? { ...row, open: event.target.value } : row))}
                 className="rounded-md border border-line-strong bg-card px-2 py-1.5 text-sm numeric text-ink"
               />
             </label>
@@ -121,7 +129,9 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
               <input
                 type="time"
                 name={`close-${day.day}`}
-                defaultValue={day.close}
+                value={day.close}
+                disabled={day.closed}
+                onChange={event => setDraft(rows => rows.map(row => row.day === day.day ? { ...row, close: event.target.value } : row))}
                 className="rounded-md border border-line-strong bg-card px-2 py-1.5 text-sm numeric text-ink"
               />
             </label>
@@ -130,11 +140,15 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
               <input
                 type="checkbox"
                 name={`closed-${day.day}`}
-                defaultChecked={day.closed}
+                checked={day.closed}
+                onChange={event => setDraft(rows => rows.map(row => row.day === day.day ? { ...row, closed: event.target.checked } : row))}
                 className="h-4 w-4 accent-[var(--hi-accent)]"
               />
               Closed
             </label>
+            {day.closed && <><input type="hidden" name={`open-${day.day}`} value={day.open} /><input type="hidden" name={`close-${day.day}`} value={day.close} /></>}
+            {!day.closed && day.close < day.open && <span className="text-xs text-muted">Next day</span>}
+            {!day.closed && day.open === day.close && <span role="alert" className="text-xs text-danger">Choose different times.</span>}
           </div>
         ))}
       </div>
@@ -146,12 +160,13 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
    Payment methods
    ========================================================================== */
 
-export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings }) {
+export function PaymentMethodsForm({ methods, version = 0 }: { methods: PaymentMethodSettings; version?: number }) {
   const [state, formAction, pending] = useActionState(savePaymentMethods, INITIAL);
 
   return (
     <SettingsCard
       title="Payment methods"
+      version={version}
       description="Payment is collected at the counter."
       state={state}
       pending={pending}
@@ -178,12 +193,13 @@ export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings
    Ordering
    ========================================================================== */
 
-export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
+export function OrderingForm({ ordering, version = 0 }: { ordering: OrderingSettings; version?: number }) {
   const [state, formAction, pending] = useActionState(saveOrderingSettings, INITIAL);
 
   return (
     <SettingsCard
       title="Ordering"
+      version={version}
       description="Pausing orders blocks checkout. The menu remains visible."
       state={state}
       pending={pending}
@@ -227,12 +243,13 @@ export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
    Shop details
    ========================================================================== */
 
-export function ShopInfoForm({ info }: { info: ShopInfo }) {
+export function ShopInfoForm({ info, version = 0 }: { info: ShopInfo; version?: number }) {
   const [state, formAction, pending] = useActionState(saveShopInfo, INITIAL);
 
   return (
     <SettingsCard
       title="Shop details"
+      version={version}
       description="Appears in the footer and on receipts."
       state={state}
       pending={pending}

@@ -59,7 +59,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
     preparing: template.order_preparing,
     ready: template.order_ready,
     completed: template.order_completed,
-    cancelled: "This order was cancelled and will not be charged.",
+    cancelled: settings.notifications.cancelled.message,
   };
 
   return (
@@ -71,6 +71,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         status={order.status}
         message={statusMessage[order.status]}
         prefs={alertPrefs}
+        enabled={settings.loaded && settings.notifications[order.status].in_app}
       />
 
       <Link href="/orders" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted transition-colors hover:text-ink">

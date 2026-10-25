@@ -43,7 +43,8 @@ export default async function HomePage() {
     fetchPresets(token),
     fetchFavoriteIds(token),
   ]);
-  const { open, today } = isOpenNow(settings.businessHours);
+  const { today } = isOpenNow(settings.businessHours);
+  const open = settings.loaded && (settings.availability?.open ?? isOpenNow(settings.businessHours).open);
   const firstName =
     user.profile?.full_name?.trim().split(/\s+/)[0] || user.email.split("@")[0];
 

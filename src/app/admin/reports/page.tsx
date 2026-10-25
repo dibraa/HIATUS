@@ -19,6 +19,8 @@ export const metadata: Metadata = { title: "Reports" };
 export const dynamic = "force-dynamic";
 
 import { ReportTabs } from "./report-tabs";
+import { ReconciliationWorkspace } from "./reconciliation";
+import { readCloseout } from "@/app/actions/reconciliation";
 import { CustomerTable, TransactionTable, DisputeList, NewDispute, HourChart } from "./finance-views";
 import { AdminPagination } from "@/components/admin-pagination";
 import type { AdminSearch } from "@/lib/activity";
@@ -66,6 +68,11 @@ function SalesPanels({ data, period, date }: { data: Report; period: string; dat
 export default async function ReportsPage({ searchParams }: { searchParams: Promise<AdminSearch> }) {
   const search = await searchParams;
   const get = (key: string) => typeof search[key] === "string" ? search[key] as string : "";
+  if (get("view") === "reconciliation") {
+    const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+    const date = get("date") || today, result = await readCloseout(date);
+    return <div className="admin-reports"><PageHeader title="Reports" /><ReportTabs view="reconciliation" period="daily" date={date} today={today} />{result.data ? <ReconciliationWorkspace key={date} initial={result.data} today={today} /> : <DataError title="Closeout unavailable" body={result.error || "Please try again."} showRetry />}</div>;
+  }
   const view = (["sales", "customers", "transactions", "refunds"].includes(get("view")) ? get("view") : "sales") as ReportView;
   const financial = view === "transactions" || view === "refunds";
   const period = get("period") || (financial ? "all" : "monthly");

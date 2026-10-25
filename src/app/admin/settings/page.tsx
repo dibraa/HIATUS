@@ -10,12 +10,13 @@ import { apiJson } from "@/lib/api-client";
 import { getServerToken } from "@/lib/server-token";
 import type { AuthenticationSettings } from "@/lib/authentication-options";
 import { AuthenticationSettingsForm } from "./authentication-settings";
+import { NotificationSettingsForm } from "./notification-settings";
+import { DataError } from "@/components/ui/data-error";
 import {
   BusinessHoursForm,
   OrderingForm,
   PaymentMethodsForm,
   ShopInfoForm,
-  TemplatesForm,
 } from "./settings-forms";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -23,10 +24,10 @@ export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
-  const { businessHours, paymentMethods, ordering, shopInfo, templates } =
-    await getSettings();
+  const settings = await getSettings();
+  const { businessHours, paymentMethods, ordering, shopInfo, versions, loaded } = settings;
 
-  const { open } = isOpenNow(businessHours);
+  const open = settings.availability?.open ?? (loaded && isOpenNow(businessHours).open);
   let integrations: IntegrationSettings | null = null;
   try { integrations = await apiJson<IntegrationSettings>("/settings/integrations", { token: (await getServerToken()) ?? undefined, cache: "no-store" }); } catch { /* The form shows an unavailable state. */ }
   let receiptEnabled: boolean | null = null;
@@ -52,21 +53,25 @@ export default async function SettingsPage() {
       <div className="admin-settings-status">
         <span className="text-muted">Storefront status</span>
         <Badge tone={open ? "success" : "neutral"}>
-          {open ? "Open now" : "Closed now"}
+          {!loaded ? "Unavailable" : open ? "Open now" : "Closed now"}
         </Badge>
-        <Badge tone={ordering.accepting_orders ? "success" : "danger"}>
-          {ordering.accepting_orders ? "Taking orders" : "Orders paused"}
+        <Badge tone={settings.availability?.can_order ? "success" : "danger"}>
+          {settings.availability?.can_order ? "Taking orders" : "Orders paused"}
         </Badge>
+        {settings.availability?.next_open_at && <span className="text-sm text-muted">Opens {new Date(settings.availability.next_open_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", weekday: "short", hour: "numeric", minute: "2-digit" })}</span>}
+        {settings.availability?.closes_at && <span className="text-sm text-muted">Open until {new Date(settings.availability.closes_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", weekday: "short", hour: "numeric", minute: "2-digit" })}</span>}
       </div>
 
-      <div className="admin-settings-layout">
-        <SettingsNavigation />
+      <div className={loaded ? "admin-settings-layout" : ""}>
+        {loaded && <SettingsNavigation />}
         <div className="admin-settings-sections">
-          <section id="settings-ordering" tabIndex={-1} aria-label="Ordering settings"><OrderingForm ordering={ordering} /></section>
-          <section id="settings-payments" tabIndex={-1} aria-label="Payment settings"><PaymentMethodsForm methods={paymentMethods} /></section>
-          <section id="settings-hours" tabIndex={-1} aria-label="Opening hours settings"><BusinessHoursForm hours={businessHours} /></section>
-          <section id="settings-shop" tabIndex={-1} aria-label="Shop details settings"><ShopInfoForm info={shopInfo} /></section>
-          <section id="settings-messages" tabIndex={-1} aria-label="Order message settings"><TemplatesForm templates={templates} /></section>
+          {loaded ? <>
+          <section id="settings-ordering" tabIndex={-1} aria-label="Ordering settings"><OrderingForm ordering={ordering} version={versions.ordering} /></section>
+          <section id="settings-payments" tabIndex={-1} aria-label="Payment settings"><PaymentMethodsForm methods={paymentMethods} version={versions.payment_methods} /></section>
+          <section id="settings-hours" tabIndex={-1} aria-label="Opening hours settings"><BusinessHoursForm hours={businessHours} version={versions.business_hours} /></section>
+          <section id="settings-shop" tabIndex={-1} aria-label="Shop details settings"><ShopInfoForm info={shopInfo} version={versions.shop_info} /></section>
+          <section id="settings-messages" tabIndex={-1} aria-label="Notification settings"><NotificationSettingsForm policy={settings.notifications} version={versions.notifications || 0} pushEnabled={integrations?.push_enabled ?? null} /></section>
+          </> : <DataError title="Settings unavailable" body="Reload before editing settings." showRetry />}
           <section id="settings-api" tabIndex={-1} aria-labelledby="api-controls-heading" className="flex flex-col gap-5">
             <div><h2 id="api-controls-heading" className="text-xl font-semibold">API controls</h2></div>
             <IntegrationSettingsForm key={JSON.stringify(integrations)} settings={integrations} />

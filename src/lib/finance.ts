@@ -1,4 +1,4 @@
-export type ReportView = "sales" | "customers" | "transactions" | "refunds";
+export type ReportView = "sales" | "customers" | "transactions" | "refunds" | "reconciliation";
 export type PeakHour = { hour: number; order_count: number };
 export type LedgerEntry = {
   _id: string; order_id: string; order_code: string; created_at: string;

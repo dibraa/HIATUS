@@ -13,12 +13,14 @@ export function OrderAlerts({
   status,
   message,
   prefs,
+  enabled = true,
 }: {
   orderId: string;
   code: string;
   status: OrderStatus;
   message: string;
   prefs: AlertPreferences;
+  enabled?: boolean;
 }) {
   const storageKey = `hiatus:order-status:${orderId}`;
   const lastSeen = useRef<OrderStatus | null>(null);
@@ -30,7 +32,7 @@ export function OrderAlerts({
     lastSeen.current = status;
     writeStored(storageKey, status);
 
-    if (previous === status || !shouldAlert(previous, status, { order_updates, ready_alerts })) return;
+    if (previous === status || (!enabled && status !== "cancelled") || !shouldAlert(previous, status, { order_updates, ready_alerts })) return;
 
     const label = STATUS_LABELS[status];
     if (status === "ready") {
@@ -47,7 +49,7 @@ export function OrderAlerts({
     }
     playChime();
     return flagTabTitle(`${label} · Order ${code}`);
-  }, [status, storageKey, code, message, order_updates, ready_alerts]);
+  }, [status, storageKey, code, message, order_updates, ready_alerts, enabled]);
 
   return (
     <ReadyModal

@@ -9,6 +9,7 @@ import { getSizeOption } from "@/lib/sizes";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { placeOrder } from "@/app/actions/orders";
+import type { Availability } from "@/lib/settings";
 import {
   ORDER_TYPE_HINTS,
   ORDER_TYPE_LABELS,
@@ -34,10 +35,12 @@ export function CheckoutForm({
   paymentMethods,
   ordering,
   estimatedMinutes,
+  availability,
 }: {
   paymentMethods: PaymentMethodSettings;
   ordering: OrderingSettings;
   estimatedMinutes: number;
+  availability?: Availability;
 }) {
   const { lines, totalPrice, totalItems, clear, hydrated } = useCart();
   const router = useRouter();
@@ -84,14 +87,15 @@ export function CheckoutForm({
     );
   }
 
-  if (!ordering.accepting_orders) {
+  if (!ordering.accepting_orders || availability?.can_order === false) {
     return (
       <div className="rounded-lg border border-warning-soft-fg/25 bg-warning-soft-bg px-6 py-10 text-center">
         <h2 className="display text-xl text-warning-soft-fg">
-          We have paused new orders
+          {availability?.open === false ? "The shop is closed" : "Ordering is paused"}
         </h2>
         <p className="mx-auto mt-2 max-w-[44ch] text-sm text-warning-soft-fg">
           Your cart is saved. Please try again later.
+          {availability?.next_open_at && <> Opens {new Date(availability.next_open_at).toLocaleString("en-PH", { timeZone: "Asia/Manila", weekday: "short", hour: "numeric", minute: "2-digit" })}.</>}
         </p>
         <div className="mt-6 flex justify-center">
           <ButtonLink href="/menu" variant="outline" size="lg">
