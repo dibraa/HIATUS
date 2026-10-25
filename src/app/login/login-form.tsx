@@ -56,7 +56,6 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
       <input type="hidden" name="next" value={next} />
       {options?.recaptcha_enabled && <input type="hidden" name="recaptcha_token" value={captchaToken || ""} />}
       <FormError>{optionsError}</FormError>
-      {optionsError && <Button type="button" variant="outline" onClick={refresh}>Refresh sign-in options</Button>}
 
       {notice && <FormError>{notice}</FormError>}
 

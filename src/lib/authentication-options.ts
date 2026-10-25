@@ -34,6 +34,6 @@ export async function getAuthenticationOptions(): Promise<AuthenticationResult> 
   } catch {
     // Do not assume CAPTCHA is disabled. Password submissions still go through
     // the API, which independently reads and enforces the current saved policy.
-    return { options: null, error: "Additional sign-in options could not load. You can try your email and password, or refresh the sign-in options." };
+    return { options: null, error: "Additional sign-in options could not load. Retrying automatically. You can still try your email and password." };
   }
 }

@@ -72,9 +72,9 @@ test("both switches off render an enabled password form without mounting Google 
   assert.doesNotMatch(rendered.html, /disabled=""/);
 });
 
-test("an options outage allows a password attempt and offers retry without assuming CAPTCHA is off", () => {
+test("an options outage allows a password attempt without a manual refresh button or assuming CAPTCHA is off", () => {
   const rendered = login({ options: null, error: "Additional options unavailable" });
-  assert.match(rendered.html, /Refresh sign-in options/);
+  assert.doesNotMatch(rendered.html, /Refresh sign-in options/);
   assert.doesNotMatch(rendered.html, /disabled=""/);
   assert.equal(rendered.googleMounts + rendered.captchaMounts, 0);
 });
@@ -115,7 +115,7 @@ test("admin switches show saved enabled values and can be turned off when provid
 
 test("open forms pick up off switches on refresh and keep known CAPTCHA requirements during an outage", async () => {
   const states = [], windowEvents = new Map(), documentEvents = new Map();
-  let effect, interval, cleanup, signal, response = result(on), failing = false, stateIndex = 0;
+  let effect, interval, cleanup, signal, intervalMs, response = result(on), failing = false, stateIndex = 0;
   const validator = load("lib/authentication-options.ts", { "@/lib/api-client": {} });
   const hook = load("lib/use-authentication-options.ts", {
     react: {
@@ -126,19 +126,24 @@ test("open forms pick up off switches on refresh and keep known CAPTCHA requirem
   }, {
     AbortController,
     document: { visibilityState: "visible", addEventListener: (name, callback) => documentEvents.set(name, callback), removeEventListener: name => documentEvents.delete(name) },
-    window: { setInterval: callback => { interval = callback; return 1; }, clearInterval() {}, addEventListener: (name, callback) => windowEvents.set(name, callback), removeEventListener: name => windowEvents.delete(name) },
+    window: { setInterval: (callback, ms) => { interval = callback; intervalMs = ms; return 1; }, clearInterval() {}, addEventListener: (name, callback) => windowEvents.set(name, callback), removeEventListener: name => windowEvents.delete(name) },
     fetch: async (_url, options) => { signal = options.signal; if (failing) throw Error("outage"); return Response.json(response); },
   });
   const controls = hook.useAuthenticationOptions(result(on));
   cleanup = effect();
   const flush = () => new Promise(resolve => setImmediate(resolve));
   await flush();
+  assert.equal(intervalMs, 15000);
   failing = true; await interval();
   assert.equal(states[0].options.recaptcha_enabled, true);
   assert.match(states[0].error, /Additional sign-in options/);
+  assert.match(states[0].error, /Retrying automatically/);
   response = result(off); failing = false;
-  await windowEvents.get("focus")();
+  await interval();
   assert.deepEqual(states[0].options, off); assert.equal(states[0].error, null);
+  response = result(on);
+  await windowEvents.get("online")();
+  assert.deepEqual(states[0].options, on);
   controls.refresh(); assert.equal(states[1], 1);
   cleanup();
   assert.equal(signal.aborted, true); assert.equal(windowEvents.size, 0); assert.equal(documentEvents.size, 0);

@@ -102,9 +102,8 @@ export function GoogleSignIn({ clientId, intent, next, captchaToken, captchaRequ
         </GoogleOAuthProvider>
       ) : !error ? <p role="status" className="text-sm text-muted">Preparing Google sign-in…</p> : null}
       {pending && <p role="status" className="text-sm text-muted">Signing in with Google…</p>}
-      {!(credential && code === "LINK_REQUIRED") && <FormError>{error}</FormError>}
-      {code === "LOGIN_REQUIRED" ? <TextLink href="/login">Go to login</TextLink> :
-        error && !credential && <Button type="button" variant="secondary" disabled={pending} onClick={restart}>Retry Google sign-in</Button>}
+      {!(credential && code === "LINK_REQUIRED") && <FormError>{error && (/try again/i.test(error) ? error : `${error} Please try again.`)}</FormError>}
+      {code === "LOGIN_REQUIRED" && <TextLink href="/login">Go to login</TextLink>}
     </div>
   );
 }

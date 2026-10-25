@@ -13,7 +13,7 @@ const initialState: AuthState = { error: null };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SignupForm({ authentication }: { authentication: Awaited<ReturnType<typeof getAuthenticationOptions>> }) {
-  const { options, error: optionsError, refresh } = useAuthenticationOptions(authentication);
+  const { options, error: optionsError } = useAuthenticationOptions(authentication);
   const [state, formAction, pending] = useActionState(signUp, initialState);
   const [googlePending, setGooglePending] = useState(false);
   const router = useRouter();
@@ -31,7 +31,6 @@ export function SignupForm({ authentication }: { authentication: Awaited<ReturnT
       <p className="border-t border-line pt-4 text-center text-sm text-muted">Or create an account with email</p>
     </>}
     <FormError>{optionsError}</FormError>
-    {optionsError && <Button type="button" variant="outline" onClick={refresh}>Refresh sign-in options</Button>}
     <form action={formAction} className="flex flex-col gap-4">
       <TextField
         id="full_name"

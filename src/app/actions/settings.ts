@@ -7,6 +7,14 @@ import type { BusinessHours } from "@/types/database";
 
 export type SettingsState = { error: string | null; success: string | null };
 
+export async function saveIntegrationSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  return writeSetting("integrations", {
+    report_export_enabled: formData.get("report_export_enabled") === "on",
+    push_enabled: formData.get("push_enabled") === "on",
+    password_email_enabled: formData.get("password_email_enabled") === "on",
+  }, ["/admin/reports"]);
+}
+
 export async function saveReceiptSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   return writeSetting("receipts", { enabled: formData.get("enabled") === "on" });
 }
