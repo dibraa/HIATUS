@@ -47,9 +47,6 @@ export default async function ShiftPage() {
     <div>
       <StaffPageHeading title="My shift" />
       <div className="grid gap-5 pt-4">
-        <p className="staff-lead">
-          Clock in when you start, count the drawer when you finish.
-        </p>
 
         {/* The job (clock in, or the open shift and clocking out) leads on
             the left; the record of past shifts sits beside it on wide
@@ -100,7 +97,7 @@ export default async function ShiftPage() {
           <EmptyState
             as="h3"
             title="No finished shifts yet"
-            body="Once you clock out, your last few shifts are listed here."
+
           />
         ) : (
           <ul className="flex flex-col gap-3">

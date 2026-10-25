@@ -23,7 +23,7 @@ export function EmptyState({
   icon,
 }: {
   title: string;
-  body: string;
+  body?: string;
   action?: ReactNode;
   as?: "h2" | "h3";
   icon?: ReactNode;
@@ -39,7 +39,7 @@ export function EmptyState({
       <Tag className="display text-2xl text-ink">{title}</Tag>
 
       {/* ~44 characters keeps the measure short enough to read as one thought */}
-      <p className="mx-auto mt-snug max-w-[44ch] text-sm text-muted">{body}</p>
+      {body && <p className="mx-auto mt-snug max-w-[44ch] text-sm text-muted">{body}</p>}
 
       {action && <div className="mt-stack flex justify-center">{action}</div>}
     </div>

@@ -84,6 +84,7 @@ export function SalesChart({
       <div aria-hidden="true" className="h-72">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
+            accessibilityLayer={false}
             data={chartData}
             margin={{ top: 8, right: 8, bottom: 8, left: 8 }}
           >
@@ -206,7 +207,7 @@ export function PeakHoursChart({ data }: { data: PeakHourRow[] }) {
 
       <div aria-hidden="true" className="h-64">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
+          <BarChart accessibilityLayer={false} data={chartData} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
             <CartesianGrid vertical={false} stroke={c["--hi-line"]} />
             <XAxis
               dataKey="label"

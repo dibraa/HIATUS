@@ -70,7 +70,6 @@ export function CustomerHome({
             className="mt-6 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg ring-1 ring-line sm:p-6"
           >
             <p className="ui-caps text-2xs text-inverse-card-muted">No order in progress</p>
-            <p className="mt-1.5">When you order ahead, you can follow it here, from the counter to ready.</p>
           </section>
         )}
       </section>

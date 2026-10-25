@@ -22,18 +22,18 @@ export function AuthenticationSettingsForm({ settings, error }: { settings: Auth
   return (
     <form action={action} className="admin-settings-card">
       <h2 className="display text-xl text-ink">Sign-in and security</h2>
-      <p className="mt-1.5 max-w-[60ch] text-sm text-muted">Choose how people log in across the site. Turning both options off keeps email-and-password login available without Google or reCAPTCHA. Save to apply changes; current sessions stay active.</p>
+      <p className="mt-1.5 max-w-[60ch] text-sm text-muted">Email and password remain available when both options are off. Current sessions stay active.</p>
       <div className="mt-5 flex flex-col gap-4">
         <FormError>{error}</FormError>
         {settings && <fieldset disabled={pending} className="flex min-w-0 flex-col gap-4">
           <CheckboxField id="google-enabled" name="google_enabled" label="Enable Google sign-in"
             checked={draft.google} onChange={event => setDraft(previous => ({ ...previous, google: event.target.checked }))}
             disabled={!settings.google_ready && !draft.google}
-            hint={settings.google_ready ? "Available on login and sign-up. Existing members confirm their password once to connect Google." : "Google sign-in is disabled by server configuration."} />
+            hint={settings.google_ready ? "Login and sign-up. Existing accounts require a password to link Google." : "Google sign-in is disabled by server configuration."} />
           <CheckboxField id="recaptcha-enabled" name="recaptcha_enabled" label="Enable reCAPTCHA on login"
             checked={draft.captcha} onChange={event => setDraft(previous => ({ ...previous, captcha: event.target.checked }))}
             disabled={!settings.recaptcha_ready && !draft.captcha}
-            hint={settings.recaptcha_ready ? "Requires a checkbox for password and Google login. Sign-up and password recovery stay unchanged." : "reCAPTCHA keys and allowed hostnames are not configured. Add them on the server before enabling."} />
+            hint={settings.recaptcha_ready ? "Verifies password and Google login only." : "Configure reCAPTCHA keys and allowed hostnames before enabling."} />
         </fieldset>}
         <FormError>{state.error}</FormError>
         <FormSuccess>{state.success}</FormSuccess>

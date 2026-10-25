@@ -115,7 +115,6 @@ export function TeamTable({
                 {members.length === 0 ? (
                   <tr><td colSpan={5} className="px-4 py-12 text-center">
                     <p className="text-sm text-ink">No accounts yet.</p>
-                    <p className="mt-1 text-sm text-muted">New accounts will appear here.</p>
                   </td></tr>
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan={5} className="px-4 py-12 text-center">

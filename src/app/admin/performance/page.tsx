@@ -23,14 +23,14 @@ export default async function PerformancePage({ searchParams }: { searchParams: 
     ]);
   } catch (error) { return <><AdminPageHeader title="Staff activity metrics" /><DataError title="Could not load activity metrics" body={(error as Error).message} showRetry /><a href="/admin/performance" className="admin-secondary-link mt-4">Reset filters</a></>; }
   return <div className="space-y-5">
-    <AdminPageHeader title="Staff activity metrics" description="Recorded staff and administrator actions, not an employee performance score." />
+    <AdminPageHeader title="Staff activity metrics" description="Recorded actions, not a performance score." />
     <ActivityFilters options={options} query={query} period={data.period} metrics />
     <p className="text-sm text-muted">Reporting period: {data.period.from} to {data.period.to} · Asia/Manila</p>
     <div className="admin-stats">
-      <AdminStatCard label="Staff accounts" value={data.staff_count} hint="Current staff accounts, across all dates" />
-      <AdminStatCard label="Recorded actions" value={data.totals.count} hint="Selected staff and reporting period" />
-      <AdminStatCard label="Successful actions" value={data.totals.success} hint="Confirmed server results" />
-      <AdminStatCard label="Failed actions" value={data.totals.failure} hint="Recorded failures in this period" />
+      <AdminStatCard label="Staff accounts" value={data.staff_count} hint="Across all dates" />
+      <AdminStatCard label="Recorded actions" value={data.totals.count} />
+      <AdminStatCard label="Successful actions" value={data.totals.success} />
+      <AdminStatCard label="Failed actions" value={data.totals.failure} />
     </div>
     <div className="grid gap-5 xl:grid-cols-2">
       {[{ title: "By staff member", rows: data.by_actor.map(row => ({ ...row, label: row.name })) }, { title: "By action", rows: data.by_action.map(row => ({ ...row, label: actionLabel(row._id) })) }].map(section => <section className="admin-panel" key={section.title}>

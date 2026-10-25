@@ -73,9 +73,8 @@ export function CheckoutForm({
     return (
       <div className="py-12 text-center">
         <h2 className="display text-xl text-ink">
-          Nothing to check out
+          Your cart is empty
         </h2>
-        <p className="mt-2 text-sm text-muted">Your cart is empty.</p>
         <div className="mt-6 flex justify-center">
           <ButtonLink href="/menu" size="lg">
             Browse the menu
@@ -92,8 +91,7 @@ export function CheckoutForm({
           We have paused new orders
         </h2>
         <p className="mx-auto mt-2 max-w-[44ch] text-sm text-warning-soft-fg">
-          The shop is not taking orders at the moment. Your cart is saved — come
-          back shortly and it will still be here.
+          Your cart is saved. Please try again later.
         </p>
         <div className="mt-6 flex justify-center">
           <ButtonLink href="/menu" variant="outline" size="lg">

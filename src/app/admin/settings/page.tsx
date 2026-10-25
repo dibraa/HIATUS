@@ -68,7 +68,7 @@ export default async function SettingsPage() {
           <section id="settings-shop" tabIndex={-1} aria-label="Shop details settings"><ShopInfoForm info={shopInfo} /></section>
           <section id="settings-messages" tabIndex={-1} aria-label="Order message settings"><TemplatesForm templates={templates} /></section>
           <section id="settings-api" tabIndex={-1} aria-labelledby="api-controls-heading" className="flex flex-col gap-5">
-            <div><h2 id="api-controls-heading" className="text-xl font-semibold">API controls</h2><p className="mt-2 text-sm text-muted">Enable or disable optional integrations. Save each group to apply changes. Core login, ordering, and on-screen reports remain available.</p></div>
+            <div><h2 id="api-controls-heading" className="text-xl font-semibold">API controls</h2></div>
             <IntegrationSettingsForm key={JSON.stringify(integrations)} settings={integrations} />
             <ReceiptSettingsForm key={String(receiptEnabled)} enabled={receiptEnabled} />
             <AuthenticationSettingsForm settings={authentication} error={authenticationError} />

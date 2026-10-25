@@ -25,7 +25,7 @@ export default async function OrdersPage() {
       <div className="mx-auto max-w-2xl py-2">
         <PageHeader
           title="My orders"
-          description="Track what is being made and revisit anything you have ordered before."
+
         />
         <DataError
           title="Couldn't load orders"
@@ -43,13 +43,13 @@ export default async function OrdersPage() {
     <div className="mx-auto max-w-2xl py-2">
       <PageHeader
         title="My orders"
-        description="Track what is being made and revisit anything you have ordered before."
+
       />
 
       {orderList.length === 0 ? (
         <EmptyState
           title="No orders yet"
-          body="Once you order ahead, it shows up here with its live pickup status."
+
           action={<ButtonLink href="/menu">Browse the menu</ButtonLink>}
         />
       ) : (

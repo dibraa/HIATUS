@@ -54,7 +54,7 @@ export default async function TeamPage() {
     <div>
       <PageHeader
         title="Users"
-        description="Manage every account, its details, and access."
+
       />
 
       <section className="admin-panel" aria-label="User accounts">

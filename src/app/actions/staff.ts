@@ -17,6 +17,7 @@ function revalidateOrderViews(orderId?: string) {
   revalidatePath("/staff");
   revalidatePath("/staff/pos");
   revalidatePath("/admin/orders");
+  revalidatePath("/admin/reports");
   revalidatePath("/admin");
   revalidatePath("/orders");
   if (orderId) revalidatePath(`/orders/${orderId}`);

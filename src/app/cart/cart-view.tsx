@@ -33,7 +33,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
     return (
       <EmptyState
         title="Your cart is empty"
-        body="Add a drink from the menu and it will show up here."
+
         action={<ButtonLink href="/menu" size="lg">Browse the menu</ButtonLink>}
       />
     );
@@ -113,7 +113,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
           <span className="font-semibold numeric text-ink">{formatPrice(totalPrice)}</span>
         </div>
         <p className="mt-1 text-xs text-muted">
-          Pickup only — no delivery fee. Pay cash when you collect.
+          Pay at the counter.
         </p>
 
         <ButtonLink href="/checkout" size="lg" className="mt-5 w-full">

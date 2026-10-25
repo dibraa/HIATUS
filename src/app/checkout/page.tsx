@@ -12,7 +12,7 @@ export default async function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-lg py-2">
-      <PageHeader title="Checkout" description="A couple of choices, then we start making it." />
+      <PageHeader title="Checkout"  />
       <CheckoutForm
         paymentMethods={settings.paymentMethods}
         ordering={settings.ordering}

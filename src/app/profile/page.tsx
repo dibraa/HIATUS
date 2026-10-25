@@ -60,7 +60,6 @@ export default async function ProfilePage() {
       {user && user.role !== "customer" && (
         <p className="mb-6 flex flex-wrap items-center gap-2 rounded-lg border border-line bg-raised px-4 py-3 text-sm text-ink-soft">
           <Badge tone={user.role === "admin" ? "accent" : "green"}>{ROLE_LABELS[user.role]}</Badge>
-          You are signed in with a team account.
           <Link href={user.role === "admin" ? "/admin" : "/staff"} className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink">
             Go to your dashboard
           </Link>

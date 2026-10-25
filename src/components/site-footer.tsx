@@ -37,9 +37,6 @@ export async function SiteFooter() {
           <h2 id="visit-heading" className="display text-5xl">
             Come by
           </h2>
-          <p className="mt-snug max-w-[34ch] text-pretty text-inverse-muted">
-            Stay a while, or order ahead and grab it on your way.
-          </p>
         </div>
 
         <div>

@@ -20,7 +20,7 @@ export default async function NotificationsPage() {
   } catch {
     return (
       <div className="mx-auto max-w-2xl py-2">
-        <PageHeader title="Notifications" description="Stay up to date with your Hiatus Coffee orders." />
+        <PageHeader title="Notifications"  />
         <DataError title="Couldn't load notifications" body="Check your connection and try again." />
       </div>
     );
@@ -35,7 +35,7 @@ export default async function NotificationsPage() {
       </div>
       <PageHeader
         title="Notifications"
-        description="Stay up to date with your Hiatus Coffee orders."
+
       />
       <NotificationList notifications={notifications} />
     </div>

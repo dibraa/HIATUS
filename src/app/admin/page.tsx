@@ -80,7 +80,6 @@ export default async function AdminDashboardPage() {
     <div className="admin-dashboard">
       <AdminPageHeader
         title="Dashboard"
-        description={summary ? `${formatPrice(summary.revenue_today)} today · ${summary.orders_today} orders` : "Today's overview"}
         action={<Link href="/admin/orders" className="admin-primary-link">View orders</Link>}
       />
       <div className="admin-attention-row">
@@ -122,7 +121,7 @@ export default async function AdminDashboardPage() {
             <Link href="/admin/reports" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
           </div>
           {topItems.length === 0 ? (
-            <EmptyState as="h3" title="Nothing sold yet" body="Popular drinks appear here after orders complete." />
+            <EmptyState as="h3" title="Nothing sold yet"  />
           ) : (
             <ol className="divide-y divide-line">
               {topItems.map((item, i) => (
@@ -146,7 +145,7 @@ export default async function AdminDashboardPage() {
           <Link href="/admin/orders" className="inline-flex min-h-11 items-center text-xs font-medium text-accent-ink hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink">See all</Link>
         </div>
         {recentOrders.length === 0 ? (
-          <EmptyState as="h3" title="No orders yet" body="Orders placed through the storefront appear here as they come in." />
+          <EmptyState as="h3" title="No orders yet"  />
         ) : (
           <div className="admin-table-scroll" tabIndex={0} role="region" aria-label="Recent orders table">
             <table className="admin-recent-table w-full text-left text-sm">

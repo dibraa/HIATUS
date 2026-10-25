@@ -52,10 +52,6 @@ export default async function StaffMenuPage() {
       {/* Full width (live choice): the list uses the whole content column. */}
       <div className="grid gap-5 pt-4">
         <div className="grid gap-1">
-          <p className="staff-lead">
-            Flip a drink off when you run out. Customers see the change
-            straight away.
-          </p>
           {items.length > 0 && (
             <p className="staff-lead" aria-live="polite">
               {soldOut === 0
@@ -68,7 +64,7 @@ export default async function StaffMenuPage() {
         {items.length === 0 ? (
           <EmptyState
             title="No menu items yet"
-            body="Once the shop adds drinks to the menu, they will be listed here."
+
           />
         ) : (
           <>
@@ -128,10 +124,8 @@ export default async function StaffMenuPage() {
                 );
               })}
             </div>
-            <p className="staff-caption flex flex-wrap items-center gap-2">
-              <span className="counter-tag">Read only</span>
-              Prices, names and photos are managed by an admin on the menu
-              screen.
+            <p className="staff-caption">
+              Ask an admin to edit names, prices, or photos.
             </p>
           </>
         )}

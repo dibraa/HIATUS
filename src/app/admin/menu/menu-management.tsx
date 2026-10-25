@@ -22,7 +22,7 @@ function CategoryForm({ category }: { category?: Category }) {
 }
 export function CategoryManager({ categories }: { categories: Category[] }) {
   return <details className="admin-panel mb-5"><summary className="flex min-h-11 cursor-pointer items-center font-medium">Manage categories</summary>
-    <p className="my-3 text-sm text-muted">Rename categories for all their items. Lower positions appear first in the category filter. Move items before deleting a category.</p>
+    <p className="my-3 text-sm text-muted">Renaming updates all items. Lower positions appear first. Categories must be empty before deletion.</p>
     {categories.map(category => <CategoryForm key={category.name} category={category} />)}
     <CategoryForm />
   </details>;

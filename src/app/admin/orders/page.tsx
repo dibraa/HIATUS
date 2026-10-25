@@ -50,7 +50,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
       <div>
         <PageHeader
           title="Orders"
-          description="Review orders by status and monitor each order's progress."
+
         />
         <DataError
           title="Couldn't load orders"
@@ -75,17 +75,16 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
     <div>
       <PageHeader
         title="Orders"
-        description="Review orders by status and monitor each order's progress."
+
       />
 
       <AutoRefresh seconds={15} />
-      <p className="mb-4 text-sm text-muted">Refreshes every 15 seconds. Choose All to view the full order history.</p>
+      <p className="mb-4 text-sm text-muted">Updates every 15 seconds.</p>
       <OrderStatusFilter currentTab={tab} tabs={TABS} />
 
       {orderList.length === 0 ? (
         <EmptyState
           title="No orders in this view"
-          body={tab === "active" ? "Orders placed through the storefront appear here as they come in." : "No orders match this filter yet."}
         />
       ) : (
         <section className="admin-panel">
