@@ -9,9 +9,9 @@ export function IntegrationSettingsForm({ settings }: { settings: IntegrationSet
   const [state, action, pending] = useActionState(saveIntegrationSettings, { error: null, success: null });
   const [draft, setDraft] = useState(settings);
   const controls = [
-    ["report_export_enabled", "Enable Excel report export API", "Allows administrators to download .xlsx reports. On-screen reports stay available when disabled."],
-    ["push_enabled", "Enable browser push notifications", "Controls outbound order alerts and test push messages. In-app notifications remain available."],
-    ["password_email_enabled", "Enable password setup and reset email", "Disabling prevents password recovery and new-account setup emails. Existing passwords still work."],
+    ["report_export_enabled", "Enable report exports", "CSV, PDF, and Excel downloads. On-screen reports remain available when off."],
+    ["push_enabled", "Enable browser push notifications", "Order alerts and test messages. In-app notifications remain available when off."],
+    ["password_email_enabled", "Enable password setup and reset email", "Turning off blocks recovery and account setup emails. Existing passwords still work."],
   ] as const;
   return <form action={action} className="admin-settings-card" aria-busy={pending}>
     <h3 className="text-lg font-semibold">Exports and notifications</h3>

@@ -298,7 +298,7 @@ export function QueueBoard({
       ) : (
         <EmptyState
           title={current === "paid" ? "No paid orders" : "No orders in history"}
-          body="Orders will appear here as they are paid, completed, or cancelled. Adjust the payment filter or search to see more."
+          body="Try another payment filter or search."
         />
       )}
       {selected && panel === "payment" && (

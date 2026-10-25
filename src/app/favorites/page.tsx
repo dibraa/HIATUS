@@ -38,13 +38,13 @@ export default async function FavoritesPage() {
     <div className="py-2">
       <PageHeader
         title="Saved"
-        description="The drinks you keep coming back to, and the orders you have saved to repeat."
+
       />
 
       {nothingSaved ? (
         <EmptyState
           title="Nothing saved yet"
-          body="Tap the heart on any drink to save it here, or save a whole order from your cart to reorder it in one tap."
+          body="Save drinks with the heart button, or save an order from your cart."
           action={<ButtonLink href="/menu">Browse the menu</ButtonLink>}
         />
       ) : (

@@ -40,6 +40,7 @@ export function Modal({
   onConfirm,
   onCancel,
   danger,
+  className = "",
 }: {
   open: boolean;
   title: string;
@@ -49,8 +50,10 @@ export function Modal({
   onConfirm: () => void;
   onCancel: () => void;
   danger?: boolean;
+  className?: string;
 }) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
   const confirmRef = useRef<HTMLButtonElement>(null);
   const returnFocusTo = useRef<HTMLElement | null>(null);
 
@@ -76,7 +79,15 @@ export function Modal({
   useEffect(() => {
     if (!open) return;
     returnFocusTo.current = document.activeElement as HTMLElement | null;
-    confirmRef.current?.focus();
+    // Long confirmations start at the heading so their content is not skipped
+    // when focusing the action would scroll a constrained dialog to its end.
+    const dialog = dialogRef.current;
+    if (dialog && dialog.scrollHeight > dialog.clientHeight) {
+      dialog.scrollTop = 0;
+      titleRef.current?.focus({ preventScroll: true });
+    } else {
+      confirmRef.current?.focus();
+    }
     return () => {
       returnFocusTo.current?.focus?.();
     };
@@ -105,7 +116,7 @@ export function Modal({
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
 
-      if (e.shiftKey && document.activeElement === first) {
+      if (e.shiftKey && (document.activeElement === first || document.activeElement === titleRef.current)) {
         e.preventDefault();
         last.focus();
       } else if (!e.shiftKey && document.activeElement === last) {
@@ -122,7 +133,7 @@ export function Modal({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      className={`fixed inset-0 z-50 flex items-center justify-center p-4 ${className}`}
       role="presentation"
       onClick={onCancel}
     >
@@ -141,26 +152,27 @@ export function Modal({
         aria-modal="true"
         aria-labelledby="modal-title"
         aria-describedby="modal-body"
-        className={`dialog-in relative w-full max-w-md rounded-2xl border border-line bg-card p-6 shadow-lg transition-[opacity,transform] duration-(--hi-dur-base) ease-hi-out ${
+        className={`dialog-in relative max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border border-line bg-card p-6 shadow-lg transition-[opacity,transform] duration-(--hi-dur-base) ease-hi-out ${
           exiting ? "scale-[0.97] opacity-0" : "scale-100 opacity-100"
         }`}
         onClick={(e) => e.stopPropagation()}
       >
-        <h2 id="modal-title" className="display text-2xl text-ink">
+        <h2 ref={titleRef} tabIndex={-1} id="modal-title" className="display wrap-anywhere text-2xl text-ink">
           {title}
         </h2>
-        <p id="modal-body" className="mt-tight text-sm text-muted">
+        <p id="modal-body" className="mt-tight wrap-anywhere text-sm text-muted">
           {body}
         </p>
 
-        <div className="mt-stack flex justify-end gap-3">
-          <Button variant="ghost" size="md" onClick={onCancel}>
+        <div className="mt-stack flex flex-wrap justify-end gap-3">
+          <Button variant="ghost" size="md" className="min-w-0 max-w-full wrap-anywhere whitespace-normal" onClick={onCancel}>
             {cancelLabel}
           </Button>
           <Button
             ref={confirmRef}
             variant={danger ? "danger" : "primary"}
             size="md"
+            className="min-w-0 max-w-full wrap-anywhere whitespace-normal"
             onClick={onConfirm}
           >
             {confirmLabel}

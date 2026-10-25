@@ -31,7 +31,7 @@ export function AuthTicket({
   /** The ticket's order line, top right: "Log in", "Sign up"… */
   label: string;
   title: string;
-  description: string;
+  description?: string;
   /** The form. */
   children: ReactNode;
   /** Below the tear line: the way to the other auth page. */
@@ -71,9 +71,8 @@ export function AuthTicket({
               so the headline needs to track the viewport only on phones, and
               `.display` already carries the sub-1 line-height. */}
           <h1 id="auth-title" className="display text-5xl text-ink">{title}</h1>
-          <p className="mb-stack mt-snug max-w-[38ch] text-ink-soft">{description}</p>
-
-          {children}
+          {description && <p className="mt-snug max-w-[38ch] text-ink-soft">{description}</p>}
+          <div className="mt-stack">{children}</div>
 
           {footer && (
             <div className="mt-6 border-t-2 border-dashed border-line-strong pt-4 text-sm text-muted">

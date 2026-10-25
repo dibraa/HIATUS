@@ -12,7 +12,7 @@ export default function Loading() {
       <AuthTicket
         label="Sign up"
         title="Create your account"
-        description="Ordering ahead needs a name and a way to reach you at pickup. Nothing else."
+
       >
         <div className="flex flex-col gap-4">
           <FieldSkeleton />

@@ -12,7 +12,7 @@ export default async function SignupPage() {
     <AuthTicket
       label="Sign up"
       title="Create your account"
-      description="Ordering ahead needs a name and a way to reach you at pickup. Nothing else."
+
       footer={
         <>
           Already have an account? <TextLink href="/login">Log in</TextLink>

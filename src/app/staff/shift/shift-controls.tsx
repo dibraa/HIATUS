@@ -31,14 +31,13 @@ export function ClockInForm() {
         startTransition(async () => {
           const { error } = await clockIn(Number(opening) || 0);
           if (error) toast.error(error);
-          else toast.success("Clocked in. Have a good shift.");
+          else toast.success("Clocked in.");
         });
       }}
     >
       <h2 className="display staff-section-title">Start your shift</h2>
       <p className="staff-lead mt-1.5">
-        Count the float in the drawer before you begin, so the end-of-shift
-        total has something to reconcile against.
+        Enter the cash in the drawer.
       </p>
 
       <div className="mt-4 flex flex-col gap-1.5">
@@ -93,14 +92,13 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
             note,
           );
           if (error) toast.error(error);
-          else toast.success("Clocked out. Shift recorded.");
+          else toast.success("Shift recorded.");
         });
       }}
     >
       <h2 className="display staff-section-title">End your shift</h2>
       <p className="staff-lead mt-1.5">
-        Count the drawer and enter the total. Anything that does not match is
-        worth a note while you still remember it.
+        Enter the counted cash and note any difference.
       </p>
 
       <div className="mt-4 flex flex-col gap-1.5">

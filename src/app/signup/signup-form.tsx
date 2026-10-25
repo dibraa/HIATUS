@@ -72,7 +72,7 @@ export function SignupForm({ authentication }: { authentication: Awaited<ReturnT
         pattern="[0-9]*"
         title="Enter numbers only."
         autoComplete="tel"
-        hint="Optional. Only used if something goes wrong with an order."
+        hint="Optional. For questions about your order."
         value={phone}
         onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))}
       />

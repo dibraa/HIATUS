@@ -14,7 +14,7 @@ export default async function LoginPage() {
     <AuthTicket
       label="Log in"
       title="Welcome back."
-      description="Log in to order ahead and keep track of your cups."
+
       footer={
         <>
           No account yet? <TextLink href="/signup">Create one</TextLink>

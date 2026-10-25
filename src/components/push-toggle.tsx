@@ -111,7 +111,7 @@ export function PushToggle() {
       <div>
         <p className="text-sm font-semibold text-ink">Browser notifications on this device</p>
         <p className="mt-1 text-sm text-muted">
-          Get told when your order changes, even with this site closed.
+          Order alerts, even when this site is closed.
         </p>
       </div>
 

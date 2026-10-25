@@ -20,7 +20,6 @@ export default async function CartPage() {
     return (
       <EmptyState
         title="Log in first to view your cart"
-        body="Please log in before viewing your cart."
         action={<ButtonLink href="/login?next=%2Fcart" size="lg">Log in</ButtonLink>}
       />
     );

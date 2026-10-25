@@ -24,7 +24,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
     return <><AdminPageHeader title="Activity logs" /><DataError title="Could not load activity" body={(error as Error).message} showRetry /><a href="/admin/activity" className="admin-secondary-link mt-4">Reset filters</a></>;
   }
   return <div>
-    <AdminPageHeader title="Activity logs" description="Account, menu, and counter actions recorded by the server. Logs cannot be edited here." />
+    <AdminPageHeader title="Activity logs"  />
     <ActivityFilters options={options} query={query} period={data.period} />
     <section className="admin-panel" aria-label="Activity records">
       <p className="mb-4 text-sm text-muted">{data.period.from} to {data.period.to} · Asia/Manila</p>

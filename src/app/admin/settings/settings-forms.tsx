@@ -87,7 +87,7 @@ export function BusinessHoursForm({ hours }: { hours: BusinessHours[] }) {
   return (
     <SettingsCard
       title="Opening hours"
-      description="Shown on the storefront. A closing time earlier than the opening time is read as running past midnight."
+      description="Closing before opening means the shop stays open past midnight."
       state={state}
       pending={pending}
       action={formAction}
@@ -152,7 +152,7 @@ export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings
   return (
     <SettingsCard
       title="Payment methods"
-      description="Which tenders customers can choose at checkout. Payment is still taken at the counter."
+      description="Payment is collected at the counter."
       state={state}
       pending={pending}
       action={formAction}
@@ -162,7 +162,6 @@ export function PaymentMethodsForm({ methods }: { methods: PaymentMethodSettings
         name="cash"
         label="Cash"
         defaultChecked={methods.cash}
-        hint="Paid at the counter on collection."
       />
       <CheckboxField
         id="ewallet"
@@ -185,7 +184,7 @@ export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
   return (
     <SettingsCard
       title="Ordering"
-      description="Controls what the storefront offers. Switching orders off leaves the menu browsable but stops new checkouts."
+      description="Pausing orders blocks checkout. The menu remains visible."
       state={state}
       pending={pending}
       action={formAction}
@@ -195,7 +194,6 @@ export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
         name="accepting_orders"
         label="Accepting orders"
         defaultChecked={ordering.accepting_orders}
-        hint="Turn off during a rush or after closing."
       />
       <CheckboxField
         id="dine_in_enabled"
@@ -219,7 +217,7 @@ export function OrderingForm({ ordering }: { ordering: OrderingSettings }) {
         max="120"
         step="1"
         defaultValue={ordering.default_prep_minutes}
-        hint="Only used until there is enough order history to measure the real wait."
+        hint="Used until order history provides a measured wait."
       />
     </SettingsCard>
   );
@@ -288,7 +286,7 @@ export function TemplatesForm({ templates }: { templates: NotificationTemplates 
   return (
     <SettingsCard
       title="Order messages"
-      description="What a customer reads on their order page at each stage. Keep it warm and plain — no jargon."
+      description="Shown on the customer’s order page at each stage."
       state={state}
       pending={pending}
       action={formAction}

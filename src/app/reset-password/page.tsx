@@ -25,7 +25,7 @@ export default async function ResetPasswordPage({
     <AuthTicket
       label="New password"
       title="Set a new password"
-      description="Choose something you have not used here before."
+
     >
       <ResetPasswordForm token={token} />
     </AuthTicket>

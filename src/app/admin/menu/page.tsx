@@ -33,7 +33,7 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
       <div>
         <PageHeader
           title="Menu items"
-          description="Every drink the storefront can sell. Flavour drives both the customer filter and the best-seller report."
+
           action={<AddMenuItemButton />}
         />
         <DataError
@@ -54,7 +54,7 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
     <div>
       <PageHeader
         title="Menu items"
-        description="Every drink the storefront can sell. Flavour drives both the customer filter and the best-seller report."
+
         action={<AddMenuItemButton />}
       />
 

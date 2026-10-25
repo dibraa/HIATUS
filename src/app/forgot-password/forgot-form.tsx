@@ -61,7 +61,6 @@ export function ForgotPasswordForm() {
         autoComplete="email"
         required
         placeholder="you@example.com"
-        hint="We will send a link to set a new password."
       />
 
       {state.error && <FormError>{state.error}</FormError>}

@@ -55,6 +55,7 @@ export function BestSellerChart({ data }: { data: BestSellingFlavor[] }) {
       >
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
+            accessibilityLayer={false}
             data={chartData}
             layout="vertical"
             margin={{ top: 8, right: 24, bottom: 8, left: 8 }}

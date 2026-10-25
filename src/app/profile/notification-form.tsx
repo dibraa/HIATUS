@@ -55,18 +55,17 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
             id="ready_alerts"
             name="ready_alerts"
             label="Ready for pickup"
-            hint="When your order is on the counter."
             defaultChecked={p.ready_alerts}
           />
           <CheckboxField
             id="order_updates"
             name="order_updates"
             label="Order progress"
-            hint="When we accept your order and start making it."
+            hint="Accepted and preparing updates."
             defaultChecked={p.order_updates}
           />
           <p className="mt-2 text-xs text-muted">
-            If we ever have to cancel your order, we always tell you, whatever you choose here.
+            Cancellation alerts are always on.
           </p>
         </fieldset>
       </form>
@@ -80,7 +79,7 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
           </svg>
           <div>
             <p className="text-sm font-medium text-ink-soft">On this site</p>
-            <p className="text-xs text-muted">A pop-up and a chime while your order page is open. Always on.</p>
+            <p className="text-xs text-muted">Pop-up and chime on the order page. Always on.</p>
           </div>
         </div>
 
