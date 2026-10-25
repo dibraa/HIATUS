@@ -41,6 +41,7 @@ export async function SiteFooter() {
 
         <div>
           <h3 className="ui-caps text-2xs text-inverse-muted">Hours</h3>
+          {!settings.loaded && <p className="mt-snug text-sm text-inverse-muted">Hours unavailable.</p>}
           <dl className="mt-snug grid grid-cols-[auto_minmax(0,1fr)] gap-x-5 gap-y-1.5">
             {groups.map((group) => (
               <div key={group.days} className="contents">

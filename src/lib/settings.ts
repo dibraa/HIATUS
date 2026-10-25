@@ -5,6 +5,7 @@ import type {
   OrderingSettings,
   PaymentMethodSettings,
   ShopInfo,
+  OrderStatus,
 } from "@/types/database";
 
 export const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
@@ -26,6 +27,9 @@ export const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplates = {
   order_ready: "Your order is ready on the counter.",
   order_completed: "Thanks for ordering — see you next time.",
 };
+export type NotificationPolicy = Record<OrderStatus, { in_app: boolean; push: boolean; message: string }>;
+export type Availability = { open: boolean; can_order: boolean; closes_at?: string | null; next_open_at: string | null; checked_at: string };
+export const DEFAULT_NOTIFICATIONS: NotificationPolicy = Object.fromEntries(Object.entries({ pending: DEFAULT_NOTIFICATION_TEMPLATES.order_accepted, preparing: DEFAULT_NOTIFICATION_TEMPLATES.order_preparing, ready: DEFAULT_NOTIFICATION_TEMPLATES.order_ready, completed: DEFAULT_NOTIFICATION_TEMPLATES.order_completed, cancelled: "This order has been cancelled." }).map(([key, message]) => [key, { in_app: true, push: key !== "completed", message }])) as NotificationPolicy;
 
 function coerceObject<T extends object>(value: unknown, fallback: T): T {
   if (!value || typeof value !== "object" || Array.isArray(value)) return fallback;
@@ -39,21 +43,29 @@ function coerceArray<T>(value: unknown, fallback: T[]): T[] {
 
 export async function getSettings() {
   try {
-    const all = await apiJson<Record<string, unknown>>("/settings");
+    const all = await apiJson<Record<string, unknown>>("/settings", { cache: "no-store" });
     return {
       businessHours: coerceArray(all["business_hours"], DEFAULT_BUSINESS_HOURS),
       paymentMethods: coerceObject(all["payment_methods"], DEFAULT_PAYMENT_METHODS),
       ordering: coerceObject(all["ordering"], DEFAULT_ORDERING),
       shopInfo: coerceObject(all["shop_info"], DEFAULT_SHOP_INFO),
       templates: coerceObject(all["notification_templates"], DEFAULT_NOTIFICATION_TEMPLATES),
+      notifications: coerceObject(all.notifications, DEFAULT_NOTIFICATIONS),
+      versions: (all._versions || {}) as Record<string, number>,
+      availability: all.availability as Availability | undefined,
+      loaded: true,
     };
   } catch {
     return {
-      businessHours: DEFAULT_BUSINESS_HOURS,
+      businessHours: [] as BusinessHours[],
       paymentMethods: DEFAULT_PAYMENT_METHODS,
       ordering: DEFAULT_ORDERING,
       shopInfo: DEFAULT_SHOP_INFO,
       templates: DEFAULT_NOTIFICATION_TEMPLATES,
+      notifications: DEFAULT_NOTIFICATIONS,
+      versions: {} as Record<string, number>,
+      availability: { open: false, can_order: false, next_open_at: null, checked_at: new Date().toISOString() } as Availability,
+      loaded: false,
     };
   }
 }
@@ -75,13 +87,13 @@ export function isOpenNow(
   const weekdayIndex = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].indexOf(get("weekday"));
 
   const today = hours.find((h) => h.day === weekdayIndex) ?? null;
-  if (!today || today.closed) return { open: false, today };
 
   const current = `${get("hour") === "24" ? "00" : get("hour")}:${get("minute")}`;
-  const overnight = today.close <= today.open;
-  const open = overnight
-    ? current >= today.open || current < today.close
-    : current >= today.open && current < today.close;
+  const previous = hours.find(h => h.day === (weekdayIndex + 6) % 7);
+  const carry = previous && !previous.closed && previous.close < previous.open && current < previous.close;
+  const own = today && !today.closed && current >= today.open && (today.close < today.open || current < today.close);
+  const open = Boolean(carry || own);
 
-  return { open, today };
+  const previousEndsLater = carry && today && previous && today.close > today.open && previous.close > today.close;
+  return { open, today: carry && (!own || previousEndsLater) ? previous ?? today : today };
 }

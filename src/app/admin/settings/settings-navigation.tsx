@@ -7,7 +7,7 @@ const sections = [
   ["settings-payments", "Payments"],
   ["settings-hours", "Opening hours"],
   ["settings-shop", "Shop details"],
-  ["settings-messages", "Order messages"],
+  ["settings-messages", "Notifications"],
   ["settings-api", "API controls"],
 ] as const;
 

@@ -23,7 +23,8 @@ export function GuestWelcome({
   settings: Awaited<ReturnType<typeof getSettings>>;
   peek: MenuPeekData;
 }) {
-  const { open, today } = isOpenNow(settings.businessHours);
+  const { today } = isOpenNow(settings.businessHours);
+  const open = settings.loaded && (settings.availability?.open ?? isOpenNow(settings.businessHours).open);
   const hasMenuPeek = peek.items.length > 0;
 
   return (

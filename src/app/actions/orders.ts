@@ -35,6 +35,8 @@ export async function placeOrder(
     revalidatePath("/orders");
     revalidatePath("/staff");
     revalidatePath("/admin/orders");
+    const targets = await getPushTargets(data.orderId, token ?? undefined);
+    if (targets) after(() => sendOrderPush(data.orderId, targets, "pending", token ?? undefined, true));
     return { orderId: data.orderId, error: null };
   } catch (err: unknown) {
     return { orderId: null, error: (err as Error).message };
@@ -44,9 +46,11 @@ export async function placeOrder(
 export async function cancelOrder(orderId: string): Promise<{ error: string | null }> {
   const token = await getServerToken();
   try {
+    const targets = await getPushTargets(orderId, token ?? undefined);
     await apiJson(`/orders/${orderId}/cancel`, { method: "POST", token: token ?? undefined });
     revalidatePath("/orders");
     revalidatePath(`/orders/${orderId}`);
+    if (targets) after(() => sendOrderPush(orderId, targets, "cancelled", token ?? undefined));
     return { error: null };
   } catch (err: unknown) {
     return { error: (err as Error).message };

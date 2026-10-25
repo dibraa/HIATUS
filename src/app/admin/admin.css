@@ -193,6 +193,15 @@
 @media (prefers-reduced-motion: reduce) { .admin-settings-nav a::before, .admin-settings-nav .admin-settings-current-dot { transition: none; transform: none; } }
 .admin-settings-sections { display: grid; gap: 1.5rem; min-width: 0; }
 .admin-reports .report-tabs { display: flex; flex-wrap: wrap; gap: .5rem; }
+.notification-event-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr); align-items: center; gap: .75rem; }
+.notification-event-row > *, .admin-reports .closeout-grid > * { min-width: 0; overflow-wrap: anywhere; }
+.notification-event-row button, .closeout-workspace button { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+.admin-reports .report-tabs a { max-width: 100%; overflow-wrap: anywhere; }
+.admin-reports .closeout-grid { display: grid; grid-template-columns: minmax(0,.6fr) minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr); align-items: start; gap: 1rem; border-bottom: 1px solid var(--hi-line); padding-block: 1rem; font-size: .875rem; }
+.admin-reports .closeout-head { padding-block: .5rem; color: var(--hi-muted); }
+.closeout-mobile-label { display: none; }
+@media (max-width: 1199px) { .notification-event-row { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 767px) { .admin-reports .closeout-grid { grid-template-columns: minmax(0, 1fr); } .admin-reports .closeout-head { display: none; } .closeout-mobile-label { display: block; margin-bottom: .375rem; color: var(--hi-muted); } .notification-event-row { grid-template-columns: minmax(0, 1fr); gap: .25rem; } }
 .admin-reports .admin-stats { margin-bottom: 1.25rem; }
 .admin-report-dialog { font-family: var(--font-geist-sans), sans-serif; }
 .admin-report-dialog .display { font-family: inherit; font-size: 1.125rem; font-weight: 650; letter-spacing: -.02em; text-transform: none; }

@@ -5,7 +5,7 @@ import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import type { BusinessHours } from "@/types/database";
 
-export type SettingsState = { error: string | null; success: string | null };
+export type SettingsState = { error: string | null; success: string | null; version?: number };
 
 export async function saveIntegrationSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   return writeSetting("integrations", {
@@ -26,13 +26,14 @@ export async function saveAuthenticationSettings(_prev: SettingsState, formData:
   }, ["/login", "/signup"]);
 }
 
-async function writeSetting(key: string, value: unknown, revalidate: string[] = []): Promise<SettingsState> {
+async function writeSetting(key: string, value: unknown, revalidate: string[] = [], version?: number): Promise<SettingsState> {
   const token = await getServerToken();
   try {
-    await apiJson(`/settings/${key}`, { method: "PUT", token: token ?? undefined, body: JSON.stringify({ value }) });
+    const saved = await apiJson<{ version?: number }>(`/settings/${key}`, { method: "PUT", token: token ?? undefined, body: JSON.stringify({ value, version }) });
     revalidatePath("/admin/settings");
     for (const path of revalidate) revalidatePath(path);
-    return { error: null, success: "Saved." };
+    revalidatePath("/", "layout");
+    return { error: null, success: "Saved.", version: saved.version };
   } catch (err: unknown) {
     return { error: (err as Error).message, success: null };
   }
@@ -46,14 +47,14 @@ export async function saveBusinessHours(_prev: SettingsState, formData: FormData
     close: String(formData.get(`close-${day}`) ?? "").trim() || "18:00",
     closed: formData.get(`closed-${day}`) === "on",
   }));
-  return writeSetting("business_hours", hours, ["/", "/checkout"]);
+  return writeSetting("business_hours", hours, ["/", "/checkout"], Number(formData.get("version")));
 }
 
 export async function savePaymentMethods(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   const methods = { cash: formData.get("cash") === "on", ewallet: formData.get("ewallet") === "on" };
   if (!methods.cash && !methods.ewallet)
     return { error: "At least one payment method has to stay switched on.", success: null };
-  return writeSetting("payment_methods", methods, ["/checkout"]);
+  return writeSetting("payment_methods", methods, ["/checkout"], Number(formData.get("version")));
 }
 
 export async function saveOrderingSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -66,7 +67,7 @@ export async function saveOrderingSettings(_prev: SettingsState, formData: FormD
   };
   if (!ordering.dine_in_enabled && !ordering.takeout_enabled)
     return { error: "Keep at least one of dine-in or takeout switched on.", success: null };
-  return writeSetting("ordering", ordering, ["/", "/checkout"]);
+  return writeSetting("ordering", ordering, ["/", "/checkout"], Number(formData.get("version")));
 }
 
 export async function saveShopInfo(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -77,7 +78,7 @@ export async function saveShopInfo(_prev: SettingsState, formData: FormData): Pr
     phone: String(formData.get("phone") ?? "").trim(),
     email: String(formData.get("email") ?? "").trim(),
   };
-  return writeSetting("shop_info", info, ["/"]);
+  return writeSetting("shop_info", info, ["/"], Number(formData.get("version")));
 }
 
 export async function saveNotificationTemplates(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
@@ -90,4 +91,9 @@ export async function saveNotificationTemplates(_prev: SettingsState, formData: 
   if (Object.values(templates).some((t) => t === ""))
     return { error: "Every message needs some wording.", success: null };
   return writeSetting("notification_templates", templates, ["/orders"]);
+}
+
+export async function saveNotifications(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
+  try { return writeSetting("notifications", JSON.parse(String(formData.get("notifications"))), ["/orders", "/staff"], Number(formData.get("version"))); }
+  catch { return { error: "Check notification settings and try again.", success: null }; }
 }

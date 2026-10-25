@@ -76,15 +76,17 @@ export async function sendOrderPush(
 ): Promise<void> {
   if (!(await pushAllowed())) return;
   if (!before.subscriptions.length || (!force && before.status === next)) return;
-  if (!shouldAlert(before.status, next, before.prefs) || !configureVapid()) return;
+  if ((next === "completed" ? !before.prefs.order_updates : !shouldAlert(before.status, next, before.prefs)) || !configureVapid()) return;
 
-  const { templates } = await getSettings();
+  const settings = await getSettings();
+  if (!settings.loaded || !settings.notifications[next].push) return;
+  const { templates } = settings;
   const body: Record<OrderStatus, string> = {
     pending: templates.order_accepted,
     preparing: templates.order_preparing,
     ready: templates.order_ready,
     completed: templates.order_completed,
-    cancelled: "This order was cancelled and will not be charged.",
+    cancelled: settings.notifications.cancelled.message,
   };
 
   const payload = JSON.stringify({
