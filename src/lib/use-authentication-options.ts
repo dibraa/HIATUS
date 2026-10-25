@@ -24,19 +24,21 @@ export function useAuthenticationOptions(initial: AuthenticationResult) {
       } catch {
         if (!disposed) setCurrent(previous => ({
           ...previous,
-          error: "Additional sign-in options could not load. You can try your email and password, or refresh the sign-in options.",
+          error: "Additional sign-in options could not load. Retrying automatically. You can still try your email and password.",
         }));
       } finally { loading = false; }
     }
     void check();
     const interval = window.setInterval(check, 15000);
     window.addEventListener("focus", check);
+    window.addEventListener("online", check);
     document.addEventListener("visibilitychange", check);
     return () => {
       disposed = true;
       controller.abort();
       window.clearInterval(interval);
       window.removeEventListener("focus", check);
+      window.removeEventListener("online", check);
       document.removeEventListener("visibilitychange", check);
     };
   }, [revision]);

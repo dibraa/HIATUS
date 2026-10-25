@@ -2,64 +2,66 @@ import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { AdminPageHeader as PageHeader } from "@/components/admin-page-header";
-import { FilterTabs } from "@/components/ui/filter-tabs";
+import { DataError } from "@/components/ui/data-error";
+import { ReportFilter } from "./report-filter";
+import { ExcelExportButton } from "./excel-export-button";
+import type { IntegrationSettings } from "@/lib/integrations";
 import { AdminStatCard as StatCard } from "@/components/admin-stat-card";
 import { EmptyState } from "@/components/ui/empty-state";
 import { formatPrice } from "@/lib/format";
 import type { BestSellingFlavor, PopularItemRow, SalesReportRow } from "@/types/database";
 import { SalesChart } from "./charts";
 import { ItemsTable } from "./items-table";
-import { ExportButton } from "./export-button";
+
 import { BestSellerChart } from "../best-seller-chart";
 
 export const metadata: Metadata = { title: "Reports" };
 export const dynamic = "force-dynamic";
 
-const RANGES = [
-  { label: "Last 7 days", value: "7d", days: 7, grain: "day" as const },
-  { label: "Last 30 days", value: "30d", days: 30, grain: "day" as const },
-  { label: "Last 12 months", value: "12m", days: 365, grain: "month" as const },
-];
+type Report = { flavors: BestSellingFlavor[]; rows: SalesReportRow[]; items: PopularItemRow[]; totals: { net_amount: number; order_count: number; discount_amount: number; average_order_value: number } };
 
-export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ range?: string }> }) {
-  const { range = "30d" } = await searchParams;
-  const selected = RANGES.find((r) => r.value === range) ?? RANGES[1];
+export default async function ReportsPage({ searchParams }: { searchParams: Promise<{ period?: string; date?: string }> }) {
+  const search = await searchParams;
+  const period = search.period || "monthly";
+  const today = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Manila", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+  const date = search.date || (period === "annual" ? today.slice(0, 4) : period === "daily" ? today : today.slice(0, 7));
+  const query = new URLSearchParams({ period, date });
   const token = await getServerToken();
-
-  const [salesRaw, itemsRaw, flavorsRaw] = await Promise.all([
-    apiJson<SalesReportRow[]>(`/analytics/sales?days=${selected.days}`, { token: token ?? undefined }).catch(() => []),
-    apiJson<PopularItemRow[]>("/analytics/popular-items", { token: token ?? undefined }).catch(() => []),
-    apiJson<BestSellingFlavor[]>(`/analytics/best-sellers?days=${selected.days}`, { token: token ?? undefined }).catch(() => []),
+  const options = { token: token ?? undefined, cache: "no-store" as const };
+  let report: Report | null = null;
+  let reportError = "";
+  let exportEnabled: boolean | null = null;
+  await Promise.all([
+    apiJson<Report>(`/analytics/report?${query}`, options).then(value => { report = value; }).catch((error: Error) => { reportError = error.message; }),
+    apiJson<IntegrationSettings>("/settings/integrations", options).then(value => { exportEnabled = value.report_export_enabled; }).catch(() => {}),
   ]);
-
-  const netTotal = salesRaw.reduce((sum, r) => sum + r.net_amount, 0);
-  const orderTotal = salesRaw.reduce((sum, r) => sum + r.order_count, 0);
-  const discountTotal = salesRaw.reduce((sum, r) => sum + r.discount_amount, 0);
-
+  if (!report) return <div><PageHeader title="Reports" description="Daily, monthly, and annual sales reports." /><ReportFilter key={period + date} period={period} date={date} /><DataError title="Report unavailable" body={reportError || "Please try again."} /></div>;
+  const data = report as Report;
+  const salesRaw = data.rows, itemsRaw = data.items;
+  const { net_amount: netTotal, order_count: orderTotal, discount_amount: discountTotal } = data.totals;
+  const flavorsRaw = data.flavors;
+  const grain = period === "annual" ? "month" : "day";
   return (
     <div>
-      <PageHeader title="Reports" description="Revenue and demand over a period you choose." action={<ExportButton data={{ kind: "sales", rows: salesRaw, grain: selected.grain }} />} />
+      <PageHeader title="Reports" description="Daily, monthly, and annual sales reports." action={<ExcelExportButton period={period} date={date} enabled={exportEnabled} />} />
 
-      <FilterTabs
-        label="Choose a reporting period"
-        className="mb-6"
-        tabs={RANGES.map((r) => ({ label: r.label, href: `/admin/reports?range=${r.value}`, active: r.value === selected.value }))}
-      />
+      <ReportFilter key={period + date} period={period} date={date} />
 
       <div className="admin-stats">
-        <StatCard label="Net revenue" value={formatPrice(netTotal)} hint={selected.label.toLowerCase()} tone="positive" />
-        <StatCard label="Orders" value={orderTotal} hint="Completed" />
+        <StatCard label="Net revenue" value={formatPrice(netTotal)} hint={date} tone="positive" />
+        <StatCard label="Orders" value={orderTotal} hint="Paid and completed" />
         <StatCard label="Average order" value={formatPrice(orderTotal === 0 ? 0 : netTotal / orderTotal)} hint="Net, per order" />
         <StatCard label="Discounts given" value={formatPrice(discountTotal)} hint="Manual adjustments" />
       </div>
 
       <section aria-labelledby="revenue-heading" className="admin-panel admin-report-section">
         <h2 id="revenue-heading" className="display text-xl text-ink mb-4">Revenue</h2>
-        <SalesChart data={salesRaw} grain={selected.grain} />
+        <SalesChart data={salesRaw} grain={grain} />
       </section>
 
       <section aria-labelledby="items-heading" className="admin-panel admin-report-section">
         <h2 id="items-heading" className="display text-xl text-ink mb-4">What sells</h2>
+        <p className="mb-4 text-sm text-muted">Item and flavour sales show subtotals before order discounts.</p>
         {itemsRaw.length === 0 ? (
           <EmptyState as="h3" title="Nothing sold in this range" body="Try a longer period." />
         ) : (

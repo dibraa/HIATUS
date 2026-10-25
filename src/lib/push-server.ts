@@ -24,6 +24,11 @@ export type PushTargets = {
 
 let vapidReady: boolean | null = null;
 
+async function pushAllowed(): Promise<boolean> {
+  try { return (await apiJson<{ push_enabled: boolean }>("/settings/integrations/options", { cache: "no-store" })).push_enabled === true; }
+  catch { return false; }
+}
+
 function configureVapid(): boolean {
   if (!PUSH_ENABLED) return false;
   if (vapidReady !== null) return vapidReady;
@@ -52,6 +57,7 @@ function configureVapid(): boolean {
  * unreachable): a status change must never fail because push couldn't load.
  */
 export async function getPushTargets(orderId: string, token: string | undefined): Promise<PushTargets | null> {
+  if (!(await pushAllowed())) return null;
   if (!configureVapid()) return null;
   return apiJson<PushTargets>(`/orders/${orderId}/push-targets`, { token }).catch(() => null);
 }
@@ -68,6 +74,7 @@ export async function sendOrderPush(
   token: string | undefined,
   force = false
 ): Promise<void> {
+  if (!(await pushAllowed())) return;
   if (!before.subscriptions.length || (!force && before.status === next)) return;
   if (!shouldAlert(before.status, next, before.prefs) || !configureVapid()) return;
 
@@ -122,6 +129,7 @@ export async function sendReadyOrderPush(
 
 /** One test push straight to the browser that asked — no stored data involved. */
 export async function sendTestPush(subscription: PushSubscription): Promise<void> {
+  if (!(await pushAllowed())) throw new Error("Browser push is disabled by the administrator.");
   if (!configureVapid()) throw new Error("Browser notifications aren't set up on the server yet.");
   await webpush.sendNotification(
     subscription,

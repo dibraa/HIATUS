@@ -181,7 +181,16 @@
 .admin-settings-layout { display: grid; grid-template-columns: 11rem minmax(0,1fr); gap: 2rem; align-items: start; }
 .admin-settings-nav { position: sticky; top: 1.5rem; display: grid; gap: .25rem; }
 .admin-settings-nav a { display: flex; align-items: center; min-height: 2.75rem; padding: .625rem .75rem; border-radius: .5rem; color: var(--hi-ink-soft); font-size: .875rem; }
-.admin-settings-nav a:hover, .admin-settings-nav a:focus-visible { background: var(--hi-raised); color: var(--hi-ink); }
+.admin-settings-nav a:hover, .admin-settings-nav a:focus-visible { color: var(--hi-ink); }
+.admin-settings-nav a[aria-current="location"] { color: var(--hi-ink); font-weight: 650; }
+.admin-settings-nav a { position: relative; isolation: isolate; gap: .625rem; }
+.admin-settings-nav a::before { content: ""; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: var(--hi-raised); opacity: 0; transition: opacity var(--hi-dur-fast) var(--hi-ease-out); }
+.admin-settings-nav a[aria-current="location"]::before, .admin-settings-nav a:focus-visible::before { opacity: 1; }
+@media (hover: hover) and (pointer: fine) { .admin-settings-nav a:hover::before { opacity: 1; } }
+.admin-settings-current-dot { flex-shrink: 0; width: .375rem; height: .375rem; margin-left: auto; background: currentColor; border-radius: 50%; opacity: 0; transform: translateX(-3px); transition: opacity var(--hi-dur-fast) var(--hi-ease-out), transform var(--hi-dur-fast) var(--hi-ease-out); }
+.admin-settings-nav a[aria-current="location"] .admin-settings-current-dot { opacity: 1; transform: translateX(0); }
+.admin-settings-nav[data-instant] a::before, .admin-settings-nav[data-instant] .admin-settings-current-dot { transition: none; }
+@media (prefers-reduced-motion: reduce) { .admin-settings-nav a::before, .admin-settings-nav .admin-settings-current-dot { transition: none; transform: none; } }
 .admin-settings-sections { display: grid; gap: 1.5rem; min-width: 0; }
 .admin-settings-sections > section { scroll-margin-top: 1.5rem; }
 .admin-settings-card { border: 1px solid var(--hi-line); border-radius: .75rem; background: var(--hi-card); padding: 1.5rem; }
