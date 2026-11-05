@@ -12,6 +12,8 @@ import type { AuthenticationSettings } from "@/lib/authentication-options";
 import { AuthenticationSettingsForm } from "./authentication-settings";
 import { NotificationSettingsForm } from "./notification-settings";
 import { DataError } from "@/components/ui/data-error";
+import { CustomCredentials } from "./custom-credentials";
+import { readCredentialSettings } from "@/app/actions/credentials";
 import {
   BusinessHoursForm,
   OrderingForm,
@@ -25,6 +27,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const settings = await getSettings();
+  const credentials = await readCredentialSettings();
   const { businessHours, ordering, shopInfo, versions, loaded } = settings;
 
   const open = settings.availability?.open ?? (loaded && isOpenNow(businessHours).open);
@@ -77,6 +80,7 @@ export default async function SettingsPage() {
             <IntegrationSettingsForm key={JSON.stringify(integrations)} settings={integrations} />
             <ReceiptSettingsForm key={String(receiptEnabled)} enabled={receiptEnabled} />
             <AuthenticationSettingsForm settings={authentication} error={authenticationError} />
+            <CustomCredentials initial={credentials.data} />
           </section>
 
 
