@@ -38,13 +38,18 @@ export async function saveMenuItem(
   const description = String(formData.get("description") ?? "").trim();
   const flavor = String(formData.get("flavor") ?? "").trim();
   const category = String(formData.get("category") ?? "coffee").trim();
-  const price = Number(formData.get("price"));
+  const sizePrices = {
+    S: Number(formData.get("price-S")),
+    M: Number(formData.get("price-M")),
+    L: Number(formData.get("price-L")),
+  };
+  const price = sizePrices.M;
   let imageUrl = String(formData.get("image_url") ?? "").trim();
   const photo = formData.get("photo");
   const isAvailable = formData.get("is_available") === "on";
 
-  if (!name || !flavor || !category || !String(formData.get("price") ?? "").trim() || !Number.isFinite(price) || price < 0 || price > 1000000 || Math.abs(price * 100 - Math.round(price * 100)) > 0.000001)
-    return { error: "Name, flavor, and a valid price are required." };
+  if (!name || !flavor || !category || Object.values(sizePrices).some((value) => !Number.isFinite(value) || value < 0 || value > 1000000 || Math.abs(value * 100 - Math.round(value * 100)) > 0.000001))
+    return { error: "Name, flavor, and valid prices for every size are required." };
 
   const token = await getServerToken();
 
@@ -68,7 +73,11 @@ export async function saveMenuItem(
     }
   }
 
-  const payload = { name, description: description || null, flavor, category, price, image_url: imageUrl || null, is_available: isAvailable, position: Number(formData.get("position") || 0) };
+  const payload = {
+    name, description: description || null, flavor, category, price,
+    size_pricing: { S: sizePrices.S - price, M: 0, L: sizePrices.L - price },
+    image_url: imageUrl || null, is_available: isAvailable, position: Number(formData.get("position") || 0),
+  };
 
   try {
     if (id) {

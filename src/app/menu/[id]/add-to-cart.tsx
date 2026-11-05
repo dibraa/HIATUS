@@ -24,7 +24,7 @@ export function AddToCart({ item }: { item: MenuItem }) {
   const [size, setSize] = useState<DrinkSize>(DEFAULT_SIZE);
   const [quantity, setQuantity] = useState(1);
 
-  const unitPrice = priceForSize(item.price, size);
+  const unitPrice = priceForSize(item.price, size, item.size_pricing);
   const lineTotal = unitPrice * quantity;
   const sizeLabel = getSizeOption(size).label;
   const cartItem = {

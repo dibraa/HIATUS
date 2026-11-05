@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { ADVANCE_LABELS, NEXT_STATUS } from "@/lib/order-meta";
-import { advanceOrderStatus } from "@/app/actions/staff";
+import { updateOrderStatus } from "@/app/actions/orders";
 import type { OrderStatus } from "@/types/database";
 
 export function AdvanceButton({ orderId, status }: { orderId: string; status: OrderStatus }) {
@@ -23,7 +23,7 @@ export function AdvanceButton({ orderId, status }: { orderId: string; status: Or
       disabled={pending}
       onClick={() => {
         startTransition(async () => {
-          const result = await advanceOrderStatus(orderId, next);
+          const result = await updateOrderStatus(orderId, next);
           if (result.error) {
             toast.error(result.error);
             return;

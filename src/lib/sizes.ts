@@ -1,9 +1,8 @@
 /**
  * Drink sizes and their price modifiers.
  *
- * A menu item stores ONE price in `menu_items.price`; that price is the
- * MEDIUM. Small and large are derived from it via the deltas below, so the
- * shop keeps managing a single price per item in the admin UI.
+ * A menu item stores its MEDIUM price in `menu_items.price`. Small and large
+ * can override the shared defaults through the item's size pricing deltas.
  *
  * The Express order route re-derives every line price server-side so a client
  * cannot dictate what an order costs. The server and client must use the same
@@ -35,9 +34,14 @@ export function getSizeOption(code: DrinkSize): SizeOption {
   return SIZE_OPTIONS.find((s) => s.code === code) ?? SIZE_OPTIONS[1];
 }
 
-/** Unit price of `basePrice` at `size`, floored at 0 so a delta can never invert a price. */
-export function priceForSize(basePrice: number, size: DrinkSize): number {
-  return Math.max(0, basePrice + getSizeOption(size).priceDelta);
+/** Unit price at `size`, floored at 0 so a delta can never invert a price. */
+export function priceForSize(
+  basePrice: number,
+  size: DrinkSize,
+  pricing?: Partial<Record<DrinkSize, number>> | null,
+): number {
+  const configuredDelta = pricing?.[size];
+  return Math.max(0, basePrice + (typeof configuredDelta === "number" ? configuredDelta : getSizeOption(size).priceDelta));
 }
 
 /** Type guard for values arriving from localStorage or a URL. */

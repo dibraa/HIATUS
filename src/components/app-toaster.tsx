@@ -14,9 +14,21 @@ const options: DefaultToastOptions = {
     boxShadow: "var(--hi-shadow-md)",
     fontSize: "0.875rem",
   },
-  // Errors are the only place a failure is shown, so they stay long enough
-  // to read a full sentence.
-  error: { duration: 6000 },
+  success: {
+    style: {
+      background: "var(--hi-success-soft-bg)",
+      color: "var(--hi-success-soft-fg)",
+      border: "1px solid color-mix(in srgb, var(--hi-success) 40%, transparent)",
+    },
+  },
+  error: {
+    duration: 6000,
+    style: {
+      background: "var(--hi-danger-soft-bg)",
+      color: "var(--hi-danger-soft-fg)",
+      border: "1px solid color-mix(in srgb, var(--hi-danger) 40%, transparent)",
+    },
+  },
 };
 
 /* ...and interrupt a screen reader instead of waiting politely behind what

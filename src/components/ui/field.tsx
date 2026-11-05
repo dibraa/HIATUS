@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useState, type ComponentProps, type ReactNode } from "react";
+import toast from "react-hot-toast";
 
 /**
  * Form primitives.
@@ -280,27 +281,23 @@ export function CheckboxField({ id, label, hint, className, ...props }: Checkbox
  * whole ("Invalid login credentials"), which belongs to no single field.
  */
 export function FormError({ children }: { children: ReactNode }) {
-  if (!children) return null;
-  return (
-    <p
-      role="alert"
-      className="rounded-md border border-danger/40 bg-danger-soft-bg px-3 py-2.5 text-sm font-medium text-danger-soft-fg"
-    >
-      {children}
-    </p>
-  );
+  const message = typeof children === "string" || typeof children === "number" ? String(children) : "";
+
+  useEffect(() => {
+    if (message) toast.error(message);
+  }, [message]);
+
+  return null;
 }
 
 /** Its success counterpart. aria-live rather than role="alert": a save
  *  confirmation is polite news, it should not interrupt what is being read. */
 export function FormSuccess({ children }: { children: ReactNode }) {
-  if (!children) return null;
-  return (
-    <p
-      aria-live="polite"
-      className="rounded-md border border-success/40 bg-success-soft-bg px-3 py-2.5 text-sm font-medium text-success-soft-fg"
-    >
-      {children}
-    </p>
-  );
+  const message = typeof children === "string" || typeof children === "number" ? String(children) : "";
+
+  useEffect(() => {
+    if (message) toast.success(message);
+  }, [message]);
+
+  return null;
 }

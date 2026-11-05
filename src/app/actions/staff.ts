@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { after } from "next/server";
 import { getServerToken } from "@/lib/server-token";
+import { getCurrentUser } from "@/lib/auth";
 import { apiJson } from "@/lib/api-client";
 import { getPushTargets, sendOrderPush, sendReadyOrderPush } from "@/lib/push-server";
 import type { OrderStatus, PaymentMethod } from "@/types/database";
@@ -10,6 +11,9 @@ import type { OrderStatus, PaymentMethod } from "@/types/database";
 export type ActionResult = { error: string | null };
 
 async function token() {
+  const user = await getCurrentUser();
+  if (!user) throw new Error("Sign in to continue.");
+  if (!user.isActive || user.role !== "staff") throw new Error("Staff-only access required");
   return (await getServerToken()) ?? undefined;
 }
 

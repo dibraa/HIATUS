@@ -142,7 +142,7 @@ function FeaturedCard({
   const { addItem } = useCart();
   const [size, setSize] = useState<DrinkSize>(DEFAULT_SIZE);
 
-  const unitPrice = priceForSize(item.price, size);
+  const unitPrice = priceForSize(item.price, size, item.size_pricing);
   const sizeLabel = getSizeOption(size).label;
 
   /* The card rises 2.5rem into the space the heading block reserves for it with

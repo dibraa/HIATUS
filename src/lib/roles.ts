@@ -3,13 +3,9 @@ import type { Role } from "@/types/database";
 /**
  * Role logic, in one place.
  *
- * The rule the whole app follows: authority is CUMULATIVE. An admin can do
- * everything a staff member can, so counter work asks `isStaff()` — which is
- * true for both — and only the books ask `isAdmin()`.
- *
- * Nothing anywhere should compare `role === "staff"` directly. That test reads
- * as "is this person on the counter" but means "is this person NOT the owner",
- * and it is how an owner ends up locked out of their own order queue.
+ * Shared operational reads use `isStaff()` for staff and admin. Counter
+ * operations use `isStaffOnly()`; administrators manage orders through the
+ * separate admin workspace and cannot open the Staff Counter.
  *
  * `is_active` is folded into both checks for the same reason it is folded into
  * the SQL helpers: a deactivated account must lose access immediately, not at

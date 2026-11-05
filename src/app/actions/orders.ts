@@ -4,6 +4,7 @@ import { after } from "next/server";
 import { getPushTargets, sendOrderPush } from "@/lib/push-server";
 import { revalidatePath } from "next/cache";
 import { getServerToken } from "@/lib/server-token";
+import { getCurrentUser } from "@/lib/auth";
 import { apiJson } from "@/lib/api-client";
 import type { OrderStatus, OrderType, PaymentMethod } from "@/types/database";
 import type { DrinkSize } from "@/lib/sizes";
@@ -63,8 +64,11 @@ export async function updateOrderStatus(
 ): Promise<{ error: string | null }> {
   const token = await getServerToken();
   try {
+    const user = await getCurrentUser();
+    if (!user) return { error: "Sign in to continue." };
+    if (!user.isActive || user.role !== "admin") return { error: "Admin access required" };
     const pushTargets = await getPushTargets(orderId, token ?? undefined);
-    await apiJson(`/orders/${orderId}/status`, {
+    await apiJson(`/admin/orders/${orderId}/status`, {
       method: "PUT",
       token: token ?? undefined,
       body: JSON.stringify({ status: newStatus }),

@@ -277,19 +277,8 @@ export function AddToTeamRow({
             </span>
           </span>
         )}
-        {state.error && (
-          <span role="alert" className="mt-2 block text-xs text-danger">
-            {state.error}
-          </span>
-        )}
-        {state.success && (
-          <span
-            aria-live="polite"
-            className="mt-2 block text-xs text-success"
-          >
-            {state.success}
-          </span>
-        )}
+        <FormError>{state.error}</FormError>
+        <FormSuccess>{state.success}</FormSuccess>
       </form>
     </div>
   );
