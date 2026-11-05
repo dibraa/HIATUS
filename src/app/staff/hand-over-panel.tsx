@@ -4,7 +4,6 @@ import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { advanceOrderStatus, takePayment } from "@/app/actions/staff";
 import { formatPrice, orderCode } from "@/lib/format";
-import { PAYMENT_METHOD_LABELS } from "@/lib/order-meta";
 import type { PaymentMethod } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 
@@ -20,7 +19,7 @@ import type { QueueOrder } from "@/types/staff";
  * primary button is pressed.
  */
 export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: () => void }) {
-  const [method, setMethod] = useState<PaymentMethod>(order.payment_method);
+  const method: PaymentMethod = "cash";
   const [tendered, setTendered] = useState<number | null>(null);
   const [pending, startTransition] = useTransition();
   const total = order.total_amount;
@@ -38,6 +37,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
   const short = change !== null && change < 0;
 
   function confirm() {
+    if (tendered === null || !Number.isFinite(tendered) || tendered < total) return;
     startTransition(async () => {
       const paid = await takePayment(order.id, method, null, "");
       if (paid.error) return void toast.error(paid.error);
@@ -78,22 +78,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
           <span className="display text-3xl text-ink">{formatPrice(total)}</span>
         </div>
 
-        <div role="radiogroup" aria-label="Payment method" className="grid grid-cols-2 gap-1.5 rounded-2xl bg-raised p-1.5">
-          {(["cash", "ewallet"] as PaymentMethod[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              role="radio"
-              aria-checked={method === m}
-              onClick={() => setMethod(m)}
-              className={`ui-caps min-h-12 rounded-xl text-xs ${
-                method === m ? "bg-card text-ink ring-2 ring-ink" : "text-ink-soft hover:text-ink"
-              }`}
-            >
-              {PAYMENT_METHOD_LABELS[m]}
-            </button>
-          ))}
-        </div>
+        <p className="text-sm font-semibold text-ink">Cash payment</p>
 
         {method === "cash" && (
           <>
@@ -125,7 +110,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
         <button
           type="button"
           onClick={confirm}
-          disabled={pending || short}
+          disabled={pending || tendered === null || !Number.isFinite(tendered) || short}
           aria-busy={pending}
           className="ui-caps inline-flex min-h-16 w-full items-center justify-center gap-2.5 rounded-2xl bg-cta text-sm text-cta-fg transition-colors hover:bg-cta-hover disabled:cursor-not-allowed disabled:opacity-60"
         >

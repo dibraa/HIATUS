@@ -18,7 +18,7 @@ export const DEFAULT_BUSINESS_HOURS: BusinessHours[] = [
   { day: 6, label: "Saturday", open: "08:00", close: "22:00", closed: false },
 ];
 
-export const DEFAULT_PAYMENT_METHODS: PaymentMethodSettings = { cash: true, ewallet: true };
+export const DEFAULT_PAYMENT_METHODS: PaymentMethodSettings = { cash: true, ewallet: false };
 export const DEFAULT_ORDERING: OrderingSettings = { accepting_orders: true, default_prep_minutes: 10, dine_in_enabled: true, takeout_enabled: true };
 export const DEFAULT_SHOP_INFO: ShopInfo = { name: "Hiatus Coffee", tagline: "Slow moments, served warm.", address: "", phone: "", email: "" };
 export const DEFAULT_NOTIFICATION_TEMPLATES: NotificationTemplates = {
@@ -46,7 +46,7 @@ export async function getSettings() {
     const all = await apiJson<Record<string, unknown>>("/settings", { cache: "no-store" });
     return {
       businessHours: coerceArray(all["business_hours"], DEFAULT_BUSINESS_HOURS),
-      paymentMethods: coerceObject(all["payment_methods"], DEFAULT_PAYMENT_METHODS),
+      paymentMethods: DEFAULT_PAYMENT_METHODS,
       ordering: coerceObject(all["ordering"], DEFAULT_ORDERING),
       shopInfo: coerceObject(all["shop_info"], DEFAULT_SHOP_INFO),
       templates: coerceObject(all["notification_templates"], DEFAULT_NOTIFICATION_TEMPLATES),

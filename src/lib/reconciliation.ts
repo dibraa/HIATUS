@@ -1,5 +1,5 @@
 export type MethodTotals = { payments: number; refunds: number; voids: number; net: number };
-export type CloseoutLedger = { totals: { cash: MethodTotals; ewallet: MethodTotals }; conflicts: number; count: number; fingerprint: string; as_of: string };
+export type CloseoutLedger = { totals: { cash: MethodTotals; ewallet: MethodTotals }; has_ewallet?: boolean; conflicts: number; count: number; fingerprint: string; as_of: string };
 export type CloseoutSnapshot = CloseoutLedger & { opening_cash: number; counted_cash: number; actual_ewallet: number; expected_cash: number; cash_difference: number; ewallet_difference: number; note: string; revision_reason: string; actor_name: string; finalized_at: string; version: number };
 export type Closeout = { date: string; current: CloseoutLedger; needs_review: boolean; record: null | { version: number; status: "draft" | "finalized"; opening_cash: number | null; counted_cash: number | null; actual_ewallet: number | null; note: string; revision_reason: string; snapshot: CloseoutSnapshot | null; history: CloseoutSnapshot[] } };
 export type CloseoutInput = { version: number; action: "draft" | "finalize" | "revise"; opening_cash?: number | null; counted_cash?: number | null; actual_ewallet?: number | null; note?: string; reason?: string; fingerprint?: string };
