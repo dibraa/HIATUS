@@ -25,7 +25,7 @@ export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const settings = await getSettings();
-  const { businessHours, paymentMethods, ordering, shopInfo, versions, loaded } = settings;
+  const { businessHours, ordering, shopInfo, versions, loaded } = settings;
 
   const open = settings.availability?.open ?? (loaded && isOpenNow(businessHours).open);
   let integrations: IntegrationSettings | null = null;
@@ -67,7 +67,7 @@ export default async function SettingsPage() {
         <div className="admin-settings-sections">
           {loaded ? <>
           <section id="settings-ordering" tabIndex={-1} aria-label="Ordering settings"><OrderingForm ordering={ordering} version={versions.ordering} /></section>
-          <section id="settings-payments" tabIndex={-1} aria-label="Payment settings"><PaymentMethodsForm methods={paymentMethods} version={versions.payment_methods} /></section>
+          <section id="settings-payments" tabIndex={-1} aria-label="Payment settings"><PaymentMethodsForm /></section>
           <section id="settings-hours" tabIndex={-1} aria-label="Opening hours settings"><BusinessHoursForm hours={businessHours} version={versions.business_hours} /></section>
           <section id="settings-shop" tabIndex={-1} aria-label="Shop details settings"><ShopInfoForm info={shopInfo} version={versions.shop_info} /></section>
           <section id="settings-messages" tabIndex={-1} aria-label="Notification settings"><NotificationSettingsForm policy={settings.notifications} version={versions.notifications || 0} pushEnabled={integrations?.push_enabled ?? null} /></section>

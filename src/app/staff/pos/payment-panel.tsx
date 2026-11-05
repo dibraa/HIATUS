@@ -40,7 +40,6 @@ export type PosOrder = {
 /** The step a payment carries the order on to, when there is one. */
 export type PaymentThen = "preparing" | "completed";
 
-const METHODS: PaymentMethod[] = ["cash", "ewallet"];
 
 /** What the order becomes after payment, as the button and toast say it. */
 const THEN_COPY: Record<PaymentThen, { action: string; done: string; failed: string }> = {
@@ -76,7 +75,7 @@ export function PaymentPanel({
   onDone?: () => void;
 }) {
   const [pending, startTransition] = useTransition();
-  const [method, setMethod] = useState<PaymentMethod>(order.payment_method);
+  const method: PaymentMethod = "cash";
   const [tendered, setTendered] = useState("");
   const [showAdjust, setShowAdjust] = useState(false);
   const [discount, setDiscount] = useState("");
@@ -241,27 +240,7 @@ export function PaymentPanel({
         ) : canPay ? (
           /* ---------- Take the money ---------- */
           <div className="mt-4">
-            <div
-              role="group"
-              aria-label="Payment method"
-              className="grid grid-cols-2 gap-2"
-            >
-              {METHODS.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setMethod(m)}
-                  aria-pressed={method === m}
-                  className={`min-h-12 rounded-md border text-sm font-medium transition-colors ${
-                    method === m
-                      ? "border-cta bg-cta text-cta-fg"
-                      : "border-line-strong bg-card text-ink-soft hover:border-ink hover:text-ink"
-                  }`}
-                >
-                  {PAYMENT_METHOD_LABELS[m]}
-                </button>
-              ))}
-            </div>
+            <p className="text-sm font-semibold text-ink">Cash payment</p>
 
             {method === "cash" && (
               <>
@@ -342,11 +321,6 @@ export function PaymentPanel({
               </>
             )}
 
-            {method === "ewallet" && (
-              <p className="mt-3 text-sm text-ink-soft">
-                Check that the transfer arrived before recording payment.
-              </p>
-            )}
 
             <Button
               size="lg"

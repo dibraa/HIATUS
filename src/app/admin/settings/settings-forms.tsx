@@ -13,7 +13,6 @@ import {
   saveBusinessHours,
   saveNotificationTemplates,
   saveOrderingSettings,
-  savePaymentMethods,
   saveShopInfo,
   type SettingsState,
 } from "@/app/actions/settings";
@@ -21,7 +20,6 @@ import type {
   BusinessHours,
   NotificationTemplates,
   OrderingSettings,
-  PaymentMethodSettings,
   ShopInfo,
 } from "@/types/database";
 
@@ -160,33 +158,8 @@ export function BusinessHoursForm({ hours, version = 0 }: { hours: BusinessHours
    Payment methods
    ========================================================================== */
 
-export function PaymentMethodsForm({ methods, version = 0 }: { methods: PaymentMethodSettings; version?: number }) {
-  const [state, formAction, pending] = useActionState(savePaymentMethods, INITIAL);
-
-  return (
-    <SettingsCard
-      title="Payment methods"
-      version={version}
-      description="Payment is collected at the counter."
-      state={state}
-      pending={pending}
-      action={formAction}
-    >
-      <CheckboxField
-        id="cash"
-        name="cash"
-        label="Cash"
-        defaultChecked={methods.cash}
-      />
-      <CheckboxField
-        id="ewallet"
-        name="ewallet"
-        label="E-wallet"
-        defaultChecked={methods.ewallet}
-        hint="GCash, Maya or a QR wallet at the counter."
-      />
-    </SettingsCard>
-  );
+export function PaymentMethodsForm() {
+  return <section className="admin-panel"><h2 className="text-lg font-semibold text-ink">Payment method</h2><p className="mt-3 text-sm text-ink">Cash</p><p className="mt-1 text-sm text-muted">Payment is collected at the counter.</p></section>;
 }
 
 /* ==========================================================================

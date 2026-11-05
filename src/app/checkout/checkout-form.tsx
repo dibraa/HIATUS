@@ -13,7 +13,6 @@ import type { Availability } from "@/lib/settings";
 import {
   ORDER_TYPE_HINTS,
   ORDER_TYPE_LABELS,
-  PAYMENT_METHOD_HINTS,
   PAYMENT_METHOD_LABELS,
   formatWait,
 } from "@/lib/order-meta";
@@ -32,7 +31,6 @@ import type {
  * the running total is restated beside the button that commits the order.
  */
 export function CheckoutForm({
-  paymentMethods,
   ordering,
   estimatedMinutes,
   availability,
@@ -52,11 +50,11 @@ export function CheckoutForm({
     ] as (OrderType | null)[]
   ).filter((t): t is OrderType => t !== null);
 
-  const availableMethods = ( ["cash", "ewallet"] as PaymentMethod[]).filter((method) => paymentMethods[method]);
+
 
   const [orderType, setOrderType] = useState<OrderType>(availableTypes[0] ?? "takeout");
   const [tableLabel, setTableLabel] = useState("");
-  const [method, setMethod] = useState<PaymentMethod>(availableMethods[0] ?? "cash");
+  const method: PaymentMethod = "cash";
   const [pickupNote, setPickupNote] = useState("");
 
   const [error, setError] = useState<string | null>(null);
@@ -191,40 +189,7 @@ export function CheckoutForm({
       )}
 
       {/* ---------- 2. How ---------- */}
-      <Card
-        title="How would you like to pay?"
-        hint="Payment is taken at the counter — nothing is charged now."
-      >
-        <div className="flex flex-col gap-2">
-          {availableMethods.map((m) => (
-            <label
-              key={m}
-              className={`flex cursor-pointer items-start gap-2.5 rounded-md border p-3.5 transition-colors ${
-                method === m
-                  ? "border-accent bg-accent-soft"
-                  : "border-line-strong bg-card hover:border-ink-soft"
-              }`}
-            >
-              <input
-                type="radio"
-                name="payment_method"
-                value={m}
-                checked={method === m}
-                onChange={() => setMethod(m)}
-                className="mt-0.5 h-4 w-4 shrink-0 accent-[var(--hi-accent)]"
-              />
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold text-ink">
-                  {PAYMENT_METHOD_LABELS[m]}
-                </span>
-                <span className="block text-xs text-muted">
-                  {PAYMENT_METHOD_HINTS[m]}
-                </span>
-              </span>
-            </label>
-          ))}
-        </div>
-      </Card>
+      <Card title="Payment" hint="Pay at the counter when you collect your order."><p className="text-sm font-semibold text-ink">Cash</p></Card>
 
       {/* ---------- 3. Notes ---------- */}
       <Card title="Anything we should know?">
