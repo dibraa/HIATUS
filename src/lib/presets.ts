@@ -16,7 +16,7 @@ export function resolvePreset(preset: OrderPreset, byId: Map<string, MenuItem>) 
     .map((line) => {
       const item = byId.get(line.menu_item_id);
       if (!item) return null;
-      return { item, quantity: line.quantity, size: line.size, unitPrice: priceForSize(item.price, line.size) };
+      return { item, quantity: line.quantity, size: line.size, unitPrice: priceForSize(item.price, line.size, item.size_pricing) };
     })
     .filter((l): l is NonNullable<typeof l> => l !== null);
 

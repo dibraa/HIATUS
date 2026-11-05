@@ -50,7 +50,7 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
           <li key={item.id} className="flex">
             <Link
               href="/signup"
-              aria-label={`${item.name}, from ${formatPrice(priceForSize(item.price, "S"))}. Sign up to order.`}
+              aria-label={`${item.name}, from ${formatPrice(priceForSize(item.price, "S", item.size_pricing))}. Sign up to order.`}
               // The same matte as the hero photograph: card ground, 10px gutter, 2xl
               // corner around an xl image. Spelled out rather than `.matte` so the
               // hover tint can still win (that class is unlayered). The one-pixel
@@ -70,7 +70,7 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
                   {item.name}
                 </p>
                 <p className="numeric mt-auto pt-1 text-sm text-ink-soft">
-                  from {formatPrice(priceForSize(item.price, "S"))}
+                  from {formatPrice(priceForSize(item.price, "S", item.size_pricing))}
                 </p>
               </div>
             </Link>

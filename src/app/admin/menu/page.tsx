@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
@@ -9,12 +8,12 @@ import { ProductImage } from "@/components/ui/product-image";
 import { formatPrice } from "@/lib/format";
 import type { MenuItem } from "@/types/database";
 import { DeleteButton } from "./delete-button";
-import { TextField, SelectField, FormSuccess } from "@/components/ui/field";
-import { Button } from "@/components/ui/button";
+import { FormSuccess } from "@/components/ui/field";
 import { AdminPagination } from "@/components/admin-pagination";
 import type { AdminSearch } from "@/lib/activity";
 import { AddMenuItemButton } from "./add-menu-item-button";
-import { CategoryManager, ItemToggles, type Category } from "./menu-management";
+import { CategoryManager, EditMenuItemButton, ItemToggles, type Category } from "./menu-management";
+import { MenuFilters } from "./menu-filters";
 
 export const metadata: Metadata = { title: "Menu items" };
 export const dynamic = "force-dynamic";
@@ -54,19 +53,18 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
     <div>
       <PageHeader
         title="Menu items"
-
-        action={<AddMenuItemButton />}
+        action={
+          <div className="flex flex-wrap gap-2">
+            <AddMenuItemButton />
+            {!categoriesError && <CategoryManager categories={categories} />}
+          </div>
+        }
       />
 
       {search.saved === "1" && <div className="mb-4"><FormSuccess>Menu item saved.</FormSuccess></div>}
-      <form action="/admin/menu" className="admin-panel mb-5 grid items-end gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Menu filters">
-        <TextField id="menu-search" name="search" label="Search menu" type="search" maxLength={100} placeholder="Item name" defaultValue={query.get("search") || ""} />
-        <SelectField id="menu-category" name="category" label="Category" defaultValue={query.get("category") || ""}><option value="">All categories</option>{categories.map(category => <option key={category.name} value={category.name}>{category.name}</option>)}</SelectField>
-        <SelectField id="menu-available" name="available" label="Availability" defaultValue={query.get("available") || ""}><option value="">All items</option><option value="true">Available</option><option value="false">Unavailable</option></SelectField>
-        <div className="flex flex-wrap gap-2"><Button type="submit">Apply filters</Button><Link href="/admin/menu" className="admin-secondary-link">Reset</Link></div>
-      </form>
+      <MenuFilters categories={categories} values={{ search: query.get("search") || "", category: query.get("category") || "", available: query.get("available") || "" }} />
 
-      {categoriesError ? <p role="alert" className="mb-5 text-danger">Categories could not load. Reload to try again.</p> : <CategoryManager categories={categories} />}
+      {categoriesError && <p role="alert" className="mb-5 text-danger">Categories could not load. Reload to try again.</p>}
       {menuItems.length === 0 ? (
         <EmptyState
           title="No menu items found"
@@ -87,14 +85,12 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
                 <p className="admin-menu-flavor">{item.flavor}</p>
                 <p className="mt-1 text-xs text-muted">{item.category}</p>
                 {item.description && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{item.description}</p>}
-                <ItemToggles item={item} />
               </div>
               <p className="admin-menu-availability"><span data-available={item.is_available}>{item.is_available ? "Available" : "Sold out"}</span></p>
               <p className="admin-menu-price">{formatPrice(item.price)} <small>Medium</small></p>
               <div className="admin-menu-actions">
-                <Link href={"/admin/menu/" + item.id} className="text-sm font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink">
-                  Edit<span className="sr-only"> {item.name}</span>
-                </Link>
+                <ItemToggles item={item} />
+                <EditMenuItemButton item={item} />
                 <DeleteButton id={item.id} name={item.name} />
               </div>
             </li>

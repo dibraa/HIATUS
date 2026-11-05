@@ -46,7 +46,7 @@ export function MenuItemCard({
   isLoggedIn?: boolean;
 }) {
   const { addItem } = useCart();
-  const defaultPrice = priceForSize(item.price, DEFAULT_SIZE);
+  const defaultPrice = priceForSize(item.price, DEFAULT_SIZE, item.size_pricing);
   const defaultSizeLabel = getSizeOption(DEFAULT_SIZE).label;
 
   return (
@@ -108,7 +108,7 @@ export function MenuItemCard({
               {formatPrice(defaultPrice)}
             </p>
             <p className="eyebrow mt-0.5 text-muted">
-              {defaultSizeLabel} &middot; from {formatPrice(priceForSize(item.price, "S"))}
+              {defaultSizeLabel} &middot; from {formatPrice(priceForSize(item.price, "S", item.size_pricing))}
             </p>
           </div>
         </div>

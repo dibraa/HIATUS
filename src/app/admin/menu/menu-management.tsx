@@ -1,14 +1,67 @@
 "use client";
 
-import { useActionState, useTransition } from "react";
+import { useActionState, useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { manageCategory, toggleMenuItem } from "@/app/actions/menu";
 import { Button } from "@/components/ui/button";
+import { AdminIcon } from "@/components/admin-icon";
 import { TextField, FormError, FormSuccess } from "@/components/ui/field";
 import type { MenuItem } from "@/types/database";
+import { MenuItemForm } from "./menu-item-form";
 
 export type Category = { name: string; position: number };
+
+export function EditMenuItemButton({ item }: { item: MenuItem }) {
+  const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!open) return;
+    const panel = dialog.current;
+    const opener = trigger.current;
+    const previousOverflow = document.body.style.overflow;
+    panel?.showModal();
+    panel?.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
+    document.body.style.overflow = "hidden";
+    return () => {
+      panel?.close();
+      document.body.style.overflow = previousOverflow;
+      if (opener?.isConnected) opener.focus();
+    };
+  }, [open]);
+
+  const close = useCallback(() => { if (!pending) setOpen(false); }, [pending]);
+  const saved = useCallback(() => {
+    setOpen(false);
+    toast.success("Menu item updated.");
+    router.refresh();
+  }, [router]);
+
+  return <>
+    <Button ref={trigger} variant="ghost" size="sm" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      Edit<span className="sr-only"> {item.name}</span>
+    </Button>
+    {open && <dialog ref={dialog} className="admin-menu-dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={pending}
+      onCancel={event => { event.preventDefault(); close(); }}
+      onClick={event => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
+      }}>
+      <div className="admin-menu-dialog-header">
+        <h2 id={titleId} className="text-xl font-semibold">Edit {item.name}</h2>
+        <button type="button" className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink disabled:opacity-50" aria-label={`Close edit ${item.name}`} disabled={pending} onClick={close}><AdminIcon name="close" /></button>
+      </div>
+      <MenuItemForm item={item} onSaved={saved} onCancel={close} onPendingChange={setPending} />
+    </dialog>}
+  </>;
+}
+
 function CategoryForm({ category }: { category?: Category }) {
   const [state, action, pending] = useActionState(manageCategory, { error: null });
   return <form action={action} className="flex flex-wrap items-end gap-3 border-t border-line py-4" aria-label={category ? `Manage ${category.name}` : "Add category"}>
@@ -21,11 +74,62 @@ function CategoryForm({ category }: { category?: Category }) {
   </form>;
 }
 export function CategoryManager({ categories }: { categories: Category[] }) {
-  return <details className="admin-panel mb-5"><summary className="flex min-h-11 cursor-pointer items-center font-medium">Manage categories</summary>
-    <p className="my-3 text-sm text-muted">Renaming updates all items. Lower positions appear first. Categories must be empty before deletion.</p>
-    {categories.map(category => <CategoryForm key={category.name} category={category} />)}
-    <CategoryForm />
-  </details>;
+  const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
+
+  useEffect(() => {
+    if (!open) return;
+    const panel = dialog.current;
+    const opener = trigger.current;
+    const previousOverflow = document.body.style.overflow;
+    panel?.showModal();
+    panel?.querySelector<HTMLInputElement>('input[name="name"]')?.focus();
+    document.body.style.overflow = "hidden";
+    return () => {
+      panel?.close();
+      document.body.style.overflow = previousOverflow;
+      if (opener?.isConnected) opener.focus();
+    };
+  }, [open]);
+
+  const close = useCallback(() => setOpen(false), []);
+
+  return <>
+    <Button ref={trigger} variant="ghost" size="md" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+      Manage categories
+    </Button>
+    {open && <dialog
+      ref={dialog}
+      className="admin-menu-dialog admin-category-dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      onCancel={event => { event.preventDefault(); close(); }}
+      onClick={event => {
+        if (event.target !== event.currentTarget) return;
+        const bounds = event.currentTarget.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) close();
+      }}
+      onKeyDown={event => {
+        if (event.key !== "Tab") return;
+        const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>('button:not(:disabled), input:not(:disabled):not([type="hidden"]), select:not(:disabled)')).filter(element => element.getClientRects().length > 0);
+        const first = controls[0], last = controls[controls.length - 1];
+        if (!first) { event.preventDefault(); return; }
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }}
+    >
+      <div className="admin-menu-dialog-header">
+        <h2 id={titleId} className="text-xl font-semibold">Manage categories</h2>
+        <button type="button" className="flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink" aria-label="Close manage categories" onClick={close}><AdminIcon name="close" /></button>
+      </div>
+      <div className="admin-category-dialog-body">
+        {categories.map(category => <CategoryForm key={category.name} category={category} />)}
+        <CategoryForm />
+      </div>
+    </dialog>}
+  </>;
 }
 export function ItemToggles({ item }: { item: MenuItem }) {
   const [pending, start] = useTransition();

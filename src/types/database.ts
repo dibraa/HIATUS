@@ -30,6 +30,8 @@ export type MenuItem = {
   flavor: string;
   category: string;
   price: number;
+  /** Size-specific adjustments from the medium price. */
+  size_pricing?: Partial<Record<"S" | "M" | "L", number>> | null;
   image_url: string | null;
   is_available: boolean;
   created_at: string;
