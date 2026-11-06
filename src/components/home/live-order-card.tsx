@@ -17,10 +17,10 @@ export function LiveOrderCard({ order, typicalMinutes }: { order: ActiveOrder; t
 
   return (
     <section
-      aria-label={`Your order ${orderCode(order.id)}`}
+      aria-label={`Your order ${orderCode(order.id, order.pickup_code)}`}
       className="mt-6 grid gap-x-6 gap-y-4 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg ring-1 ring-line sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-center sm:p-6"
     >
-      <p className="display text-4xl leading-none sm:text-5xl">{orderCode(order.id)}</p>
+      <p className="display text-4xl leading-none sm:text-5xl">{orderCode(order.id, order.pickup_code)}</p>
       <div className="min-w-0">
         <p className="truncate text-sm text-inverse-card-muted">{summary}</p>
         <div className="mt-3">

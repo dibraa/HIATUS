@@ -1,4 +1,5 @@
 "use client";
+import { usePermissions } from "@/components/permission-controls";
 
 import { useTransition } from "react";
 import toast from "react-hot-toast";
@@ -42,8 +43,9 @@ export function QueueCard({
   onPayment: () => void;
   onMore: () => void;
 }) {
+  const { can } = usePermissions();
   const [pending, startTransition] = useTransition();
-  const code = orderCode(order.id);
+  const code = orderCode(order.id, order.pickup_code);
   const minutes = Math.max(
     0,
     Math.floor((now - new Date(order.created_at).getTime()) / 60000),
@@ -52,7 +54,7 @@ export function QueueCard({
     order.payment_status === "unpaid" && order.status !== "cancelled";
   const reversed =
     order.payment_status === "refunded" || order.payment_status === "voided";
-  const next = !reversed ? NEXT_STATUS[order.status] : undefined;
+  const next = !reversed && can("counter.prepare") && !(order.status === "ready" && unpaid) ? NEXT_STATUS[order.status] : undefined;
   const waiting = order.status === "pending" || order.status === "preparing";
   // Amber is reserved for this one state, so it stays readable at a glance.
   const late = waiting && minutes >= lateAfter;
@@ -61,8 +63,8 @@ export function QueueCard({
   // step IS payment ("Pay & start"); an unpaid Ready order, the rare one that
   // slipped through, pays and hands over in the same press.
   const payFirst =
-    unpaid && (order.status === "pending" || order.status === "ready");
-  const payLabel = order.status === "pending" ? "Pay & start" : "Pay & hand over";
+    can("counter.payment") && unpaid && (order.status === "pending" || order.status === "ready");
+  const payLabel = !can("counter.prepare") ? "Take payment" : order.status === "pending" ? "Pay & start" : "Pay & hand over";
   const shown = order.order_items.length > 2
     ? order.order_items.slice(0, 1)
     : order.order_items;
@@ -229,8 +231,10 @@ export function QueueCard({
         ) : (
           <p className="counter-ticket-state">{STATUS_LABELS[order.status]}</p>
         )}
+        {order.status === "cancelled" && order.payment_status === "paid" && <p role="status" className="text-sm font-semibold text-warning-soft-fg">Refund required</p>}
+        {!order.pickup_code && <p className="break-all text-xs text-muted">Full order ID: {order.id}</p>}
         <div className="counter-ticket-links">
-          {link && (
+          {link && can(link.label === "Take payment" ? "counter.payment" : "counter.prepare") && (
             <button
               type="button"
               disabled={disabled || pending}

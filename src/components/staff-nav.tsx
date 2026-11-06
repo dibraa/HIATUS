@@ -1,4 +1,6 @@
 "use client";
+import { usePermissions } from "./permission-controls";
+import { pagePermission } from "@/lib/permissions";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -39,11 +41,12 @@ const LINKS: { href: string; label: string; icon: ReactNode }[] = [
 
 export function StaffNav({ newCount = 0 }: { newCount?: number }) {
   const pathname = usePathname();
+  const { can } = usePermissions();
 
   return (
     <nav aria-label="Staff sections" className="min-w-0">
       <ul className="no-scrollbar flex gap-1 overflow-x-auto">
-        {LINKS.map((link) => {
+        {LINKS.filter(link => pagePermission(link.href).every(can)).map((link) => {
           const active =
             link.href === "/staff"
               ? pathname === "/staff" || pathname.startsWith("/staff/pos")

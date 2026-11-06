@@ -79,7 +79,7 @@ export function QueueBoard({
     .filter(
       (o) =>
         !term ||
-        `${o.id} ${orderCode(o.id)} ${o.profiles?.full_name ?? ""} ${o.table_label ?? ""} ${o.order_items.map((i) => i.item_name).join(" ")}`
+        `${o.id} ${orderCode(o.id, o.pickup_code)} ${o.profiles?.full_name ?? ""} ${o.table_label ?? ""} ${o.order_items.map((i) => i.item_name).join(" ")}`
           .toLowerCase()
           .includes(term),
     )

@@ -7,7 +7,9 @@ import { DataError } from "@/components/ui/data-error";
 import { ProductImage } from "@/components/ui/product-image";
 import { formatPrice } from "@/lib/format";
 import type { MenuItem } from "@/types/database";
-import { DeleteButton } from "./delete-button";
+import { ArchiveButton } from "./archive-button";
+import { ArchivedMenu } from "./archived-menu";
+import { Permission } from "@/components/permission-controls";
 import { FormSuccess } from "@/components/ui/field";
 import { AdminPagination } from "@/components/admin-pagination";
 import type { AdminSearch } from "@/lib/activity";
@@ -33,7 +35,7 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
         <PageHeader
           title="Menu items"
 
-          action={<AddMenuItemButton />}
+          action={<div className="flex flex-wrap gap-3"><ArchivedMenu /><Permission name="menu.edit"><AddMenuItemButton /></Permission></div>}
         />
         <DataError
           title="Couldn't load menu"
@@ -50,13 +52,14 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
   catch { categoriesError = true; }
 
   return (
-    <div>
+    <div className="admin-menu-page">
       <PageHeader
         title="Menu items"
         action={
           <div className="flex flex-wrap gap-2">
+            <ArchivedMenu />
             <AddMenuItemButton />
-            {!categoriesError && <CategoryManager categories={categories} />}
+            {!categoriesError && <Permission name="menu.categories"><CategoryManager categories={categories} /></Permission>}
           </div>
         }
       />
@@ -89,9 +92,9 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
               <p className="admin-menu-availability"><span data-available={item.is_available}>{item.is_available ? "Available" : "Sold out"}</span></p>
               <p className="admin-menu-price">{formatPrice(item.price)} <small>Medium</small></p>
               <div className="admin-menu-actions">
-                <ItemToggles item={item} />
-                <EditMenuItemButton item={item} />
-                <DeleteButton id={item.id} name={item.name} />
+                <Permission name="menu.availability"><ItemToggles item={item} /></Permission>
+                <Permission name="menu.edit"><EditMenuItemButton item={item} /></Permission>
+                <Permission name="menu.archive"><ArchiveButton id={item.id} name={item.name} /></Permission>
               </div>
             </li>
           ))}

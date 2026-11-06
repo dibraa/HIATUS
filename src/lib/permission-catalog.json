@@ -1,0 +1,298 @@
+[
+  {
+    "key": "dashboard.view",
+    "role": "admin",
+    "group": "Dashboard",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "orders.view",
+    "role": "admin",
+    "group": "Orders",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "orders.manage",
+    "role": "admin",
+    "group": "Orders",
+    "label": "Manage",
+    "requires": [
+      "orders.view"
+    ]
+  },
+  {
+    "key": "menu.view",
+    "role": "admin",
+    "group": "Menu",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "menu.edit",
+    "role": "admin",
+    "group": "Menu",
+    "label": "Edit",
+    "requires": [
+      "menu.view"
+    ]
+  },
+  {
+    "key": "menu.availability",
+    "role": "admin",
+    "group": "Menu",
+    "label": "Set availability",
+    "requires": [
+      "menu.view"
+    ]
+  },
+  {
+    "key": "menu.categories",
+    "role": "admin",
+    "group": "Menu",
+    "label": "Manage categories",
+    "requires": [
+      "menu.view"
+    ]
+  },
+  {
+    "key": "menu.archive",
+    "role": "admin",
+    "group": "Menu",
+    "label": "Archive and restore",
+    "requires": [
+      "menu.view"
+    ]
+  },
+  {
+    "key": "reports.view",
+    "role": "admin",
+    "group": "Reports",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "reports.export",
+    "role": "admin",
+    "group": "Reports",
+    "label": "Export",
+    "requires": [
+      "reports.view"
+    ]
+  },
+  {
+    "key": "finance.view",
+    "role": "admin",
+    "group": "Finance",
+    "label": "View",
+    "requires": [
+      "reports.view"
+    ]
+  },
+  {
+    "key": "finance.refund",
+    "role": "admin",
+    "group": "Finance",
+    "label": "Record refunds",
+    "requires": [
+      "reports.view",
+      "finance.view"
+    ]
+  },
+  {
+    "key": "finance.disputes",
+    "role": "admin",
+    "group": "Finance",
+    "label": "Manage disputes",
+    "requires": [
+      "reports.view",
+      "finance.view"
+    ]
+  },
+  {
+    "key": "finance.reconcile",
+    "role": "admin",
+    "group": "Finance",
+    "label": "Reconcile payments",
+    "requires": [
+      "reports.view",
+      "finance.view"
+    ]
+  },
+  {
+    "key": "users.view",
+    "role": "admin",
+    "group": "Users",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "users.create",
+    "role": "admin",
+    "group": "Users",
+    "label": "Create accounts",
+    "requires": [
+      "users.view"
+    ]
+  },
+  {
+    "key": "users.edit",
+    "role": "admin",
+    "group": "Users",
+    "label": "Edit",
+    "requires": [
+      "users.view"
+    ]
+  },
+  {
+    "key": "users.status",
+    "role": "admin",
+    "group": "Users",
+    "label": "Suspend and reactivate",
+    "requires": [
+      "users.view"
+    ]
+  },
+  {
+    "key": "users.roles",
+    "role": "admin",
+    "group": "Users",
+    "label": "Change user types",
+    "requires": [
+      "users.view"
+    ]
+  },
+  {
+    "key": "users.permissions",
+    "role": "admin",
+    "group": "Users",
+    "label": "Manage permissions",
+    "requires": [
+      "users.view"
+    ]
+  },
+  {
+    "key": "activity.view",
+    "role": "admin",
+    "group": "Activity logs",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "performance.view",
+    "role": "admin",
+    "group": "Staff activity",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "settings.view",
+    "role": "admin",
+    "group": "Settings",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "settings.edit",
+    "role": "admin",
+    "group": "Settings",
+    "label": "Edit",
+    "requires": [
+      "settings.view"
+    ]
+  },
+  {
+    "key": "settings.integrations",
+    "role": "admin",
+    "group": "Settings",
+    "label": "Manage integrations",
+    "requires": [
+      "settings.view"
+    ]
+  },
+  {
+    "key": "counter.view",
+    "role": "staff",
+    "group": "Counter",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "counter.prepare",
+    "role": "staff",
+    "group": "Counter",
+    "label": "Prepare and hand over",
+    "requires": [
+      "counter.view"
+    ]
+  },
+  {
+    "key": "counter.payment",
+    "role": "staff",
+    "group": "Counter",
+    "label": "Take payments",
+    "requires": [
+      "counter.view"
+    ]
+  },
+  {
+    "key": "counter.discount",
+    "role": "staff",
+    "group": "Counter",
+    "label": "Apply discounts",
+    "requires": [
+      "counter.view"
+    ]
+  },
+  {
+    "key": "counter.refund",
+    "role": "staff",
+    "group": "Counter",
+    "label": "Record refunds",
+    "requires": [
+      "counter.view"
+    ]
+  },
+  {
+    "key": "counter.void",
+    "role": "staff",
+    "group": "Counter",
+    "label": "Void orders",
+    "requires": [
+      "counter.view"
+    ]
+  },
+  {
+    "key": "availability.view",
+    "role": "staff",
+    "group": "Availability",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "availability.edit",
+    "role": "staff",
+    "group": "Availability",
+    "label": "Edit",
+    "requires": [
+      "availability.view"
+    ]
+  },
+  {
+    "key": "shift.view",
+    "role": "staff",
+    "group": "My shift",
+    "label": "View",
+    "requires": []
+  },
+  {
+    "key": "shift.manage",
+    "role": "staff",
+    "group": "My shift",
+    "label": "Manage",
+    "requires": [
+      "shift.view"
+    ]
+  }
+]

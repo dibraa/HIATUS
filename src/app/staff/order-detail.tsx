@@ -1,4 +1,5 @@
 "use client";
+import { usePermissions } from "@/components/permission-controls";
 
 import { useEffect, useRef, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -37,9 +38,10 @@ export function OrderDetail({
   onDone: () => void;
   onDetails: () => void;
 }) {
+  const { can } = usePermissions();
   const dialog = useRef<HTMLDialogElement>(null);
   const [pending, startTransition] = useTransition();
-  const code = orderCode(order.id);
+  const code = orderCode(order.id, order.pickup_code);
   const next = NEXT_STATUS[order.status];
   const unpaid = order.payment_status === "unpaid";
   const reversed =
@@ -52,7 +54,7 @@ export function OrderDetail({
         : undefined;
   const title = !unpaid
     ? "Order details"
-    : then === "preparing"
+    : !can("counter.prepare") ? "Take payment" : then === "preparing"
       ? "Pay & start"
       : then === "completed"
         ? "Pay & hand over"
@@ -114,14 +116,14 @@ export function OrderDetail({
             order.subtotal_amount ?? order.total_amount + order.discount_amount,
           paid_at: order.paid_at ?? null,
         }}
-        then={unpaid ? then : undefined}
+        then={unpaid && can("counter.prepare") ? then : undefined}
         onBusyChange={onBusyChange}
         onDone={onDone}
       />
       <div className="grid gap-2 border-t border-line pt-4">
         {/* An unpaid order moves on through the payment button above; this
             one is only for an order that is already paid. */}
-        {next && !reversed && !unpaid && (
+        {next && !reversed && !unpaid && can("counter.prepare") && (
           <Button
             loading={pending}
             disabled={busy}

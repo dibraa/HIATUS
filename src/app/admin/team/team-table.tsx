@@ -5,7 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { TextField, SelectField } from "@/components/ui/field";
 import type { Role } from "@/types/database";
 import { CreateStaffForm } from "./team-controls";
-import { UserRoleSelect, EditUserButton, DeleteUserButton } from "./user-controls";
+import { Permission } from "@/components/permission-controls";
+import { PermissionsEditor } from "./permissions-editor";
+import { UserRoleSelect, EditUserButton, AccountStatusButton } from "./user-controls";
 
 type TableMember = {
   id: string;
@@ -86,7 +88,7 @@ export function TeamTable({
           {STATUS_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </SelectField>
         <div className="admin-team-toolbar-actions">
-          <CreateStaffForm />
+          <Permission name="users.create"><CreateStaffForm /></Permission>
         </div>
       </div>
 
@@ -141,9 +143,10 @@ export function TeamTable({
                         ) : <Badge tone="danger">Suspended</Badge>}
                       </td>
                       <td className="px-2 py-4 text-right">
-                        <div className="flex justify-end gap-2">
-                          <EditUserButton member={member} isMe={isMe} />
-                          <DeleteUserButton member={member} isMe={isMe} />
+                        <div className="admin-team-inline-actions">
+                          <Permission name="users.edit"><EditUserButton member={member} isMe={isMe} /></Permission>
+                          <AccountStatusButton member={member} isMe={isMe} />
+                          <Permission name="users.permissions"><PermissionsEditor id={member.id} name={member.email} isMe={isMe} /></Permission>
                         </div>
                       </td>
                     </tr>

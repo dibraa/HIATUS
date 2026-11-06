@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -19,7 +20,7 @@ import { formatPrice } from "@/lib/format";
  * feature gets skipped entirely on the days it is least convenient, which are
  * exactly the days worth recording.
  */
-export function ClockInForm() {
+function ClockInFormContent() {
   const [opening, setOpening] = useState("");
   const [pending, startTransition] = useTransition();
 
@@ -73,7 +74,7 @@ export function ClockInForm() {
   );
 }
 
-export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
+function ClockOutFormContent({ expectedCash }: { expectedCash: number }) {
   const [closing, setClosing] = useState("");
   const [note, setNote] = useState("");
   const [pending, startTransition] = useTransition();
@@ -166,3 +167,7 @@ export function ClockOutForm({ expectedCash }: { expectedCash: number }) {
     </form>
   );
 }
+
+export const ClockInForm = withPermission("shift.manage", ClockInFormContent, true);
+
+export const ClockOutForm = withPermission("shift.manage", ClockOutFormContent, true);

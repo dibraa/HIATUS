@@ -202,6 +202,8 @@ function FeaturedCard({
             value={size}
             onChange={setSize}
             name={item.id}
+            basePrice={item.price}
+            pricing={item.size_pricing}
             tone="dark"
             disabled={!item.is_available}
           />

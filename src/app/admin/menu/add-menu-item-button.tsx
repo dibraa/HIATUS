@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { AdminIcon } from "@/components/admin-icon";
 import { MenuItemForm } from "./menu-item-form";
 
-export function AddMenuItemButton({ children = "Add item" }: { children?: React.ReactNode }) {
+function AddMenuItemButtonContent({ children = "Add item" }: { children?: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -62,3 +63,5 @@ export function AddMenuItemButton({ children = "Add item" }: { children?: React.
     </dialog>}
   </>;
 }
+
+export const AddMenuItemButton = withPermission("menu.edit", AddMenuItemButtonContent);

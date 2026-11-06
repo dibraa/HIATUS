@@ -43,7 +43,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
       if (paid.error) return void toast.error(paid.error);
       const done = await advanceOrderStatus(order.id, "completed");
       if (done.error) return void toast.error(`Paid, but not handed over: ${done.error}`);
-      toast.success(`${orderCode(order.id)} · paid ${formatPrice(total)} · handed over`);
+      toast.success(`${orderCode(order.id, order.pickup_code)} · paid ${formatPrice(total)} · handed over`);
       onClose();
     });
   }
@@ -69,7 +69,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
         <div className="pr-14">
           <p className="eyebrow text-muted">Hand over</p>
           <h2 id="handover-title" className="display mt-1 text-3xl leading-none text-ink">
-            {orderCode(order.id)} · {customer}
+            {orderCode(order.id, order.pickup_code)} · {customer}
           </h2>
         </div>
 

@@ -1,4 +1,6 @@
 "use client";
+import { usePermissions } from "./permission-controls";
+import { pagePermission } from "@/lib/permissions";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -43,6 +45,7 @@ export function StaffSidebar({
   staffEmail: string;
 }) {
   const pathname = usePathname();
+  const { can } = usePermissions();
   return (
     <div className="counter-sidebar-inner">
       {/* The welcome page's mark; it is the word, so no text sits beside it. */}
@@ -54,7 +57,7 @@ export function StaffSidebar({
         <BrandMark />
       </Link>
       <nav aria-label="Staff sections" className="counter-navigation">
-        {SECTIONS.map((section) => {
+        {SECTIONS.filter(section => pagePermission(section.href).every(can)).map((section) => {
           const active =
             section.href === "/staff"
               ? pathname === "/staff" || pathname.startsWith("/staff/pos")

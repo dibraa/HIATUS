@@ -1,3 +1,4 @@
+import { PermissionProvider } from "@/components/permission-controls";
 import { redirect } from "next/navigation";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin } from "@/lib/roles";
@@ -20,7 +21,7 @@ export default async function AdminLayout({
   if (!isAdmin(access)) redirect("/");
 
   return (
-    <div className="admin-workspace">
+    <PermissionProvider permissions={user.permissions}><div className="admin-workspace">
       <a href="#admin-content" className="admin-skip-link">Skip to admin content</a>
       <AdminSidebar account={{ full_name: user.profile?.full_name, email: user.email }} />
       <div className="admin-main">
@@ -29,6 +30,6 @@ export default async function AdminLayout({
           {children}
         </section>
       </div>
-    </div>
+    </div></PermissionProvider>
   );
 }

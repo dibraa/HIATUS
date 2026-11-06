@@ -112,13 +112,15 @@ export async function updateStaffCredentials(userId: string, data: {
   } catch (err: unknown) { return { error: (err as Error).message }; }
 }
 
-export async function deleteUserAccount(userId: string): Promise<{ error: string | null }> {
-  const token = await getServerToken();
+export type AccountPermissions = { role: Role; overrides: Record<string, boolean>; permissions: string[]; version: number };
+export async function readUserPermissions(id: string): Promise<{ data?: AccountPermissions; error: string | null }> {
+  try { return { data: await apiJson<AccountPermissions>(`/admin/team/${id}/permissions`, { token: (await getServerToken()) ?? undefined, cache: "no-store" }), error: null }; }
+  catch (error) { return { error: (error as Error).message }; }
+}
+export async function saveUserPermissions(id: string, version: number, overrides: Record<string, boolean>): Promise<{ error: string | null }> {
   try {
-    await apiJson(`/admin/team/${userId}`, { method: "DELETE", token: token ?? undefined });
-    revalidatePath("/admin/team");
-    revalidatePath("/admin/activity");
-    revalidatePath("/admin/performance");
+    await apiJson(`/admin/team/${id}/permissions`, { method: "PUT", token: (await getServerToken()) ?? undefined, body: JSON.stringify({ version, overrides }) });
+    revalidatePath("/admin", "layout"); revalidatePath("/staff", "layout");
     return { error: null };
   } catch (error) { return { error: (error as Error).message }; }
 }

@@ -87,13 +87,7 @@ test("email delivery failures distinguish a created account from a failed delive
   assert.match(result.warning, /setup email could not be delivered/);
 });
 
-test("confirmed account deletion uses the protected endpoint and revalidates affected screens", async () => {
-  let request;
-  const refreshes = [];
-  const actions = loadActions(async (path, options) => { request = { path, ...options }; }, path => refreshes.push(path));
-  assert.equal((await actions.deleteUserAccount("selected-user")).error, null);
-  assert.equal(request.path, "/admin/team/selected-user");
-  assert.equal(request.method, "DELETE");
-  assert.equal(request.token, "test-admin-session");
-  assert.deepEqual(refreshes, ["/admin/team", "/admin/activity", "/admin/performance"]);
+test("admin account deletion is no longer exposed as a server action", () => {
+  const actions = loadActions(async () => { throw Error("Unexpected API call"); }, () => {});
+  assert.equal(actions.deleteUserAccount, undefined);
 });

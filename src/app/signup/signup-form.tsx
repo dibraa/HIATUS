@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { signUp, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
@@ -12,11 +12,76 @@ import { useAuthenticationOptions } from "@/lib/use-authentication-options";
 const initialState: AuthState = { error: null };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function SignupSuccessDialog({ message }: { message: string }) {
+  const router = useRouter();
+  const dialog = useRef<HTMLDialogElement>(null);
+  const login = useRef<HTMLAnchorElement>(null);
+  const [dismissed, setDismissed] = useState(false);
+
+  useEffect(() => {
+    if (dismissed) {
+      login.current?.focus();
+      return;
+    }
+    const element = dialog.current;
+    const previousOverflow = document.body.style.overflow;
+    element?.showModal();
+    element?.querySelector<HTMLButtonElement>("button")?.focus();
+    document.body.style.overflow = "hidden";
+    return () => {
+      element?.close();
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [dismissed]);
+
+  if (dismissed) {
+    return (
+      <section aria-labelledby="signup-success-title" className="rounded-lg border border-line bg-card p-5">
+        <h2 id="signup-success-title" className="display text-xl">Account created</h2>
+        <p className="mt-2 text-sm text-muted">{message}</p>
+        <a ref={login} href="/login" className="mt-3 inline-flex min-h-11 items-center text-accent underline">
+          Proceed to login
+        </a>
+      </section>
+    );
+  }
+
+  return (
+    <dialog
+      ref={dialog}
+      aria-labelledby="signup-success-title"
+      aria-describedby="signup-success-message"
+      onCancel={(event) => {
+        event.preventDefault();
+        setDismissed(true);
+      }}
+      onKeyDown={(event) => {
+        // This success dialog has one action; keep Tab and Shift+Tab on it.
+        if (event.key === "Tab") {
+          event.preventDefault();
+          dialog.current?.querySelector<HTMLButtonElement>("button")?.focus();
+        }
+      }}
+      className="dialog-in fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-sm overflow-auto rounded-2xl border border-line bg-card p-6 text-center text-ink backdrop:bg-scrim"
+    >
+      <div aria-hidden="true" className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft-bg text-success-soft-fg">
+        <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="m5 12.5 4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+      <h2 id="signup-success-title" className="display mt-4 text-2xl text-ink">Account created</h2>
+      <p id="signup-success-message" className="mt-tight text-sm text-muted">{message}</p>
+      <Button type="button" size="md" className="mt-stack w-full" onClick={() => router.push("/login")}>
+        Proceed to login
+      </Button>
+    </dialog>
+  );
+}
+
 export function SignupForm({ authentication }: { authentication: Awaited<ReturnType<typeof getAuthenticationOptions>> }) {
   const { options, error: optionsError } = useAuthenticationOptions(authentication);
   const [state, formAction, pending] = useActionState(signUp, initialState);
   const [googlePending, setGooglePending] = useState(false);
-  const router = useRouter();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [emailTouched, setEmailTouched] = useState(false);
@@ -105,41 +170,7 @@ export function SignupForm({ authentication }: { authentication: Awaited<ReturnT
       {/* Entrance is the stylesheet's `.scrim-in` / `.dialog-in` keyframes,
           so there is no visibility state to flip after mount. The one button
           takes focus on open: it is the only thing to do here. */}
-      {state.success && (
-        <div
-          className="scrim-in fixed inset-0 z-50 flex items-center justify-center bg-scrim px-4"
-          role="presentation"
-        >
-          <section
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="signup-success-title"
-            className="dialog-in w-full max-w-sm rounded-2xl border border-line bg-card p-6 text-center shadow-lg"
-          >
-            <div
-              aria-hidden="true"
-              className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-success-soft-bg text-success-soft-fg"
-            >
-              <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="m5 12.5 4.5 4.5L19 7.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </div>
-            <h2 id="signup-success-title" className="display mt-4 text-2xl text-ink">
-              Account created
-            </h2>
-            <p className="mt-tight text-sm text-muted">{state.success}</p>
-            <Button
-              type="button"
-              size="md"
-              autoFocus
-              className="mt-stack w-full"
-              onClick={() => router.push("/login")}
-            >
-              Proceed to login
-            </Button>
-          </section>
-        </div>
-      )}
+      {state.success && <SignupSuccessDialog message={state.success} />}
     </form>
     </div>
   );

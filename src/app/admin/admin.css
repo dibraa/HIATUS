@@ -161,12 +161,14 @@
 .admin-team-toolbar-actions { display: flex; align-items: center; gap: .75rem; }
 .admin-team-toolbar-actions > :is(button, a) { white-space: nowrap; }
 .admin-team-count { margin-bottom: .5rem; color: var(--hi-muted); font-size: .75rem; }
-.admin-team-table { position: relative; min-width: 52rem; table-layout: fixed; }
-.admin-team-table th:first-child { width: 30%; }
-.admin-team-table th:nth-child(2) { width: 18%; }
-.admin-team-table th:nth-child(3) { width: 20%; }
-.admin-team-table th:nth-child(4) { width: 16%; }
-.admin-team-table th:last-child { width: 16%; }
+.admin-team-table { position: relative; min-width: 68rem; table-layout: fixed; }
+.admin-team-table thead th:first-child { width: auto; }
+.admin-team-table thead th:nth-child(2) { width: 11rem; }
+.admin-team-table thead th:nth-child(3) { width: 11rem; }
+.admin-team-table thead th:nth-child(4) { width: 8.5rem; }
+.admin-team-table thead th:last-child { width: 22rem; }
+.admin-team-table :is(th, td):nth-child(4) { padding-right: 1.25rem; }
+.admin-team-table :is(th, td):last-child { padding-left: 1rem; }
 .admin-team-table :is(th, td) { vertical-align: middle; }
 .admin-team-member { overflow-wrap: anywhere; }
 .admin-team-inline-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: .5rem; }
@@ -331,3 +333,23 @@
   .admin-drawer-content { gap: .75rem; padding: 3.5rem 1rem .75rem; }
 }
 @media (prefers-reduced-motion: reduce) { .admin-workspace * { scroll-behavior: auto; transition-duration: 0ms; } }
+
+@media print {
+  .admin-workspace:has(.admin-receipt) .admin-sidebar,
+  .admin-workspace:has(.admin-receipt) .admin-mobile-bar,
+  .admin-workspace:has(.admin-receipt) .admin-menu-context { display: none !important; }
+  .admin-workspace:has(.admin-receipt) .admin-main { margin-left: 0; }
+  .admin-workspace:has(.admin-receipt) .admin-content { padding: 0; }
+}
+
+@media print {
+  html:has(.admin-receipt), body:has(.admin-receipt) { background: white !important; }
+  .admin-receipt .payment-receipt {
+    width: 100%; max-width: 80mm !important; margin-inline: auto;
+    --hi-ink: #000; --hi-ink-soft: #222; --hi-muted: #444;
+    --hi-line: #ccc; --hi-line-strong: #777; --hi-card: #fff; color: black;
+  }
+  .admin-receipt article { background: white; border-radius: 0; }
+}
+
+.admin-menu-page .admin-page-action { min-width: 0; max-width: 100%; flex-shrink: 1; }

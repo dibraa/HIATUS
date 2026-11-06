@@ -67,7 +67,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       {["pending", "preparing", "ready"].includes(order.status) && <AutoRefresh seconds={20} whileHidden />}
       <OrderAlerts
         orderId={order.id}
-        code={orderCode(order.id)}
+        code={orderCode(order.id, order.pickup_code)}
         status={order.status}
         message={statusMessage[order.status]}
         prefs={alertPrefs}
@@ -83,7 +83,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
         <div>
-          <h1 className="display text-3xl text-ink">Order {orderCode(order.id)}</h1>
+          <h1 className="display text-3xl text-ink">Order {orderCode(order.id, order.pickup_code)}</h1>
           <p className="mt-1.5 text-sm text-muted">
             <time dateTime={order.created_at}>{formatDateTime(order.created_at)}</time>
           </p>
@@ -100,7 +100,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {order.status === "ready" && order.order_type === "takeout" && (
             <p className="mt-2 text-sm text-muted">
               Come to the counter and give the code{" "}
-              <span className="font-mono font-semibold text-ink">{orderCode(order.id)}</span>.
+              <span className="font-mono font-semibold text-ink">{orderCode(order.id, order.pickup_code)}</span>.
             </p>
           )}
           {["pending", "preparing", "ready"].includes(order.status) && (
@@ -167,7 +167,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         )}
       </section>
 
-      {order.status === "pending" && <div className="mt-6"><CancelButton orderId={order.id} /></div>}
+      {order.status === "cancelled" && order.payment_status === "paid" && <p role="status" className="mt-5 rounded-md border border-warning-soft-fg p-4 text-sm text-ink">Refund required. Ask staff to return your payment. It has not been marked refunded yet.</p>}
+      {!order.pickup_code && <p className="mt-4 break-all text-xs text-muted">Full order ID: {order.id}</p>}
+      {order.status === "pending" && <div className="mt-6"><CancelButton orderId={order.id} paid={order.payment_status === "paid"} /></div>}
 
       {order.status === "completed" && (
         <section aria-labelledby="rate-heading" className="mt-10">

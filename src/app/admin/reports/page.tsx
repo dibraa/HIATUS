@@ -92,7 +92,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
   const endpoint = view === "sales" ? "/analytics/report" : view === "customers" ? "/admin/finance/customers" : "/admin/finance/transactions";
   await Promise.all([
     apiJson<Report | CustomerReport | LedgerReport>(endpoint + "?" + apiQuery, options).then(value => { report = value; }).catch((error: Error) => { reportError = error.message; }),
-    apiJson<IntegrationSettings>("/settings/integrations", options).then(value => { exportEnabled = value.report_export_enabled; }).catch(() => {}),
+    apiJson<IntegrationSettings>("/settings/integrations/options", options).then(value => { exportEnabled = value.report_export_enabled; }).catch(() => {}),
     ...(view === "refunds" ? [apiJson<DisputeReport>("/admin/finance/disputes?" + new URLSearchParams({ ...Object.fromEntries(query), page: get("case_page") || "1" }), options).then(value => { cases = value; }).catch((error: Error) => { caseError = error.message; })] : []),
   ]);
   const exports = Object.fromEntries(["search", "kind", "method", "status", "order"].map(key => [key, get(key)]));

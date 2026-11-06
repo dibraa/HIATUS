@@ -26,7 +26,7 @@ export function QuantityStepper({
   size?: "sm" | "md";
 }) {
   const isDark = tone === "dark";
-  const pad = size === "sm" ? "h-9 w-9" : "h-11 w-11";
+  const pad = "h-11 w-11";
 
   const shell = isDark
     ? "border-inverse-line text-inverse-fg"

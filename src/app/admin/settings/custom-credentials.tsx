@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -19,7 +20,7 @@ function initialDrafts(data: CredentialStatus | null) {
   return Object.fromEntries(names.map(name => [name, Object.fromEntries(fields[name].map(field => [field.key, field.secret ? "" : data?.providers[name].values[field.key] || ""]))])) as Record<CredentialProvider, Record<string, string>>;
 }
 
-export function CustomCredentials({ initial }: { initial: CredentialStatus | null }) {
+function CustomCredentialsContent({ initial }: { initial: CredentialStatus | null }) {
   const [data, setData] = useState(initial);
   const [drafts, setDrafts] = useState(() => initialDrafts(initial));
   const [expanded, setExpanded] = useState<CredentialProvider | null>(null);
@@ -71,3 +72,5 @@ export function CustomCredentials({ initial }: { initial: CredentialStatus | nul
     <Modal className="admin-report-dialog" open={reset !== null} title="Use original configuration?" body={`Remove saved custom ${reset ? labels[reset] : ""} credentials? The original configuration will apply immediately. Provider switches stay unchanged.`} confirmLabel="Use original configuration" onCancel={() => setReset(null)} onConfirm={() => { if (reset) save(reset, "reset"); }} />
   </section>;
 }
+
+export const CustomCredentials = withPermission("settings.integrations", CustomCredentialsContent, true);

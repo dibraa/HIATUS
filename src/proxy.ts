@@ -1,3 +1,4 @@
+import { pagePermission, firstAllowed } from "@/lib/permissions";
 import { NextResponse, type NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 import {
@@ -48,6 +49,7 @@ export async function proxy(request: NextRequest) {
   const token = request.cookies.get("token")?.value ?? null;
 
   let role: Role | null = null;
+  let permissions: string[] = [];
   const isActive = true;
 
   if (token) {
@@ -66,8 +68,10 @@ export async function proxy(request: NextRequest) {
           const account = (await response.json()) as {
             role: Role;
             is_active: boolean;
+            permissions: string[];
           };
           role = account.is_active ? account.role : null;
+          permissions = account.permissions || [];
         }
       }
     } catch {
@@ -107,7 +111,7 @@ export async function proxy(request: NextRequest) {
 
   if (wantsStaff && isAdmin(access)) {
     const url = request.nextUrl.clone();
-    url.pathname = ADMIN_PREFIX;
+    url.pathname = path.startsWith("/staff/pos/receipt/") ? "/admin/orders/" + path.split("/").pop() + "/receipt" : ADMIN_PREFIX;
     url.search = "";
     return NextResponse.redirect(url);
   }
@@ -119,6 +123,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  if (role && (wantsAdmin || wantsStaff) && !path.startsWith("/staff/pos/receipt") && pagePermission(path, request.nextUrl.searchParams.get("view") || "").some(key => !key.split("|").some(option => permissions.includes(option)))) {
+    const url = request.nextUrl.clone();
+    url.pathname = firstAllowed(role, permissions);
+    url.search = "";
+    return NextResponse.redirect(url);
+  }
   return NextResponse.next({ request: { headers: requestHeaders } });
 }
 

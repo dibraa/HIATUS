@@ -39,7 +39,7 @@ export const ROLE_LABELS: Record<Role, string> = {
 export const ROLE_DESCRIPTIONS: Record<Role, string> = {
   customer: "Orders for themselves. No access to the counter or the books.",
   staff: "Works the queue, takes payment, marks drinks sold out.",
-  admin: "Everything staff can do, plus the menu, the team and the reports.",
+  admin: "Manages users, menus, orders, reports, and settings within their account permissions.",
 };
 
 /**

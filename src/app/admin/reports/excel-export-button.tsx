@@ -1,9 +1,10 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/field";
 
-export function ExcelExportButton({ period, date, enabled, view = "sales", filters = {} }: { period: string; date: string; enabled: boolean | null; view?: string; filters?: Record<string, string> }) {
+function ExcelExportButtonContent({ period, date, enabled, view = "sales", filters = {} }: { period: string; date: string; enabled: boolean | null; view?: string; filters?: Record<string, string> }) {
   const [format, setFormat] = useState("xlsx");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,3 +26,5 @@ export function ExcelExportButton({ period, date, enabled, view = "sales", filte
     <FormError>{error}</FormError>
   </div>;
 }
+
+export const ExcelExportButton = withPermission("reports.export", ExcelExportButtonContent);

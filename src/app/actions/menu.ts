@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
 import { getServerToken } from "@/lib/server-token";
 import { apiFetch, apiJson } from "@/lib/api-client";
 
@@ -73,10 +74,11 @@ export async function saveMenuItem(
     }
   }
 
+  const maySetAvailability = (await getCurrentUser())?.permissions.includes("menu.availability") === true;
   const payload = {
     name, description: description || null, flavor, category, price,
     size_pricing: { S: sizePrices.S - price, M: 0, L: sizePrices.L - price },
-    image_url: imageUrl || null, is_available: isAvailable, position: Number(formData.get("position") || 0),
+    image_url: imageUrl || null, ...(!id || maySetAvailability ? { is_available: maySetAvailability && isAvailable } : {}), position: Number(formData.get("position") || 0),
   };
 
   try {
@@ -98,16 +100,16 @@ export async function saveMenuItem(
   redirect("/admin/menu?saved=1");
 }
 
-export async function deleteMenuItem(id: string): Promise<{ error: string | null }> {
-  const token = await getServerToken();
+export type ArchivedItem = { _id: string; name: string; category: string; price: number; archived_at: string };
+export type ArchivedPage = { items: ArchivedItem[]; total: number; page: number; page_size: number };
+export async function readArchivedMenu(search = "", page = 1): Promise<{ data?: ArchivedPage; error: string | null }> {
+  try { return { data: await apiJson<ArchivedPage>("/menu/archived?" + new URLSearchParams({ search, page: String(page) }), { token: (await getServerToken()) ?? undefined, cache: "no-store" }), error: null }; }
+  catch (error) { return { error: (error as Error).message }; }
+}
+export async function archiveMenuItem(id: string, restore = false): Promise<{ error: string | null }> {
   try {
-    await apiJson(`/menu/${id}`, { method: "DELETE", token: token ?? undefined });
-    revalidatePath("/admin/menu");
-    revalidatePath("/");
-    revalidatePath("/menu");
-    revalidatePath("/staff");
+    await apiJson("/menu/" + id + (restore ? "/restore" : "/archive"), { method: "POST", token: (await getServerToken()) ?? undefined });
+    for (const path of ["/admin/menu", "/menu", "/", "/staff", "/favorites", "/cart", "/admin/activity", "/menu/" + id]) revalidatePath(path);
     return { error: null };
-  } catch (err: unknown) {
-    return { error: (err as Error).message };
-  }
+  } catch (error) { return { error: (error as Error).message }; }
 }

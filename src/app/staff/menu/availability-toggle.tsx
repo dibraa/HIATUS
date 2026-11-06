@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useTransition, type ReactNode } from "react";
 import toast from "react-hot-toast";
@@ -20,7 +21,7 @@ import { setItemAvailability } from "@/app/actions/staff";
  * ~200ms of honesty is worth more than the snappiness here, so the row says
  * "Saving…" while it waits instead of looking like the tap missed.
  */
-export function AvailabilityRow({
+function AvailabilityRowContent({
   itemId,
   itemName,
   available,
@@ -96,3 +97,5 @@ export function AvailabilityRow({
     </label>
   );
 }
+
+export const AvailabilityRow = withPermission("availability.edit", AvailabilityRowContent, true);

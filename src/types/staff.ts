@@ -1,6 +1,7 @@
 import type { OrderItem, OrderStatus } from "./database";
 
 export type QueueOrder = {
+  pickup_code?: string | null;
   id: string;
   status: OrderStatus;
   order_type: "dine_in" | "takeout";

@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -82,7 +83,7 @@ function SettingsCard({
    Business hours
    ========================================================================== */
 
-export function BusinessHoursForm({ hours, version = 0 }: { hours: BusinessHours[]; version?: number }) {
+function BusinessHoursFormContent({ hours, version = 0 }: { hours: BusinessHours[]; version?: number }) {
   const [draft, setDraft] = useState(hours);
   const [state, formAction, pending] = useActionState(saveBusinessHours, INITIAL);
 
@@ -166,7 +167,7 @@ export function PaymentMethodsForm() {
    Ordering
    ========================================================================== */
 
-export function OrderingForm({ ordering, version = 0 }: { ordering: OrderingSettings; version?: number }) {
+function OrderingFormContent({ ordering, version = 0 }: { ordering: OrderingSettings; version?: number }) {
   const [state, formAction, pending] = useActionState(saveOrderingSettings, INITIAL);
 
   return (
@@ -216,7 +217,7 @@ export function OrderingForm({ ordering, version = 0 }: { ordering: OrderingSett
    Shop details
    ========================================================================== */
 
-export function ShopInfoForm({ info, version = 0 }: { info: ShopInfo; version?: number }) {
+function ShopInfoFormContent({ info, version = 0 }: { info: ShopInfo; version?: number }) {
   const [state, formAction, pending] = useActionState(saveShopInfo, INITIAL);
 
   return (
@@ -267,7 +268,7 @@ export function ShopInfoForm({ info, version = 0 }: { info: ShopInfo; version?: 
    Notification wording
    ========================================================================== */
 
-export function TemplatesForm({ templates }: { templates: NotificationTemplates }) {
+function TemplatesFormContent({ templates }: { templates: NotificationTemplates }) {
   const [state, formAction, pending] = useActionState(
     saveNotificationTemplates,
     INITIAL
@@ -316,3 +317,11 @@ export function TemplatesForm({ templates }: { templates: NotificationTemplates 
     </SettingsCard>
   );
 }
+
+export const BusinessHoursForm = withPermission("settings.edit", BusinessHoursFormContent, true);
+
+export const OrderingForm = withPermission("settings.edit", OrderingFormContent, true);
+
+export const ShopInfoForm = withPermission("settings.edit", ShopInfoFormContent, true);
+
+export const TemplatesForm = withPermission("settings.edit", TemplatesFormContent, true);

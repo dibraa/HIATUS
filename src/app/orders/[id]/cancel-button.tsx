@@ -7,7 +7,7 @@ import { cancelOrder } from "@/app/actions/orders";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 
-export function CancelButton({ orderId }: { orderId: string }) {
+export function CancelButton({ orderId, paid }: { orderId: string; paid: boolean }) {
   const [pending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const router = useRouter();
@@ -29,7 +29,7 @@ export function CancelButton({ orderId }: { orderId: string }) {
       <Modal
         open={confirmOpen}
         title="Cancel this order?"
-        body="This cannot be undone. The order will be cancelled and any payment will be refunded."
+        body={paid ? "The order will be cancelled. Ask staff to return your payment; a refund is recorded only after staff confirms it." : "This cannot be undone. The order will be cancelled. No payment has been recorded; if you have paid since opening this page, ask staff about your refund."}
         confirmLabel="Cancel order"
         cancelLabel="Keep it"
         danger
@@ -42,7 +42,7 @@ export function CancelButton({ orderId }: { orderId: string }) {
               toast.error(result.error);
               return;
             }
-            toast.success("Order cancelled");
+            toast.success(result.refundRequired ? "Order cancelled. Ask staff about your refund." : "Order cancelled");
             router.refresh();
           });
         }}

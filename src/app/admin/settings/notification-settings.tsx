@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 import { useActionState, useState } from "react";
 import Link from "next/link";
 import { saveNotifications } from "@/app/actions/settings";
@@ -7,7 +8,7 @@ import type { OrderStatus } from "@/types/database";
 import { CheckboxField, TextAreaField, FormError, FormSuccess } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 const events: [OrderStatus, string][] = [["pending", "Received"], ["preparing", "Preparing"], ["ready", "Ready"], ["completed", "Completed"], ["cancelled", "Cancelled"]];
-export function NotificationSettingsForm({ policy, version, pushEnabled }: { policy: NotificationPolicy; version: number; pushEnabled: boolean | null }) {
+function NotificationSettingsFormContent({ policy, version, pushEnabled }: { policy: NotificationPolicy; version: number; pushEnabled: boolean | null }) {
   const [draft, setDraft] = useState(policy), [expanded, setExpanded] = useState<OrderStatus | null>(null);
   const [state, action, pending] = useActionState(saveNotifications, { error: null, success: null, version });
   function change(status: OrderStatus, value: Partial<NotificationPolicy[OrderStatus]>) { setDraft(previous => ({ ...previous, [status]: { ...previous[status], ...value } })); }
@@ -24,3 +25,5 @@ export function NotificationSettingsForm({ policy, version, pushEnabled }: { pol
     <Button type="submit" loading={pending} disabled={pending || events.some(([status]) => !draft[status].message.trim())}>Save notifications</Button>
   </form>;
 }
+
+export const NotificationSettingsForm = withPermission("settings.edit", NotificationSettingsFormContent, true);

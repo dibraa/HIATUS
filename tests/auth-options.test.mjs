@@ -16,6 +16,7 @@ function load(file, modules, globals = {}) {
   }).outputText;
   const exports = {};
   vm.runInNewContext(compiled, { exports, AbortSignal, Response, ...globals, require: name => {
+    if (name === "@/components/permission-controls") return { withPermission: (_key, Component) => Component };
     assert(name in modules, `Unexpected dependency: ${name}`); return modules[name];
   } });
   return exports;

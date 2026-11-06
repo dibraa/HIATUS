@@ -1,10 +1,11 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 import { useActionState, useState } from "react";
 import { saveReceiptSettings } from "@/app/actions/settings";
 import { CheckboxField, FormError, FormSuccess } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 
-export function ReceiptSettingsForm({ enabled }: { enabled: boolean | null }) {
+function ReceiptSettingsFormContent({ enabled }: { enabled: boolean | null }) {
   const [checked, setChecked] = useState(enabled ?? false);
   const [state, action, pending] = useActionState(saveReceiptSettings, { error: null, success: null });
   return <form action={action} className="admin-panel" aria-busy={pending}>
@@ -17,3 +18,5 @@ export function ReceiptSettingsForm({ enabled }: { enabled: boolean | null }) {
     </>}
   </form>;
 }
+
+export const ReceiptSettingsForm = withPermission("settings.integrations", ReceiptSettingsFormContent, true);
