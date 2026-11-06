@@ -3,10 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
-import { deleteMenuItem } from "@/app/actions/menu";
+import { archiveMenuItem } from "@/app/actions/menu";
 import { Modal } from "@/components/ui/modal";
 
-export function DeleteButton({ id, name }: { id: string; name: string }) {
+export function ArchiveButton({ id, name }: { id: string; name: string }) {
   const [pending, startTransition] = useTransition();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const router = useRouter();
@@ -19,27 +19,27 @@ export function DeleteButton({ id, name }: { id: string; name: string }) {
         className="text-sm font-medium text-muted transition-colors hover:text-danger disabled:opacity-50"
         onClick={() => setConfirmOpen(true)}
       >
-        {pending ? "Deleting…" : "Delete"}
+        {pending ? "Archiving…" : "Archive"}
         <span className="sr-only"> {name}</span>
       </button>
 
       <Modal
         open={confirmOpen}
-        title={`Delete "${name}"?`}
-        body="This permanently deletes the menu item from the database. Past orders and receipts keep their saved item details."
-        confirmLabel="Delete"
+        title={`Archive "${name}"?`}
+        body="Remove this item from the live menu? Its details and order history will be kept. You can restore it from Archived items."
+        confirmLabel="Archive"
         cancelLabel="Keep it"
         danger
         onCancel={() => setConfirmOpen(false)}
         onConfirm={() => {
           setConfirmOpen(false);
           startTransition(async () => {
-            const result = await deleteMenuItem(id);
+            const result = await archiveMenuItem(id);
             if (result.error) {
               toast.error(result.error);
               return;
             }
-            toast.success("Deleted");
+            toast.success("Item archived");
             router.refresh();
           });
         }}

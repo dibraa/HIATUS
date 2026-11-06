@@ -41,17 +41,9 @@ export function formatDate(value: string | Date) {
   return DATE_ONLY.format(new Date(value));
 }
 
-/**
- * A short, sayable order code.
- *
- * A UUID cannot be called across a counter. The first six hex characters can:
- * six characters is 16.7 million codes, which for the orders open at one shop
- * at one moment is collision-free in practice — and it is only ever used to
- * IDENTIFY a ticket to a human, never to look one up. Every query still uses
- * the full id.
- */
-export function orderCode(id: string) {
-  return `#${id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+/** Stored pickup references identify new orders; legacy history retains its former code. Full IDs remain the lookup key. */
+export function orderCode(id: string, pickupCode?: string | null) {
+  return `#${pickupCode || id.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
 }
 
 /**

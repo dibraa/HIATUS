@@ -1,11 +1,14 @@
 "use client";
+import { Permission, withPermission } from "@/components/permission-controls";
 
-import { useEffect, useId, useRef, useState, useTransition, type ReactNode } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
-import { FormError, SelectField, TextField } from "@/components/ui/field";
-import { deleteUserAccount, setAccountActive, updateStaffCredentials, updateUserRole } from "@/app/actions/admin";
+import { SelectField, TextField } from "@/components/ui/field";
+import { setAccountActive, updateStaffCredentials, updateUserRole } from "@/app/actions/admin";
+import { AdminDialog as AccountDialog } from "@/components/admin-dialog";
+import { InlineFormError as FormError } from "@/components/inline-form-error";
 import { PhoneField } from "@/components/ui/phone-field";
 import { ROLE_LABELS } from "@/lib/roles";
 import type { Role, TeamMember } from "@/types/database";
@@ -13,80 +16,7 @@ import type { Role, TeamMember } from "@/types/database";
 type Account = Pick<TeamMember, "id" | "email" | "full_name" | "phone" | "role" | "is_active" | "on_shift">;
 const ROLES: Role[] = ["admin", "staff", "customer"];
 
-function AccountDialog({ title, description, pending, onClose, children, confirmation = false }: {
-  title: string;
-  description: string;
-  pending: boolean;
-  onClose: () => void;
-  children: ReactNode;
-  confirmation?: boolean;
-}) {
-  const ref = useRef<HTMLDialogElement>(null);
-  const id = useId();
-
-  useEffect(() => {
-    const dialog = ref.current;
-    const trigger = document.activeElement as HTMLElement | null;
-    const previousOverflow = document.body.style.overflow;
-    dialog?.showModal();
-    document.body.style.overflow = "hidden";
-    return () => {
-      dialog?.close();
-      document.body.style.overflow = previousOverflow;
-      if (trigger?.isConnected) trigger.focus();
-    };
-  }, []);
-
-  useEffect(() => {
-    ref.current?.querySelector<HTMLElement>("input:not([disabled]), button:not([disabled])")?.focus();
-  }, [confirmation]);
-
-  return (
-    <dialog
-      ref={ref}
-      role={confirmation ? "alertdialog" : "dialog"}
-      aria-modal="true"
-      aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-description`}
-      aria-busy={pending}
-      className="fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-2xl border border-line bg-card p-0 text-left text-ink backdrop:bg-scrim"
-      onCancel={(event) => {
-        event.preventDefault();
-        if (!pending) onClose();
-      }}
-      onKeyDown={(event) => {
-        if (event.key !== "Tab") return;
-        const controls = Array.from(event.currentTarget.querySelectorAll<HTMLElement>(
-          'input:not(:disabled), button:not(:disabled), select:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])',
-        )).filter((element) => element.getClientRects().length > 0);
-        const first = controls[0];
-        const last = controls[controls.length - 1];
-        if (!first) { event.preventDefault(); return; }
-        if (event.shiftKey && document.activeElement === first) {
-          event.preventDefault();
-          last.focus();
-        } else if (!event.shiftKey && document.activeElement === last) {
-          event.preventDefault();
-          first.focus();
-        }
-      }}
-      onClick={(event) => {
-        if (event.target === event.currentTarget && !pending) {
-          const bounds = event.currentTarget.getBoundingClientRect();
-          if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) onClose();
-        }
-      }}
-    >
-      <div className="p-6">
-        <h2 id={`${id}-title`} className="display text-2xl text-ink">{title}</h2>
-        <p id={`${id}-description`} className="mt-2 break-words text-sm text-muted">{description}</p>
-        <div className="mt-5">{children}</div>
-      </div>
-    </dialog>
-  );
-}
-
-export function UserRoleSelect({ member, isMe }: { member: Account; isMe: boolean }) {
+function UserRoleSelectContent({ member, isMe }: { member: Account; isMe: boolean }) {
   const [proposedRole, setProposedRole] = useState<Role | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -126,7 +56,7 @@ export function UserRoleSelect({ member, isMe }: { member: Account; isMe: boolea
       {proposedRole && (
         <AccountDialog
           title="Change role?"
-          description={`Change ${displayName} from ${ROLE_LABELS[member.role]} to ${ROLE_LABELS[proposedRole]}?`}
+          description={`Change ${displayName} from ${ROLE_LABELS[member.role]} to ${ROLE_LABELS[proposedRole]}? Custom permissions will reset to the new user type defaults.`}
           confirmation
           pending={pending}
           onClose={() => setProposedRole(null)}
@@ -149,7 +79,7 @@ export function UserRoleSelect({ member, isMe }: { member: Account; isMe: boolea
   );
 }
 
-export function EditUserButton({ member, isMe }: { member: Account; isMe: boolean }) {
+function EditUserButtonContent({ member, isMe }: { member: Account; isMe: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -248,7 +178,7 @@ function EditUserForm({ member, isMe, onClose }: { member: Account; isMe: boolea
           {!isMe && (
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
               <p className="text-sm text-muted">Account access: {member.is_active ? "Active" : "Suspended"}</p>
-              <button type="button" disabled={pending} className="admin-team-action-btn" onClick={() => { setError(null); setConfirmAccess(true); }}>{member.is_active ? "Suspend account" : "Restore account"}</button>
+              <Permission name="users.status"><button type="button" disabled={pending} className="admin-team-action-btn" onClick={() => { setError(null); setConfirmAccess(true); }}>{member.is_active ? "Suspend account" : "Restore account"}</button></Permission>
             </div>
           )}
         </>
@@ -257,32 +187,18 @@ function EditUserForm({ member, isMe, onClose }: { member: Account; isMe: boolea
   );
 }
 
-export function DeleteUserButton({ member, isMe }: { member: Account; isMe: boolean }) {
-  const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pending, startTransition] = useTransition();
-  return <>
-    <button type="button" className="admin-team-action-btn admin-team-action-danger" disabled={isMe}
-      title={isMe ? "You cannot delete your own active account." : undefined}
-      aria-label={`Delete account for ${member.email}`} onClick={() => { setError(null); setOpen(true); }}>Delete</button>
-    {open && <AccountDialog title="Permanently delete account?" description={`${member.full_name || "Unnamed account"} (${member.email})`} confirmation pending={pending} onClose={() => setOpen(false)}>
-      <p className="text-sm text-ink-soft">This action cannot be undone. The sign-in account and personal preferences will be permanently deleted. Financial records and activity history will be retained without a link to the account.</p>
-      {error && <div className="mt-4"><FormError>{error}</FormError></div>}
-      <div className="mt-6 flex flex-wrap justify-end gap-2">
-        <Button variant="ghost" disabled={pending} onClick={() => setOpen(false)}>Cancel</Button>
-        <Button variant="danger" disabled={pending} onClick={() => {
-          if (pending) return;
-          setError(null);
-          startTransition(async () => {
-            try {
-              const result = await deleteUserAccount(member.id);
-              if (result.error) { setError(result.error); return; }
-              toast.success("Account permanently deleted.");
-              setOpen(false);
-            } catch { setError("The account could not be deleted. Try again."); }
-          });
-        }}>{pending ? "Deleting…" : "Confirm Delete"}</Button>
-      </div>
+
+export const UserRoleSelect = withPermission("users.roles", UserRoleSelectContent, true);
+
+export const EditUserButton = withPermission("users.edit", EditUserButtonContent);
+
+export function AccountStatusButton({ member, isMe }: { member: Account; isMe: boolean }) {
+  const [open,setOpen] = useState(false), [pending,start] = useTransition();
+  const [error,setError] = useState<string | null>(null);
+  const router = useRouter();
+  return <Permission name="users.status"><button type="button" className="admin-team-action-btn" disabled={isMe || pending} onClick={() => { setOpen(true);setError(null); }}>{member.is_active ? "Suspend" : "Reactivate"}</button>
+    {open && <AccountDialog title={member.is_active ? "Suspend account?" : "Reactivate account?"} description={member.email + (member.is_active ? " will lose sign-in access. Account history will be kept." : " will be able to sign in again.")} confirmation pending={pending} onClose={() => setOpen(false)}>
+      <FormError>{error}</FormError><div className="flex flex-wrap gap-3"><Button disabled={pending} loading={pending} onClick={() => start(async () => { const result = await setAccountActive(member.id,!member.is_active); if (result.error) setError(result.error); else { setOpen(false);router.refresh(); } })}>Confirm access change</Button><Button variant="ghost" disabled={pending} onClick={() => setOpen(false)}>Cancel</Button></div>
     </AccountDialog>}
-  </>;
+  </Permission>;
 }

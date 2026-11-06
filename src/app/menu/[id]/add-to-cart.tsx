@@ -59,6 +59,8 @@ export function AddToCart({ item }: { item: MenuItem }) {
           value={size}
           onChange={setSize}
           name={item.id}
+            basePrice={item.price}
+            pricing={item.size_pricing}
           disabled={!item.is_available}
         />
       </div>

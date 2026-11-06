@@ -1,3 +1,4 @@
+import { getCurrentUser } from "@/lib/auth";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerToken } from "@/lib/server-token";
@@ -17,6 +18,7 @@ export const metadata: Metadata = { title: "Dashboard" };
 export const dynamic = "force-dynamic";
 
 type RecentOrder = {
+  pickup_code?: string | null;
   _id: string; id?: string; status: OrderStatus; order_type: "dine_in" | "takeout";
   payment_status: PaymentStatus; total_amount: number; created_at: string;
   user_id: { full_name: string | null } | null;
@@ -48,6 +50,7 @@ function SalesTrend({ data }: { data: SalesReportRow[] }) {
 
 export default async function AdminDashboardPage() {
   const token = await getServerToken();
+  const user = await getCurrentUser();
 
   let summary: TodaySummary | null;
   let salesRaw: SalesReportRow[];
@@ -59,7 +62,7 @@ export default async function AdminDashboardPage() {
       apiJson<TodaySummary>("/analytics/today", { token: token ?? undefined }),
       apiJson<SalesReportRow[]>("/analytics/sales?days=7", { token: token ?? undefined }),
       apiJson<PopularItemRow[]>("/analytics/popular-items", { token: token ?? undefined }),
-      apiJson<RecentOrder[]>("/orders", { token: token ?? undefined }),
+      user?.permissions.includes("orders.view") ? apiJson<RecentOrder[]>("/orders", { token: token ?? undefined }) : Promise.resolve([]),
     ]);
   } catch {
     return (
@@ -155,7 +158,7 @@ export default async function AdminDashboardPage() {
                   <tr key={order.id} className="text-ink-soft">
                     <td className="px-2 py-4 text-xs text-muted">{String(i + 1).padStart(2, "0")}</td>
                     <th scope="row" className="px-2 py-4 font-medium text-ink">
-                      {(order.user_id as { full_name: string | null } | null)?.full_name?.trim() || orderCode(order.id!)}
+                      {(order.user_id as { full_name: string | null } | null)?.full_name?.trim() || orderCode(order.id!, order.pickup_code)}
                     </th>
                     <td className="whitespace-nowrap px-2 py-4 text-xs text-muted">
                       <time dateTime={order.created_at}>{formatElapsed(order.created_at)}</time>

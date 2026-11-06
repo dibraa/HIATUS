@@ -9,6 +9,7 @@ export type CurrentUser = {
   profile: Profile | null;
   role: Role;
   isActive: boolean;
+  permissions: string[];
 };
 
 /**
@@ -28,6 +29,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       role: Role;
       is_active: boolean;
       created_at: string;
+      permissions: string[];
     }>("/auth/me", { token });
 
     const profile: Profile = {
@@ -45,6 +47,7 @@ export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
       profile,
       role: user.role,
       isActive: user.is_active,
+      permissions: user.permissions ?? [],
     };
   } catch {
     return null;

@@ -1,4 +1,5 @@
 "use client";
+import { usePermissions } from "@/components/permission-controls";
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -44,13 +45,14 @@ export function QueueReceiptModal({
   onClose: () => void;
   onHandOver: () => void;
 }) {
+  const { can } = usePermissions();
   const [pending, startTransition] = useTransition();
   const [confirm, setConfirm] = useState<"refund" | "void" | null>(null);
   const [reason, setReason] = useState("");
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
 
-  const code = orderCode(order.id);
+  const code = orderCode(order.id, order.pickup_code);
   const customer = order.profiles?.full_name?.trim() || "Walk-in";
   const minutes = Math.max(
     0,
@@ -96,20 +98,20 @@ export function QueueReceiptModal({
       `${code} to ${STATUS_LABELS[to]}`,
     );
 
-  const next = NEXT_STATUS[order.status];
+  const next = can("counter.prepare") ? NEXT_STATUS[order.status] : undefined;
   // Payment comes before making, so an unpaid New or Ready order goes to the
   // payment dialog, which moves it on once the money is recorded.
   const payFirst =
-    order.payment_status === "unpaid" &&
+    can("counter.payment") && order.payment_status === "unpaid" &&
     (order.status === "pending" || order.status === "ready");
-  const primary = reversed ? null : payFirst ? (
+  const primary = reversed ? null : next === "completed" && !paid && !payFirst ? <p className="text-sm text-muted">Awaiting payment before handover.</p> : payFirst ? (
     <Button
       size="md"
       variant="primary"
       onClick={onHandOver}
       className="min-h-12 w-full"
     >
-      {order.status === "pending" ? "Pay & start" : "Pay & hand over"}
+      {!can("counter.prepare") ? "Take payment" : order.status === "pending" ? "Pay & start" : "Pay & hand over"}
     </Button>
   ) : next === "completed" ? (
     <Button
@@ -166,6 +168,7 @@ export function QueueReceiptModal({
         }
       }}
     >
+      {order.status === "cancelled" && paid && <p role="status" className="mb-3 text-sm font-semibold text-warning-soft-fg">Refund required. Return the payment before confirming the refund.</p>}
       <fieldset disabled={pending || !!confirm} className="grid min-w-0 gap-3">
         <legend className="sr-only">Order details and actions</legend>
         <div className="flex items-start justify-between gap-2">
@@ -257,7 +260,7 @@ export function QueueReceiptModal({
         {primary}
 
         <div className="grid grid-cols-2 gap-2">
-          {order.status === "pending" && (
+          {can("counter.prepare") && order.status === "pending" && (
             <button
               type="button"
               onClick={() =>
@@ -274,6 +277,7 @@ export function QueueReceiptModal({
             </button>
           )}
           <button
+            disabled={!can("counter.prepare")}
             type="button"
             onClick={() =>
               run(
@@ -287,7 +291,7 @@ export function QueueReceiptModal({
           >
             {order.special_request_flag ? "Unflag request" : "Flag request"}
           </button>
-          {order.status === "ready" && (
+          {can("counter.prepare") && order.status === "ready" && (
             <button
               type="button"
               onClick={() =>
@@ -338,7 +342,7 @@ export function QueueReceiptModal({
           >
             Mark item sold out
           </Link>
-          {paid ? (
+          {paid && can("counter.refund") ? (
             <button
               type="button"
               onClick={() => setConfirm("refund")}
@@ -347,7 +351,7 @@ export function QueueReceiptModal({
             >
               Refund
             </button>
-          ) : !reversed && order.status !== "cancelled" ? (
+          ) : can("counter.void") && !reversed && order.status !== "cancelled" ? (
             <button
               type="button"
               onClick={() => setConfirm("void")}

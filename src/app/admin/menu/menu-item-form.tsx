@@ -1,4 +1,5 @@
 "use client";
+import { usePermissions } from "@/components/permission-controls";
 
 import { useActionState, useState, useEffect, type ChangeEvent } from "react";
 import { saveMenuItem, type MenuFormState } from "@/app/actions/menu";
@@ -22,6 +23,7 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
   onCancel?: () => void;
   onPendingChange?: (pending: boolean) => void;
 }) {
+  const { can } = usePermissions();
   const [state, formAction, pending] = useActionState(saveMenuItem, initialState);
   const [categories, setCategories] = useState<{ name: string }[]>([]);
   useEffect(() => { let active = true; apiJson<{ name: string }[]>("/menu/categories", { cache: "no-store" }).then(values => { if (active) setCategories(values); }).catch(() => {}); return () => { active = false; }; }, []);
@@ -114,7 +116,9 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
               <TextField key={size} id={`price-${size}`} name={`price-${size}`} label={`${size === "S" ? "Small" : size === "M" ? "Medium" : "Large"} price (PHP)`} type="number" min="0" max="1000000" step="0.01" required inputMode="decimal" value={fields.price[size]} onChange={updateText} />
             ))}
             <div className="flex items-center pt-1">
-              <CheckboxField id="is_available" name="is_available" label="Available on the menu" checked={fields.is_available} onChange={event => setFields(previous => ({ ...previous, is_available: event.target.checked }))} />
+              <fieldset disabled={!can("menu.availability")}>
+<CheckboxField id="is_available" name="is_available" label="Available on the menu" checked={fields.is_available} onChange={event => setFields(previous => ({ ...previous, is_available: event.target.checked }))} />
+</fieldset>
             </div>
           </div>
         </section>

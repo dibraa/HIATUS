@@ -65,7 +65,11 @@ test("direct Counter and legacy POS links redirect Admin while allowing Staff", 
   const roles = {};
   vm.runInNewContext(compile("../src/lib/roles.ts"), { exports: roles });
   for (const role of ["admin", "staff", "customer"]) {
+    const permissionCatalog = JSON.parse(readFileSync(new URL("../src/lib/permission-catalog.json", import.meta.url), "utf8"));
+    const permissionExports = {};
+    vm.runInNewContext(compile("../src/lib/permissions.ts"), { exports: permissionExports, require: () => permissionCatalog });
     const modules = {
+      "@/lib/permissions": permissionExports,
       "next/server": { NextResponse: { next: () => ({ allowed: true }), redirect: url => ({ redirected: url.pathname }) } },
       "jose": { jwtVerify: async () => ({ payload: { role } }) },
       "@/lib/roles": roles,
@@ -75,7 +79,7 @@ test("direct Counter and legacy POS links redirect Admin while allowing Staff", 
     vm.runInNewContext(compile("../src/proxy.ts"), {
       exports, Headers, TextEncoder, console,
       process: { env: { JWT_SECRET: "fixture", NODE_ENV: "test" } },
-      fetch: async () => ({ ok: true, json: async () => ({ role, is_active: true }) }),
+      fetch: async () => ({ ok: true, json: async () => ({ role, is_active: true, permissions: permissionCatalog.filter(p => p.role === role).map(p => p.key) }) }),
       require(name) { assert(name in modules, name); return modules[name]; },
     });
     for (const path of ["/staff", "/staff/pos", "/staff/menu", "/staff/shift"]) {

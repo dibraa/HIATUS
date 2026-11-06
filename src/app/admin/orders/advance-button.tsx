@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -8,7 +9,7 @@ import { ADVANCE_LABELS, NEXT_STATUS } from "@/lib/order-meta";
 import { updateOrderStatus } from "@/app/actions/orders";
 import type { OrderStatus } from "@/types/database";
 
-export function AdvanceButton({ orderId, status }: { orderId: string; status: OrderStatus }) {
+function AdvanceButtonContent({ orderId, status }: { orderId: string; status: OrderStatus }) {
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   const next = NEXT_STATUS[status];
@@ -37,3 +38,5 @@ export function AdvanceButton({ orderId, status }: { orderId: string; status: Or
     </Button>
   );
 }
+
+export const AdvanceButton = withPermission("orders.manage", AdvanceButtonContent);

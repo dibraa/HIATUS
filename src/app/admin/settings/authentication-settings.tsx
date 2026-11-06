@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -7,7 +8,7 @@ import type { AuthenticationSettings } from "@/lib/authentication-options";
 import { CheckboxField, FormError, FormSuccess } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 
-export function AuthenticationSettingsForm({ settings, error }: { settings: AuthenticationSettings | null; error: string | null }) {
+function AuthenticationSettingsFormContent({ settings, error }: { settings: AuthenticationSettings | null; error: string | null }) {
   const [state, action, pending] = useActionState(saveAuthenticationSettings, { error: null, success: null });
   const router = useRouter();
   const source = settings ? `${settings.google_enabled}:${settings.recaptcha_enabled}` : "unavailable";
@@ -42,3 +43,5 @@ export function AuthenticationSettingsForm({ settings, error }: { settings: Auth
     </form>
   );
 }
+
+export const AuthenticationSettingsForm = withPermission("settings.integrations", AuthenticationSettingsFormContent, true);

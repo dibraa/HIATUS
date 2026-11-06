@@ -38,6 +38,7 @@ export type MenuItem = {
 };
 
 export type Order = {
+  pickup_code?: string | null;
   id: string;
   user_id: string;
   status: OrderStatus;

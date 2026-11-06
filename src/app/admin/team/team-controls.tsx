@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import {
   useActionState,
@@ -297,7 +298,7 @@ function CloseIcon() {
   );
 }
 
-export function CreateStaffForm() {
+function CreateStaffFormContent() {
   const [open, setOpen] = useState(false);
   const [phone, setPhone] = useState("");
   const [state, formAction, pending] = useActionState(createStaffAccount, {
@@ -783,3 +784,5 @@ export function MemberControls({ member }: { member: TeamMember }) {
     </div>
   );
 }
+
+export const CreateStaffForm = withPermission("users.create", CreateStaffFormContent);

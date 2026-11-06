@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -31,7 +32,7 @@ function legalOptions(current: OrderStatus): { value: OrderStatus; label: string
   return ALL_OPTIONS.filter((o) => o.value === current || o.value === next);
 }
 
-export function StatusSelect({
+function StatusSelectContent({
   orderId,
   status,
   customerName,
@@ -75,3 +76,5 @@ export function StatusSelect({
     </SelectField>
   );
 }
+
+export const StatusSelect = withPermission("orders.manage", StatusSelectContent);

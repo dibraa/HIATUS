@@ -17,6 +17,7 @@ import type { OrderStatus } from "@/types/database";
 
 /** What the Express API returns for GET /orders/:id/push-targets. */
 export type PushTargets = {
+  pickup_code?: string | null;
   status: OrderStatus;
   prefs: AlertPreferences;
   subscriptions: PushSubscription[];
@@ -90,7 +91,7 @@ export async function sendOrderPush(
   };
 
   const payload = JSON.stringify({
-    title: `Order ${orderCode(orderId)}: ${STATUS_LABELS[next]}`,
+    title: `Order ${orderCode(orderId, before.pickup_code)}: ${STATUS_LABELS[next]}`,
     body: body[next],
     url: `/orders/${orderId}`,
     tag: `order-${orderId}`,

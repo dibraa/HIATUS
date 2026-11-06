@@ -1,4 +1,5 @@
 "use client";
+import { usePermissions } from "@/components/permission-controls";
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,7 @@ function Difference({ value }: { value: number | null }) {
   return <span className={value === null ? "text-muted" : value === 0 ? "text-success" : "text-danger"}>{value === null ? "Not entered" : value === 0 ? "Balanced" : `${value > 0 ? "+" : "−"}${formatPrice(Math.abs(value))} · ${value > 0 ? "Over" : "Short"}`}</span>;
 }
 export function ReconciliationWorkspace({ initial, today }: { initial: Closeout; today: string }) {
+  const { can } = usePermissions();
   const [data, setData] = useState(initial);
   const [opening, setOpening] = useState(initial.record?.opening_cash?.toString() ?? ""), [cash, setCash] = useState(initial.record?.counted_cash?.toString() ?? ""), [wallet, setWallet] = useState(initial.record?.actual_ewallet?.toString() ?? "");
   const [note, setNote] = useState(initial.record?.note || ""), [reason, setReason] = useState("");
@@ -34,7 +36,7 @@ export function ReconciliationWorkspace({ initial, today }: { initial: Closeout;
       if(result.error)setError(result.error);else if(result.data){setData(result.data);setSuccess(action === "finalize" ? "Closeout finalized." : action === "revise" ? "Revision started. Previous versions are preserved." : "Draft saved.");setReason("");}
     });
   }
-  return <div className="closeout-workspace">
+  return <fieldset disabled={!can("finance.reconcile")} className="closeout-workspace min-w-0">
     <div className="admin-panel mb-5"><form action="/admin/reports" className="flex flex-wrap items-end justify-between gap-4"><input type="hidden" name="view" value="reconciliation" /><div className="flex flex-wrap items-end gap-3"><TextField id="closeout-date" name="date" label="Date · Manila time" type="date" required max={today} defaultValue={data.date} /><Button type="submit" variant="outline" disabled={pending}>View day</Button></div><span role="status" className="rounded-md bg-raised px-3 py-2 text-sm font-semibold">{data.needs_review ? "Needs review" : locked ? "Finalized" : "Draft"}</span></form></div>
     {data.needs_review && <p role="status" className="mb-5 rounded-md border border-warning-soft-fg p-4 text-sm">Transactions changed after finalization. Revise this closeout to review the new totals.</p>}
     {data.current.conflicts > 0 && <p role="alert" className="mb-5 rounded-md border border-danger p-4 text-sm text-danger">{data.current.conflicts} conflicting records block finalization. <Link href={`/admin/reports?view=transactions&period=daily&date=${data.date}`} className="underline">Review transactions</Link></p>}
@@ -55,5 +57,5 @@ export function ReconciliationWorkspace({ initial, today }: { initial: Closeout;
     <details className="report-details admin-panel mt-5"><summary>Calculation details</summary><div className="report-detail-body text-sm"><p>Expected cash = opening cash + collections − refunds − paid voids. Staff shift floats are not added. Historical e-wallet records appear only when present.</p><div className="mt-4 grid gap-4 sm:grid-cols-2">{(["cash", ...(hasWallet ? ["ewallet" as const] : [])] as const).map(method => { const totals = snapshot?.totals[method] || data.current.totals[method];return <dl key={method}><dt className="font-semibold">{method === "cash" ? "Cash" : "E-wallet"}</dt><dd>Collections {formatPrice(totals.payments)}</dd><dd>Refunds {formatPrice(totals.refunds)}</dd><dd>Paid voids {formatPrice(totals.voids)}</dd><dd>Net {formatPrice(totals.net)}</dd></dl>;})}</div></div></details>
     <details className="report-details admin-panel mt-5"><summary>Closeout history</summary><div className="report-detail-body">{!data.record?.history.length ? <p className="text-sm text-muted">No finalized versions yet.</p> : <ol className="divide-y divide-line">{[...data.record.history].reverse().map(entry => <li className="py-4 text-sm" key={entry.version}><strong>Version {entry.version} · {entry.actor_name}</strong><p>{formatDateTime(entry.finalized_at)}</p><p>Cash: {formatPrice(entry.counted_cash)} · Difference: {formatPrice(entry.cash_difference)}</p>{(entry.has_ewallet || Object.values(entry.totals.ewallet).some(value => value !== 0) || entry.actual_ewallet !== 0) && <p>Historical e-wallet: {formatPrice(entry.actual_ewallet)} ; Difference: {formatPrice(entry.ewallet_difference)}</p>}{entry.note && <p className="mt-2 whitespace-pre-wrap wrap-anywhere">{entry.note}</p>}{entry.revision_reason && <p className="mt-2 whitespace-pre-wrap wrap-anywhere">Revision: {entry.revision_reason}</p>}</li>)}</ol>}</div></details>
     <Modal className="admin-report-dialog" open={confirm !== null} title={confirm === "revise" ? "Revise this closeout?" : "Finalize daily closeout?"} body={confirm === "revise" ? `Reason: ${reason}. Previous finalized versions remain in history.` : `Cash expected ${expected === null ? "not entered" : formatPrice(expected)}, counted ${formatPrice(Number(cash))}. ${hasWallet ? `Historical e-wallet expected ${formatPrice(expectedWallet)}, verified ${formatPrice(Number(wallet))}. E-wallet difference ${formatPrice(walletDifference || 0)}. ` : ""}Cash difference ${formatPrice(cashDifference || 0)}.${note ? ` Explanation: ${note}` : ""}`} confirmLabel={confirm === "revise" ? "Start revision" : "Finalize closeout"} onCancel={() => setConfirm(null)} onConfirm={() => save(confirm === "revise" ? "revise" : "finalize")} />
-  </div>;
+  </fieldset>;
 }

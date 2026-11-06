@@ -14,7 +14,7 @@ export function IncomingOrders({
   return (
     <div className="ui-caps mb-3 flex min-h-11 items-center gap-3 px-1 text-2xs text-muted">
       <span className="min-w-0 truncate">
-        {incoming.length} new · {incoming.map((o) => orderCode(o.id)).join(" · ")}
+        {incoming.length} new · {incoming.map((o) => orderCode(o.id, o.pickup_code)).join(" · ")}
       </span>
       <button
         type="button"

@@ -1,6 +1,6 @@
 "use client";
 
-import { SIZE_OPTIONS, type DrinkSize } from "@/lib/sizes";
+import { SIZE_OPTIONS, priceForSize, type DrinkSize } from "@/lib/sizes";
 
 /**
  * Size picker, built on real radio inputs inside a fieldset.
@@ -15,12 +15,16 @@ export function SizeSelector({
   onChange,
   /** Radios need a shared, page-unique name; pass the item id. */
   name,
+  basePrice,
+  pricing,
   tone = "light",
   disabled = false,
 }: {
   value: DrinkSize;
   onChange: (size: DrinkSize) => void;
   name: string;
+  basePrice: number;
+  pricing?: Partial<Record<DrinkSize, number>> | null;
   tone?: "light" | "dark";
   disabled?: boolean;
 }) {
@@ -39,6 +43,7 @@ export function SizeSelector({
       <div className="flex gap-2">
         {SIZE_OPTIONS.map((option) => {
           const selected = option.code === value;
+          const priceDelta = priceForSize(basePrice, option.code, pricing) - basePrice;
           return (
             <label key={option.code} className="group flex-1 cursor-pointer">
               <input
@@ -54,10 +59,10 @@ export function SizeSelector({
                 // Spelling the size out, plus the price impact, gives a far more
                 // useful announcement than the visible letter alone.
                 aria-label={`${option.label}, ${option.volume}${
-                  option.priceDelta === 0
+                  priceDelta === 0
                     ? ""
-                    : `, ${option.priceDelta > 0 ? "plus" : "minus"} ${Math.abs(
-                        option.priceDelta
+                    : `, ${priceDelta > 0 ? "plus" : "minus"} ${Math.abs(
+                        priceDelta
                       )} pesos`
                 }`}
               />

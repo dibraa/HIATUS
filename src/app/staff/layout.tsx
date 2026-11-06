@@ -1,3 +1,4 @@
+import { PermissionProvider } from "@/components/permission-controls";
 import { redirect } from "next/navigation";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isAdmin, isStaff } from "@/lib/roles";
@@ -13,6 +14,7 @@ export default async function StaffLayout({
 }: {
   children: React.ReactNode;
 }) {
+  let permissions: string[] = [];
   let staffName = MOCK_USER.name;
   let staffEmail = MOCK_USER.email;
   if (!USE_MOCKS) {
@@ -23,9 +25,10 @@ export default async function StaffLayout({
     if (!isStaff(access)) redirect("/");
     staffName = user.profile?.full_name?.trim() || user.email.split("@")[0];
     staffEmail = user.email;
+    permissions = user.permissions;
   }
   return (
-    <ThemeProvider>
+    <PermissionProvider permissions={permissions}><ThemeProvider>
       <div className="staff-workspace">
         <aside className="counter-sidebar">
           <StaffSidebar staffName={staffName} staffEmail={staffEmail} />
@@ -42,6 +45,6 @@ export default async function StaffLayout({
           {children}
         </div>
       </div>
-    </ThemeProvider>
+    </ThemeProvider></PermissionProvider>
   );
 }

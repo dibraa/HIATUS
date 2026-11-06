@@ -1,4 +1,5 @@
 "use client";
+import { Permission, usePermissions } from "@/components/permission-controls";
 
 import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
@@ -22,6 +23,7 @@ import type {
 } from "@/types/database";
 
 export type PosOrder = {
+  pickup_code?: string | null;
   id: string;
   status: OrderStatus;
   order_type: "dine_in" | "takeout";
@@ -74,6 +76,8 @@ export function PaymentPanel({
   /** Called once the payment (and the move, if any) has gone through. */
   onDone?: () => void;
 }) {
+  const { can } = usePermissions();
+  const afterPayment = can("counter.prepare") ? then : undefined;
   const [pending, startTransition] = useTransition();
   const method: PaymentMethod = "cash";
   const [tendered, setTendered] = useState("");
@@ -91,10 +95,10 @@ export function PaymentPanel({
     onBusyChange?.(pending || confirmRefund || confirmVoid);
   }, [pending, confirmRefund, confirmVoid, onBusyChange]);
 
-  const code = orderCode(order.id);
+  const code = orderCode(order.id, order.pickup_code);
   const total = formatPrice(order.total_amount);
   const isUnpaid = order.payment_status === "unpaid";
-  const canPay = isUnpaid && order.status !== "cancelled" && !stuck;
+  const canPay = can("counter.payment") && isUnpaid && order.status !== "cancelled" && !stuck;
 
   const tenderedNumber = Number(tendered);
   const change =
@@ -114,7 +118,7 @@ export function PaymentPanel({
 
   const paidWord =
     method === "cash" ? `Paid ${total}` : "Transfer received";
-  const primaryLabel = then ? `${paidWord} · ${THEN_COPY[then].action}` : paidWord;
+  const primaryLabel = afterPayment ? `${paidWord} · ${THEN_COPY[afterPayment].action}` : paidWord;
 
   // Failures are a pop-up only; the one exception is `stuck` below, which
   // stays on screen because it carries the "Try again" that finishes the job.
@@ -140,9 +144,9 @@ export function PaymentPanel({
         const paid = await takePayment(order.id, method, null, "");
         if (paid.error) return fail(paid.error);
         const how = PAYMENT_METHOD_LABELS[method].toLowerCase();
-        if (carryOn && then) {
-          if (!(await move(then))) return;
-          toast.success(`${code} · paid ${total} ${how} · ${THEN_COPY[then].done}`);
+        if (carryOn && afterPayment) {
+          if (!(await move(afterPayment))) return;
+          toast.success(`${code} · paid ${total} ${how} · ${THEN_COPY[afterPayment!].done}`);
         } else {
           toast.success(`${code} · paid ${total} ${how}`);
         }
@@ -154,7 +158,7 @@ export function PaymentPanel({
   }
 
   function retryMove() {
-    if (!then) return;
+    if (!then || !can("counter.prepare")) return;
     startTransition(async () => {
       try {
         if (!(await move(then))) return;
@@ -332,7 +336,7 @@ export function PaymentPanel({
               {pending ? "Recording…" : primaryLabel}
             </Button>
 
-            {then && (
+            {afterPayment && (
               <button
                 type="button"
                 onClick={() => pay(false)}
@@ -372,7 +376,7 @@ export function PaymentPanel({
         )}
 
         {/* ---------- Corrections (folded away) ---------- */}
-        {!stuck && (canPay || order.payment_status === "paid") && (
+        {!stuck && ["counter.discount", "counter.refund", "counter.void"].some(can) && (isUnpaid || order.payment_status === "paid") && (
           <div className="mt-4 border-t border-line pt-2">
             <button
               type="button"
@@ -386,7 +390,7 @@ export function PaymentPanel({
 
             {showAdjust && (
               <div id={`adjust-${order.id}`} className="mt-2 grid gap-3">
-                {canPay && (
+                {isUnpaid && order.status !== "cancelled" && can("counter.discount") && (
                   <form
                     className="grid gap-2 rounded-md border border-line-strong p-3"
                     onSubmit={(e) => {
@@ -427,7 +431,7 @@ export function PaymentPanel({
                   </form>
                 )}
 
-                {order.payment_status === "paid" && (
+                {order.payment_status === "paid" && can("counter.refund") && (
                   <form
                     className="grid gap-2 rounded-md border border-line-strong p-3"
                     onSubmit={(e) => {
@@ -455,7 +459,7 @@ export function PaymentPanel({
                   </form>
                 )}
 
-                <form
+                <Permission name="counter.void">                <form
                   className="grid gap-2 rounded-md border border-danger/50 p-3"
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -483,7 +487,7 @@ export function PaymentPanel({
                       Void
                     </Button>
                   </div>
-                </form>
+                </form></Permission>
               </div>
             )}
           </div>

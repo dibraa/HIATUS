@@ -1,4 +1,5 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 
 import { useActionState, useCallback, useEffect, useId, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
@@ -12,7 +13,7 @@ import { MenuItemForm } from "./menu-item-form";
 
 export type Category = { name: string; position: number };
 
-export function EditMenuItemButton({ item }: { item: MenuItem }) {
+function EditMenuItemButtonContent({ item }: { item: MenuItem }) {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -73,7 +74,7 @@ function CategoryForm({ category }: { category?: Category }) {
     <div className="w-full" aria-live="polite"><FormError>{state.error}</FormError>{state.success && <FormSuccess>Category updated.</FormSuccess>}</div>
   </form>;
 }
-export function CategoryManager({ categories }: { categories: Category[] }) {
+function CategoryManagerContent({ categories }: { categories: Category[] }) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -131,7 +132,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
     </dialog>}
   </>;
 }
-export function ItemToggles({ item }: { item: MenuItem }) {
+function ItemTogglesContent({ item }: { item: MenuItem }) {
   const [pending, start] = useTransition();
   const router = useRouter();
   function change(field: "is_available", enabled: boolean) {
@@ -145,3 +146,9 @@ export function ItemToggles({ item }: { item: MenuItem }) {
     <Button variant="ghost" disabled={pending} aria-pressed={item.is_available} onClick={() => change("is_available", !(item.is_available))}>{(item.is_available) ? "Mark sold out" : "Make available"}</Button>
   </div>;
 }
+
+export const CategoryManager = withPermission("menu.categories", CategoryManagerContent);
+
+export const EditMenuItemButton = withPermission("menu.edit", EditMenuItemButtonContent);
+
+export const ItemToggles = withPermission("menu.availability", ItemTogglesContent);

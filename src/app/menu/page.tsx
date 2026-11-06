@@ -100,7 +100,7 @@ export default async function MenuPage({
               className="ui-caps mb-4 flex min-h-11 items-center justify-between gap-3 rounded-2xl bg-inverse-card px-4 text-2xs text-inverse-card-fg ring-1 ring-line lg:hidden"
             >
               <span>
-                {orderCode(activeOrder.id)} · {activeOrder.status === "ready" ? "Ready for pickup" : "On its way"}
+                {orderCode(activeOrder.id, activeOrder.pickup_code)} · {activeOrder.status === "ready" ? "Ready for pickup" : "On its way"}
               </span>
               <span>Track &rarr;</span>
             </Link>
@@ -173,7 +173,7 @@ export default async function MenuPage({
               className="block rounded-2xl bg-inverse-card p-4 text-inverse-card-fg ring-1 ring-line"
             >
               <span className="ui-caps flex justify-between text-2xs">
-                <span>{orderCode(activeOrder.id)}</span>
+                <span>{orderCode(activeOrder.id, activeOrder.pickup_code)}</span>
                 <span>Track &rarr;</span>
               </span>
               <span className="mt-3 block">

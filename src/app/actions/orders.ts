@@ -44,15 +44,17 @@ export async function placeOrder(
   }
 }
 
-export async function cancelOrder(orderId: string): Promise<{ error: string | null }> {
+export async function cancelOrder(orderId: string): Promise<{ error: string | null; refundRequired?: boolean }> {
   const token = await getServerToken();
   try {
     const targets = await getPushTargets(orderId, token ?? undefined);
-    await apiJson(`/orders/${orderId}/cancel`, { method: "POST", token: token ?? undefined });
+    const result = await apiJson<{ refund_required?: boolean }>(`/orders/${orderId}/cancel`, { method: "POST", token: token ?? undefined });
     revalidatePath("/orders");
+    revalidatePath("/staff");
+    revalidatePath("/admin/orders");
     revalidatePath(`/orders/${orderId}`);
     if (targets) after(() => sendOrderPush(orderId, targets, "cancelled", token ?? undefined));
-    return { error: null };
+    return { error: null, refundRequired: result.refund_required === true };
   } catch (err: unknown) {
     return { error: (err as Error).message };
   }

@@ -1,3 +1,4 @@
+import { getCurrentUser } from "@/lib/auth";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
@@ -30,6 +31,7 @@ export default async function ReceiptPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const user = await getCurrentUser();
   const settings = await getSettings();
 
   let order: Order & { id: string; items: (OrderItem & { id: string })[] };
@@ -120,7 +122,7 @@ export default async function ReceiptPage({
     <main className="payment-receipt mx-auto max-w-md px-5 py-8 print:max-w-none print:px-0 print:py-0">
       <div className="mb-5 flex items-center justify-between print:hidden">
         <Link
-          href="/staff/pos?tab=paid"
+          href={user?.role === "admin" ? "/admin/reports?view=transactions&period=all" : "/staff?tab=paid"}
           className="ui-caps text-2xs text-muted hover:text-ink"
         >
           ← Settled orders
@@ -137,8 +139,10 @@ export default async function ReceiptPage({
             {payment ? "Payment receipt" : "Order record — no payment received"}
           </p>
           <p className="mt-3 font-mono text-sm text-ink">
-            {orderCode(order.id)}
+            {orderCode(order.id, order.pickup_code)}
           </p>
+          {!order.pickup_code && <p className="mt-2 break-all text-xs text-muted">Full order ID: {order.id}</p>}
+          {order.status === "cancelled" && order.payment_status === "paid" && <p className="mt-2 font-semibold text-warning-soft-fg">Refund required</p>}
         </header>
         {order.payment_status !== "paid" && (
           <p className="mt-4 rounded-md border border-line-strong p-3 text-sm font-semibold text-ink">

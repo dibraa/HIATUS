@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DataError } from "@/components/ui/data-error";
-import { formatPrice } from "@/lib/format";
+import { formatPrice, orderCode } from "@/lib/format";
 import type { Order } from "@/types/database";
 
 export const metadata: Metadata = { title: "My orders" };
@@ -75,6 +75,9 @@ function OrderGroup({ title, orders }: { title: string; orders: (Order & { id: s
               className="flex items-center justify-between gap-4 rounded-lg border border-line bg-card px-4 py-3.5 transition-colors hover:border-line-strong hover:bg-raised"
             >
               <span className="min-w-0">
+                <span className="block text-sm font-semibold">{orderCode(order.id, order.pickup_code)}</span>
+                {!order.pickup_code && <span className="block break-all text-xs text-muted">ID: {order.id}</span>}
+                {order.status === "cancelled" && order.payment_status === "paid" && <span className="block text-sm font-semibold text-warning-soft-fg">Refund required</span>}
                 <span className="block text-sm font-medium text-ink">
                   <time dateTime={order.created_at}>{DATE_FORMAT.format(new Date(order.created_at))}</time>
                 </span>

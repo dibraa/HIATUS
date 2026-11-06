@@ -17,6 +17,7 @@ export const metadata: Metadata = { title: "Orders" };
 export const dynamic = "force-dynamic";
 
 type OrderRow = {
+  pickup_code?: string | null;
   _id: string; id?: string; status: OrderStatus; order_type: OrderType;
   payment_status: PaymentStatus; total_amount: number;
   pickup_note: string | null; created_at: string;
@@ -104,14 +105,14 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
               </thead>
               <tbody className="divide-y divide-line">
                 {orderList.map((order) => {
-                  const customer = order.user_id?.full_name?.trim() || orderCode(order.id!);
+                  const customer = order.user_id?.full_name?.trim() || orderCode(order.id!, order.pickup_code);
                   const phone = order.user_id?.phone;
                   const fullItems = order.items.map(itemSummary).join(", ");
                   const visibleItems = order.items.slice(0, 2);
                   const hiddenCount = order.items.length - visibleItems.length;
                   return (
                     <tr key={order.id} className="text-ink-soft">
-                      <td className="whitespace-nowrap px-2 py-4 text-xs text-muted">{orderCode(order.id!)}</td>
+                      <td className="whitespace-nowrap px-2 py-4 text-xs text-muted">{orderCode(order.id!, order.pickup_code)}{!order.pickup_code && <span className="block max-w-48 break-all whitespace-normal text-xs">ID: {order.id}</span>}</td>
                       <th scope="row" className="min-w-28 px-2 py-4 font-medium text-ink">
                         {customer}
                         {phone && (
@@ -140,7 +141,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                       </td>
                       <td className="whitespace-nowrap px-2 py-4 text-xs">{ORDER_TYPE_LABELS[order.order_type] ?? order.order_type}</td>
                       <td className="whitespace-nowrap px-2 py-4 font-semibold tabular-nums text-ink">{formatPrice(order.total_amount)}</td>
-                      <td className="whitespace-nowrap px-2 py-4 text-xs">{PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status}</td>
+                      <td className="whitespace-nowrap px-2 py-4 text-xs">{PAYMENT_STATUS_LABELS[order.payment_status] ?? order.payment_status}{order.status === "cancelled" && order.payment_status === "paid" && <strong className="mt-1 block text-warning-soft-fg">Refund required</strong>}</td>
                       <td className="px-2 py-4">
                         <div className="flex flex-wrap gap-1">
                           {order.payment_status === "unpaid" && order.status !== "cancelled" && <Badge tone="warning">{PAYMENT_STATUS_LABELS.unpaid}</Badge>}

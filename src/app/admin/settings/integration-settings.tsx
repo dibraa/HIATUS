@@ -1,11 +1,12 @@
 "use client";
+import { withPermission } from "@/components/permission-controls";
 import { useActionState, useState } from "react";
 import { saveIntegrationSettings } from "@/app/actions/settings";
 import { Button } from "@/components/ui/button";
 import { CheckboxField, FormError, FormSuccess } from "@/components/ui/field";
 import type { IntegrationSettings } from "@/lib/integrations";
 
-export function IntegrationSettingsForm({ settings }: { settings: IntegrationSettings | null }) {
+function IntegrationSettingsFormContent({ settings }: { settings: IntegrationSettings | null }) {
   const [state, action, pending] = useActionState(saveIntegrationSettings, { error: null, success: null });
   const [draft, setDraft] = useState(settings);
   const controls = [
@@ -22,3 +23,5 @@ export function IntegrationSettingsForm({ settings }: { settings: IntegrationSet
     <Button type="submit" disabled={!draft || pending} loading={pending}>Save API controls</Button>
   </form>;
 }
+
+export const IntegrationSettingsForm = withPermission("settings.integrations", IntegrationSettingsFormContent, true);
