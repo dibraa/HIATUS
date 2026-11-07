@@ -37,9 +37,7 @@ function ClockInFormContent() {
       }}
     >
       <h2 className="display staff-section-title">Start your shift</h2>
-      <p className="staff-lead mt-1.5">
-        Enter the cash in the drawer.
-      </p>
+
 
       <div className="mt-4 flex flex-col gap-1.5">
         <label
@@ -98,9 +96,7 @@ function ClockOutFormContent({ expectedCash }: { expectedCash: number }) {
       }}
     >
       <h2 className="display staff-section-title">End your shift</h2>
-      <p className="staff-lead mt-1.5">
-        Enter the counted cash and note any difference.
-      </p>
+      <p className="staff-lead mt-1.5">Note any cash difference.</p>
 
       <div className="mt-4 flex flex-col gap-1.5">
         <label

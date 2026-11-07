@@ -124,9 +124,7 @@ export default async function StaffMenuPage() {
                 );
               })}
             </div>
-            <p className="staff-caption">
-              Ask an admin to edit names, prices, or photos.
-            </p>
+            <p className="staff-caption">Admins edit names, prices and photos.</p>
           </>
         )}
       </div>

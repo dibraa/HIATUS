@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PUSH_ENABLED } from "@/lib/push-flag";
+import { currentIntegrations } from "@/lib/integration-client";
+import { OneSignalToggle } from "./onesignal-toggle";
 import { Button } from "@/components/ui/button";
 import { FormError, FormSuccess } from "@/components/ui/field";
 import { removePushSubscription, savePushSubscription, sendTestNotification } from "@/app/actions/push";
@@ -29,6 +32,14 @@ const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
  * prompt in response to a user gesture.
  */
 export function PushToggle() {
+  const [policy, setPolicy] = useState<ReturnType<typeof currentIntegrations>>(null);
+  useEffect(() => { const sync = () => setPolicy(currentIntegrations()); sync(); window.addEventListener("hiatus:integrations", sync); return () => window.removeEventListener("hiatus:integrations", sync); }, []);
+  if (!policy) return <p className="text-sm text-muted">Checking notification settings...</p>;
+  if (!policy.push_enabled) return <p className="text-sm text-muted">Browser notifications are disabled.</p>;
+  if (policy.push_provider === "onesignal") return policy.onesignal_app_id ? <OneSignalToggle /> : <p className="text-sm text-muted">Browser notifications are not configured.</p>;
+  return PUSH_ENABLED ? <NativePushToggle /> : <p className="text-sm text-muted">Browser notifications are not configured.</p>;
+}
+function NativePushToggle() {
   const [state, setState] = useState<PushState>("checking");
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [busy, setBusy] = useState(false);

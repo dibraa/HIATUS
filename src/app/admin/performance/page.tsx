@@ -1,3 +1,4 @@
+import { activityToday, activityRangeDates, activityDateError, readActivityFilters } from "@/lib/activity-filters";
 import type { Metadata } from "next";
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { AdminStatCard } from "@/components/admin-stat-card";
@@ -7,25 +8,32 @@ import { Badge } from "@/components/ui/badge";
 import { apiJson } from "@/lib/api-client";
 import { getServerToken } from "@/lib/server-token";
 import { formatDateTime } from "@/lib/format";
-import { activityQuery, actionLabel, type ActivityMetrics, type ActivityOptions, type AdminSearch } from "@/lib/activity";
+import { activityQuery, activityDisplayQuery, actionLabel, type ActivityMetrics, type ActivityOptions, type AdminSearch } from "@/lib/activity";
 import { PeriodSummary } from "./period-summary";
 export const metadata: Metadata = { title: "Staff activity metrics" };
 export const dynamic = "force-dynamic";
 
 export default async function PerformancePage({ searchParams }: { searchParams: Promise<AdminSearch> }) {
-  const query = activityQuery(await searchParams, true);
+  const search = await searchParams;
+  const query = activityQuery(search,true);
+  const displayQuery = activityDisplayQuery(search,true);
+  const today = activityToday();
+  const selected = readActivityFilters(displayQuery.toString(),today,true);
+  const fallbackDates = activityDateError(selected.from,selected.to) ? activityRangeDates(today,"30d") : { from:selected.from, to:selected.to };
+  const fallbackPeriod = {...fallbackDates,timezone:"Asia/Manila"};
   const token = (await getServerToken()) || undefined;
-  let data: ActivityMetrics, options: ActivityOptions;
-  try {
-    [data, options] = await Promise.all([
-      apiJson<ActivityMetrics>(`/activity/metrics?${query}`, { token, cache: "no-store" }),
-      apiJson<ActivityOptions>("/activity/options", { token, cache: "no-store" }),
-    ]);
-  } catch (error) { return <><AdminPageHeader title="Staff activity metrics" /><DataError title="Could not load activity metrics" body={(error as Error).message} showRetry /><a href="/admin/performance" className="admin-secondary-link mt-4">Reset filters</a></>; }
+  const [records, choices] = await Promise.allSettled([
+    apiJson<ActivityMetrics>(`/activity/metrics?${query}`, { token, cache: "no-store" }),
+    apiJson<ActivityOptions>("/activity/options", { token, cache: "no-store" }),
+  ]);
+  const data = records.status === "fulfilled" ? records.value : null;
+  const options = choices.status === "fulfilled" ? choices.value : { actors:[],actions:[] };
+  const loadError = records.status === "rejected" ? (records.reason as Error).message : undefined;
+  const choicesError = choices.status === "rejected" ? "Filter choices unavailable" : undefined;
   return <div className="space-y-5">
     <AdminPageHeader title="Staff activity metrics" description="Recorded actions, not a performance score." />
-    <ActivityFilters options={options} query={query} period={data.period} metrics />
-    <p className="text-sm text-muted">Reporting period: {data.period.from} to {data.period.to} · Asia/Manila</p>
+    <ActivityFilters options={options} query={displayQuery.toString()} period={data?.period || fallbackPeriod} today={today} choicesError={choicesError} metrics />
+    {data ? <>
     <div className="admin-stats">
       <AdminStatCard label="Staff accounts" value={data.staff_count} hint="Across all dates" />
       <AdminStatCard label="Recorded actions" value={data.totals.count} />
@@ -45,5 +53,6 @@ export default async function PerformancePage({ searchParams }: { searchParams: 
     <section className="admin-panel"><h2 className="mb-4 text-lg font-semibold">Recent staff activity</h2>
       {data.recent.length === 0 ? <p className="text-sm text-muted">No recent activity in this reporting period.</p> : <ul className="divide-y divide-line">{data.recent.map(log => <li key={log._id} className="flex flex-wrap items-center justify-between gap-3 py-3"><div><p className="text-sm font-medium">{log.actor_name} · {actionLabel(log.action)}</p><p className="mt-1 text-xs text-muted">{formatDateTime(log.created_at)}</p></div><Badge tone={log.status === "success" ? "success" : "danger"}>{log.status === "success" ? "Success" : "Failure"}</Badge></li>)}</ul>}
     </section>
+    </> : <DataError title="Could not load activity metrics" body={loadError || "Try again shortly."} showRetry />}
   </div>;
 }

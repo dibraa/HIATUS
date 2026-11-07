@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { trackEvent } from "./integration-client";
 import { DEFAULT_SIZE, isDrinkSize, type DrinkSize } from "@/lib/sizes";
 
 export type CartLine = {
@@ -98,6 +99,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [lines, hydrated]);
 
   const addItem: CartContextValue["addItem"] = (item, quantity = 1) => {
+    trackEvent("cart_added", { item_id: item.menuItemId, quantity });
     setLines((prev) => {
       const key = lineKey(item.menuItemId, item.size);
       const existing = prev.find((l) => lineKey(l.menuItemId, l.size) === key);

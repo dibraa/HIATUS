@@ -112,9 +112,7 @@ export function SavePreset({
         </Button>
       </div>
 
-      <p className="text-2xs text-muted">
-        Prices are not saved — a preset is always re-priced at today&rsquo;s menu.
-      </p>
+      <p className="text-2xs text-muted">Saved orders use current menu prices.</p>
     </form>
   );
 }

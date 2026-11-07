@@ -124,9 +124,7 @@ export default async function MenuItemPage({ params }: Params) {
           {averageRating !== null && <RatingSummary average={averageRating} count={ratingList.length} />}
         </div>
         {ratingList.length === 0 ? (
-          <p className="mt-4 rounded-lg border border-dashed border-line-strong bg-card px-6 py-10 text-center text-sm text-muted">
-            No reviews yet. Ratings come from customers who have picked this drink up.
-          </p>
+          <p className="mt-4 rounded-lg border border-dashed border-line-strong bg-card px-6 py-10 text-center text-sm text-muted">No customer reviews yet.</p>
         ) : (
           <ul className="mt-5 flex flex-col gap-4">
             {ratingList.map((rating) => (

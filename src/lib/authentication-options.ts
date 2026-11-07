@@ -27,13 +27,16 @@ export function isAuthenticationOptions(value: unknown): value is Authentication
 }
 
 export async function getAuthenticationOptions(): Promise<AuthenticationResult> {
-  try {
-    const options = await apiJson<unknown>("/auth/options", { cache: "no-store", signal: AbortSignal.timeout(10000) });
-    if (!isAuthenticationOptions(options)) throw new Error("Invalid sign-in options");
-    return { options, error: null };
-  } catch {
-    // Do not assume CAPTCHA is disabled. Password submissions still go through
-    // the API, which independently reads and enforces the current saved policy.
-    return { options: null, error: "Additional sign-in options could not load. Retrying automatically. You can still try your email and password." };
+  // A cold backend or a brief transport failure gets one fresh attempt before
+  // the form reports unavailable providers. Never invent an off CAPTCHA policy.
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const options = await apiJson<unknown>("/auth/options", { cache: "no-store", signal: AbortSignal.timeout(5000) });
+      if (!isAuthenticationOptions(options)) throw new Error("Invalid sign-in options");
+      return { options, error: null };
+    } catch {
+      // The API independently enforces the saved policy on password submission.
+    }
   }
+  return { options: null, error: "Additional sign-in options could not load. Retrying automatically. You can still try your email and password." };
 }

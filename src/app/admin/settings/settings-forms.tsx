@@ -92,7 +92,7 @@ function BusinessHoursFormContent({ hours, version = 0 }: { hours: BusinessHours
       version={version}
       submitLabel="Save hours"
       title="Opening hours"
-      description="Manila time. Earlier closing times continue into the next day."
+      description="Earlier closing times continue into the next day."
       state={state}
       pending={pending}
       action={formAction}
@@ -174,7 +174,7 @@ function OrderingFormContent({ ordering, version = 0 }: { ordering: OrderingSett
     <SettingsCard
       title="Ordering"
       version={version}
-      description="Pausing orders blocks checkout. The menu remains visible."
+      description="Pausing blocks checkout. The menu stays visible."
       state={state}
       pending={pending}
       action={formAction}
@@ -224,7 +224,7 @@ function ShopInfoFormContent({ info, version = 0 }: { info: ShopInfo; version?: 
     <SettingsCard
       title="Shop details"
       version={version}
-      description="Appears in the footer and on receipts."
+      description="Shown in the footer and receipts."
       state={state}
       pending={pending}
       action={formAction}
@@ -242,7 +242,7 @@ function ShopInfoFormContent({ info, version = 0 }: { info: ShopInfo; version?: 
         name="address"
         label="Address"
         defaultValue={info.address}
-        placeholder="123 Example St, Manila"
+        placeholder="123 Example St"
       />
       <div className="grid gap-4 sm:grid-cols-2">
         <TextField
@@ -277,7 +277,7 @@ function TemplatesFormContent({ templates }: { templates: NotificationTemplates 
   return (
     <SettingsCard
       title="Order messages"
-      description="Shown on the customer’s order page at each stage."
+      description="Shown on customer order pages."
       state={state}
       pending={pending}
       action={formAction}

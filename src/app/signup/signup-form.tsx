@@ -13,6 +13,7 @@ const initialState: AuthState = { error: null };
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function SignupSuccessDialog({ message }: { message: string }) {
+  const detail = message === "Your account was created successfully." ? null : message;
   const router = useRouter();
   const dialog = useRef<HTMLDialogElement>(null);
   const login = useRef<HTMLAnchorElement>(null);
@@ -38,7 +39,7 @@ function SignupSuccessDialog({ message }: { message: string }) {
     return (
       <section aria-labelledby="signup-success-title" className="rounded-lg border border-line bg-card p-5">
         <h2 id="signup-success-title" className="display text-xl">Account created</h2>
-        <p className="mt-2 text-sm text-muted">{message}</p>
+        {detail && <p className="mt-2 text-sm text-muted">{detail}</p>}
         <a ref={login} href="/login" className="mt-3 inline-flex min-h-11 items-center text-accent underline">
           Proceed to login
         </a>
@@ -50,7 +51,7 @@ function SignupSuccessDialog({ message }: { message: string }) {
     <dialog
       ref={dialog}
       aria-labelledby="signup-success-title"
-      aria-describedby="signup-success-message"
+      aria-describedby={detail ? "signup-success-message" : undefined}
       onCancel={(event) => {
         event.preventDefault();
         setDismissed(true);
@@ -70,7 +71,7 @@ function SignupSuccessDialog({ message }: { message: string }) {
         </svg>
       </div>
       <h2 id="signup-success-title" className="display mt-4 text-2xl text-ink">Account created</h2>
-      <p id="signup-success-message" className="mt-tight text-sm text-muted">{message}</p>
+      {detail && <p id="signup-success-message" className="mt-tight text-sm text-muted">{detail}</p>}
       <Button type="button" size="md" className="mt-stack w-full" onClick={() => router.push("/login")}>
         Proceed to login
       </Button>
@@ -93,9 +94,9 @@ export function SignupForm({ authentication }: { authentication: Awaited<ReturnT
     <div className="flex flex-col gap-5">
     {options?.google_enabled && options.google_client_id && <>
       <GoogleSignIn key={options.google_client_id} clientId={options.google_client_id} intent="signup" disabled={pending || Boolean(state.success)} onPendingChange={setGooglePending} />
-      <p className="border-t border-line pt-4 text-center text-sm text-muted">Or create an account with email</p>
+      <p className="border-t border-line pt-4 text-center text-sm text-muted">or use email</p>
     </>}
-    <FormError>{optionsError}</FormError>
+    {optionsError && <p role="status" className="text-sm text-muted">{optionsError}</p>}
     <form action={formAction} className="flex flex-col gap-4">
       <TextField
         id="full_name"
@@ -137,7 +138,7 @@ export function SignupForm({ authentication }: { authentication: Awaited<ReturnT
         pattern="[0-9]*"
         title="Enter numbers only."
         autoComplete="tel"
-        hint="Optional. For questions about your order."
+        hint="Optional."
         value={phone}
         onChange={(event) => setPhone(event.target.value.replace(/\D/g, ""))}
       />

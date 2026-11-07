@@ -105,7 +105,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           )}
           {["pending", "preparing", "ready"].includes(order.status) && (
             <p className="mt-4 border-t border-line pt-3 text-sm text-muted">
-              Want to be told when it&apos;s ready, even with this page closed?{" "}
+
               <Link
                 href="/profile#notifications"
                 className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
@@ -167,17 +167,17 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         )}
       </section>
 
-      {order.status === "cancelled" && order.payment_status === "paid" && <p role="status" className="mt-5 rounded-md border border-warning-soft-fg p-4 text-sm text-ink">Refund required. Ask staff to return your payment. It has not been marked refunded yet.</p>}
+      {order.status === "cancelled" && order.payment_status === "paid" && <p role="status" className="mt-5 rounded-md border border-warning-soft-fg p-4 text-sm text-ink">Refund required. Ask staff to return your payment.</p>}
       {!order.pickup_code && <p className="mt-4 break-all text-xs text-muted">Full order ID: {order.id}</p>}
       {order.status === "pending" && <div className="mt-6"><CancelButton orderId={order.id} paid={order.payment_status === "paid"} /></div>}
 
       {order.status === "completed" && (
         <section aria-labelledby="rate-heading" className="mt-10">
           <h2 id="rate-heading" className="display text-xl text-ink">Rate your order</h2>
-          <p className="mt-1.5 text-sm text-muted">Ratings show on the menu and help the next person choose.</p>
+          <p className="mt-1.5 text-sm text-muted">Reviews appear on the menu.</p>
           <div className="mt-4 flex flex-col gap-3">
             {rateable.length === 0 ? (
-              <p className="text-sm text-muted">You&apos;ve rated everything in this order. Thanks!</p>
+              <p className="text-sm text-muted">All items reviewed.</p>
             ) : (
               rateable.map((item) => (
                 <RatingForm key={item.id} orderId={order.id} menuItemId={item.menu_item_id as string} itemName={item.item_name} />

@@ -52,9 +52,7 @@ export default async function FavoritesPage() {
           {presetList.length > 0 && (
             <section aria-labelledby="presets-heading">
               <h2 id="presets-heading" className="mb-3 display text-xl text-ink">Your usual</h2>
-              <p className="mb-4 max-w-[60ch] text-sm text-muted">
-                Saved orders are re-priced at today&rsquo;s menu each time you load one.
-              </p>
+              <p className="mb-4 max-w-[60ch] text-sm text-muted">Saved orders use current menu prices.</p>
               <PresetList presets={presetList} menu={menuItems} />
             </section>
           )}

@@ -115,9 +115,7 @@ export function GrantRoleDialog() {
                 <h2 id="grant-access-title" className="display text-2xl text-ink">
                   Manage access
                 </h2>
-                <p className="mt-1.5 text-sm text-muted">
-                  Assign Staff or Admin access to an existing account.
-                </p>
+                <p className="mt-1.5 text-sm text-muted">Choose an existing account.</p>
               </div>
               <button
                 type="button"
@@ -387,10 +385,7 @@ function CreateStaffFormContent() {
                 >
                   Create account
                 </h2>
-                <p className="mt-1.5 text-sm text-muted">
-                  Create login credentials for a customer, staff member, or
-                  administrator.
-                </p>
+
               </div>
               <button
                 type="button"
@@ -406,7 +401,7 @@ function CreateStaffFormContent() {
                 <FormSuccess>
                   Account created for {lastEmail}.
                 </FormSuccess>
-                {state.warning ? <FormError>{state.warning}</FormError> : <p className="text-sm text-muted">A one-time setup link was sent by email so they can choose their own password.</p>}
+                {state.warning ? <FormError>{state.warning}</FormError> : <p className="text-sm text-muted">Password setup link emailed.</p>}
                 <div className="flex justify-end gap-2">
                   <Button
                     type="button"
@@ -452,7 +447,7 @@ function CreateStaffFormContent() {
                   onValueChange={setPhone}
                   autoComplete="off"
                 />
-                <p className="text-sm text-muted">The user will receive a one-time email link to choose their own password.</p>
+                <p className="text-sm text-muted">A password setup link will be emailed.</p>
                 <SelectField
                   id="new-staff-role"
                   name="role"

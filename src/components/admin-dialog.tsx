@@ -3,7 +3,7 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import { AdminIcon } from "@/components/admin-icon";
 export function AdminDialog({ title, description, pending, onClose, children, confirmation = false, wide = false, closeLabel }: {
   title: string;
-  description: string;
+  description?: string;
   pending: boolean;
   onClose: () => void;
   children: ReactNode;
@@ -37,7 +37,7 @@ export function AdminDialog({ title, description, pending, onClose, children, co
       role={confirmation ? "alertdialog" : "dialog"}
       aria-modal="true"
       aria-labelledby={`${id}-title`}
-      aria-describedby={`${id}-description`}
+      aria-describedby={description ? `${id}-description` : undefined}
       aria-busy={pending}
       className={`fixed inset-0 m-auto max-h-[90dvh] w-[calc(100%-2rem)] ${wide ? "max-w-4xl" : "max-w-lg"} overflow-y-auto rounded-2xl border border-line bg-card p-0 text-left text-ink backdrop:bg-scrim`}
       onCancel={(event) => {
@@ -70,12 +70,11 @@ export function AdminDialog({ title, description, pending, onClose, children, co
       <div className="p-6">
         <div className="flex items-start justify-between gap-4">
           <h2 id={`${id}-title`} className="display min-w-0 text-2xl text-ink">{title}</h2>
-          {closeLabel && <button type="button" aria-label={closeLabel} disabled={pending} onClick={onClose} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink disabled:opacity-50"><AdminIcon name="close" /></button>}
+          <button type="button" aria-label={closeLabel ?? "Close dialog"} disabled={pending} onClick={onClose} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink disabled:opacity-50"><AdminIcon name="close" /></button>
         </div>
-        <p id={`${id}-description`} className="mt-2 break-words text-sm text-muted">{description}</p>
+        {description && <p id={`${id}-description`} className="mt-2 break-words text-sm text-muted">{description}</p>}
         <div className="mt-5">{children}</div>
       </div>
     </dialog>
   );
 }
-

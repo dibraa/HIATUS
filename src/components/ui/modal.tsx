@@ -157,6 +157,14 @@ export function Modal({
         }`}
         onClick={(e) => e.stopPropagation()}
       >
+        <button
+          type="button"
+          aria-label="Close dialog"
+          onClick={onCancel}
+          className="absolute right-4 top-4 inline-flex h-11 w-11 items-center justify-center rounded-md text-muted hover:bg-raised hover:text-ink"
+        >
+          <span aria-hidden="true" className="text-2xl leading-none">×</span>
+        </button>
         <h2 ref={titleRef} tabIndex={-1} id="modal-title" className="display wrap-anywhere text-2xl text-ink">
           {title}
         </h2>

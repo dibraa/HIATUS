@@ -60,7 +60,7 @@ function SalesPanels({ data, period, date }: { data: Report; period: string; dat
         <h2 id="flavors-heading" className="display text-xl text-ink mb-4">Best-selling flavours</h2>
         <BestSellerChart data={flavorsRaw} />
       </section>
-      <HourChart data={data.peak_hours} title="Peak ordering hours" description="Orders by Manila placement hour, including preparation; cancelled orders excluded." />
+      <HourChart data={data.peak_hours} title="Peak ordering hours" description="Orders by placement hour, including preparation; cancelled orders excluded." />
     </div>
   );
 }
@@ -109,7 +109,7 @@ export default async function ReportsPage({ searchParams }: { searchParams: Prom
       <p className="mb-5 text-sm text-muted">{customer.summary.repeat} customers purchased at least twice in this period. {customer.summary.orders_per_customer.toFixed(2)} purchases per customer. Deleted-account purchases remain in sales totals but are excluded from customer comparisons.</p>
       <CustomerTable key={query.toString()} items={customer.items} period={period} date={date} />
       <AdminPagination path="/admin/reports" query={query} page={customer.page} pageSize={20} total={customer.total} label="Customer analytics pages" />
-      <HourChart data={customer.hours} title="Customer ordering times" description="Paid, completed purchases by Manila hour for matching customers." />
+      <HourChart data={customer.hours} title="Customer ordering times" description="Paid, completed purchases by hour for matching customers." />
     </> : <>
       <div className="admin-stats">{view === "transactions" ? <><StatCard label="Collections" value={formatPrice(ledger.totals.payments)} hint="Payment records" /><StatCard label="Refunds" value={formatPrice(ledger.totals.refunds)} hint="Returned payments" /><StatCard label="Paid voids" value={formatPrice(ledger.totals.voids)} hint="Unpaid voids contribute zero" /><StatCard label="Net collections" value={formatPrice(ledger.totals.net)} hint="Payments less reversals" /></> : <><StatCard label="Refund total" value={formatPrice(ledger.totals.refunds)} hint="Recorded refunds" /><StatCard label="Refund records" value={ledger.total} hint="Matching filters" /><StatCard label="Dispute cases" value={disputeData ? disputeData.total : "Unavailable"} hint="Matching case filters" /><StatCard label="Needs review" value={ledger.totals.conflicts} hint="Excluded from financial totals" /></>}</div>
       {ledger.totals.conflicts > 0 && <p role="status" className="mb-5 rounded-md border border-danger p-4 text-sm text-danger">{ledger.totals.conflicts} conflicting ledger records need review and are excluded from financial totals. Inspect their legacy sources in Details.</p>}

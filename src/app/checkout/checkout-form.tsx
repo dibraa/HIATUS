@@ -179,10 +179,7 @@ export function CheckoutForm({
                 aria-describedby="table_label-hint"
                 className="rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
               />
-              <p id="table_label-hint" className="text-xs text-muted">
-                Tell us where you are sitting and we will bring it over. Leave it
-                blank and we will find you.
-              </p>
+              <p id="table_label-hint" className="text-xs text-muted">Leave blank if you do not know your table.</p>
             </div>
           )}
         </Card>
@@ -205,10 +202,7 @@ export function CheckoutForm({
           placeholder="e.g. less ice, oat milk, or a pickup time"
           className="w-full rounded-md border border-line-strong bg-card px-3 py-2.5 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink-soft focus:border-ink"
         />
-        <p className="mt-1.5 text-xs text-muted">
-          Allergies and dietary needs go here — the person making your drink
-          sees this on the ticket.
-        </p>
+        <p className="mt-1.5 text-xs text-muted">Include allergies and dietary needs.</p>
       </Card>
 
       {/* ---------- Summary ---------- */}

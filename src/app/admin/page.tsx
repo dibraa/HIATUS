@@ -85,11 +85,6 @@ export default async function AdminDashboardPage() {
         title="Dashboard"
         action={<Link href="/admin/orders" className="admin-primary-link">View orders</Link>}
       />
-      <div className="admin-attention-row">
-        <p><span className="admin-live-dot" aria-hidden="true" />{openNow > 0 ? `${openNow} order${openNow === 1 ? "" : "s"} need attention` : "You're all caught up"}</p>
-        <div><Link href="/admin/menu">Manage menu</Link><Link href="/staff">Open the queue</Link></div>
-      </div>
-
       <section aria-labelledby="today-heading">
         <h2 id="today-heading" className="sr-only">Today at a glance</h2>
         <div className="admin-stats admin-stats-three">
@@ -183,7 +178,7 @@ export default async function AdminDashboardPage() {
       <section className="admin-panel" aria-labelledby="staff-activity-heading">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div><h2 id="staff-activity-heading" className="text-lg font-semibold">Staff activity</h2>
-            {activity ? <p className="mt-2 text-sm text-muted">{activity.totals.count} recorded actions · {activity.totals.failure} failures · {activity.period.from} to {activity.period.to} (Asia/Manila)</p> : <p role="status" className="mt-2 text-sm text-muted">Activity metrics could not be loaded. Open Staff activity to retry.</p>}
+            {activity ? <p className="mt-2 text-sm text-muted">{activity.totals.count} recorded actions · {activity.totals.failure} failures · {activity.period.from} to {activity.period.to}</p> : <p role="status" className="mt-2 text-sm text-muted">Activity metrics could not be loaded. Open Staff activity to retry.</p>}
           </div>
           <div className="flex flex-wrap gap-2"><Link href="/admin/activity" className="admin-secondary-link">Activity logs</Link><Link href="/admin/performance" className="admin-primary-link">Staff activity</Link></div>
         </div>

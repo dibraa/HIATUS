@@ -61,11 +61,7 @@ function UserRoleSelectContent({ member, isMe }: { member: Account; isMe: boolea
           pending={pending}
           onClose={() => setProposedRole(null)}
         >
-          <p className="text-sm text-ink-soft">
-            {proposedRole === "admin" ? "Admins can manage all accounts, settings, and reports."
-              : proposedRole === "staff" ? "Staff can manage orders, payments, and availability."
-                : "Customer access removes permission to manage orders, payments, and administration."}
-          </p>
+
           {!member.is_active && <p className="mt-3 text-sm text-muted">This account will remain suspended.</p>}
           {member.on_shift && proposedRole === "customer" && <p className="mt-3 text-sm text-warning-soft-fg">This user is on shift. They will lose counter access immediately.</p>}
           {error && <div className="mt-4"><FormError>{error}</FormError></div>}
@@ -94,12 +90,10 @@ function EditUserForm({ member, isMe, onClose }: { member: Account; isMe: boolea
   const [name, setName] = useState(member.full_name ?? "");
   const [email, setEmail] = useState(member.email);
   const [phone, setPhone] = useState(member.phone ?? "");
-  const [password, setPassword] = useState("");
-  const [confirmAccess, setConfirmAccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const displayName = member.full_name?.trim() || member.email;
-  const changingSignIn = email.trim().toLowerCase() !== member.email || Boolean(password);
+  const changingSignIn = email.trim().toLowerCase() !== member.email;
 
   function save() {
     if (pending) return;
@@ -107,14 +101,12 @@ function EditUserForm({ member, isMe, onClose }: { member: Account; isMe: boolea
     if (name.trim() !== (member.full_name ?? "")) data.full_name = name.trim();
     if (email.trim().toLowerCase() !== member.email) data.email = email.trim().toLowerCase();
     if (phone.trim() !== (member.phone ?? "")) data.phone = phone.trim();
-    if (password) data.password = password;
     if (!Object.keys(data).length) { onClose(); return; }
     setError(null);
     startTransition(async () => {
       try {
         const result = await updateStaffCredentials(member.id, data);
         if (result.error) { setError(result.error); return; }
-        setPassword("");
         toast.success("Account updated.");
         onClose();
         if (isMe && changingSignIn) router.replace("/login?next=/admin/team");
@@ -124,65 +116,27 @@ function EditUserForm({ member, isMe, onClose }: { member: Account; isMe: boolea
     });
   }
 
-  function changeAccess() {
-    if (pending) return;
-    setError(null);
-    startTransition(async () => {
-      try {
-        const result = await setAccountActive(member.id, !member.is_active);
-        if (result.error) { setError(result.error); return; }
-        toast.success(member.is_active ? "Account suspended." : "Account restored.");
-        onClose();
-      } catch {
-        setError("Account access could not be updated. Try again.");
-      }
-    });
-  }
-
   return (
     <AccountDialog
-      title={confirmAccess ? (member.is_active ? "Suspend account?" : "Restore account?") : "Edit account"}
-      description={confirmAccess
-        ? (member.is_active ? `${displayName} will lose sign-in access. Their account and order history will be kept.` : `${displayName} will be able to sign in again.`)
-        : `Update account details for ${displayName}.`}
-      confirmation={confirmAccess}
+      title="Edit account"
+      description={displayName}
       pending={pending}
       onClose={onClose}
     >
-      {confirmAccess ? (
-        <>
-          {member.on_shift && member.is_active && <p className="mb-4 text-sm text-warning-soft-fg">This user is on shift. Suspending the account ends their access immediately.</p>}
-          {error && <FormError>{error}</FormError>}
-          <div className="mt-6 flex flex-wrap justify-end gap-2">
-            <Button variant="ghost" disabled={pending} onClick={() => { setError(null); setConfirmAccess(false); }}>Cancel</Button>
-            <Button variant={member.is_active ? "danger" : "primary"} disabled={pending} onClick={changeAccess}>{pending ? "Updating…" : member.is_active ? "Suspend account" : "Restore account"}</Button>
+      <form onSubmit={(event) => { event.preventDefault(); save(); }}>
+        <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-2">
+          <legend className="sr-only">Account credentials</legend>
+          <TextField id={`user-name-${member.id}`} label="Name" value={name} onChange={(event) => setName(event.target.value)} required autoComplete="off" />
+          <TextField id={`user-email-${member.id}`} label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="off" />
+          <PhoneField id={`user-phone-${member.id}`} label="Phone number" value={phone} onValueChange={setPhone} autoComplete="off" />
+          {changingSignIn && <p className="text-sm text-muted sm:col-span-2">{isMe ? "You will need to sign in again after changing your email." : "Changing the email signs this user out of existing sessions."}</p>}
+          {error && <div className="sm:col-span-2"><FormError>{error}</FormError></div>}
+          <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
+            <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
+            <Button type="submit">{pending ? "Saving…" : "Save changes"}</Button>
           </div>
-        </>
-      ) : (
-        <>
-          <form onSubmit={(event) => { event.preventDefault(); save(); }}>
-            <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-2">
-              <legend className="sr-only">Account credentials</legend>
-              <TextField id={`user-name-${member.id}`} label="Name" value={name} onChange={(event) => setName(event.target.value)} required autoComplete="off" />
-              <TextField id={`user-email-${member.id}`} label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required autoComplete="off" />
-              <PhoneField id={`user-phone-${member.id}`} label="Phone number" value={phone} onValueChange={setPhone} autoComplete="off" />
-              <TextField id={`user-password-${member.id}`} label="New password" type="password" minLength={8} value={password} onChange={(event) => setPassword(event.target.value)} hint="Leave blank to keep the current password. Use at least 8 characters for a new password." autoComplete="new-password" />
-              {changingSignIn && <p className="text-sm text-muted sm:col-span-2">{isMe ? "You will need to sign in again after changing your email or password." : "Changing the email or password signs this user out of existing sessions."}</p>}
-              {error && <div className="sm:col-span-2"><FormError>{error}</FormError></div>}
-              <div className="flex flex-wrap justify-end gap-2 sm:col-span-2">
-                <Button type="button" variant="ghost" onClick={onClose}>Cancel</Button>
-                <Button type="submit">{pending ? "Saving…" : "Save changes"}</Button>
-              </div>
-            </fieldset>
-          </form>
-          {!isMe && (
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-              <p className="text-sm text-muted">Account access: {member.is_active ? "Active" : "Suspended"}</p>
-              <Permission name="users.status"><button type="button" disabled={pending} className="admin-team-action-btn" onClick={() => { setError(null); setConfirmAccess(true); }}>{member.is_active ? "Suspend account" : "Restore account"}</button></Permission>
-            </div>
-          )}
-        </>
-      )}
+        </fieldset>
+      </form>
     </AccountDialog>
   );
 }
