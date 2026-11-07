@@ -353,3 +353,21 @@
 }
 
 .admin-menu-page .admin-page-action { min-width: 0; max-width: 100%; flex-shrink: 1; }
+
+/* Automatic activity filters keep the common controls together. */
+.admin-activity-main { display: grid; grid-template-columns: minmax(12rem, 1.25fr) minmax(12rem, 1fr) 11rem; gap: 1rem; align-items: end; }
+.admin-activity-main[data-metrics] { grid-template-columns: minmax(12rem, 1fr) 11rem; }
+.admin-activity-dates, .admin-activity-extra { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 1rem; }
+.admin-activity-more { margin-top: 1rem; border-top: 1px solid var(--hi-line); }
+.admin-activity-more summary { width: fit-content; min-height: 2.75rem; padding-top: .75rem; cursor: pointer; font-size: .875rem; font-weight: 550; }
+.admin-activity-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; margin-top: .75rem; }
+@media (max-width: 900px) {
+  .admin-activity-main { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-activity-main > :first-child { grid-column: 1 / -1; }
+  .admin-activity-main[data-metrics] > :first-child { grid-column: auto; }
+}
+@media (max-width: 600px) {
+  .admin-activity-main, .admin-activity-main[data-metrics], .admin-activity-dates, .admin-activity-extra { grid-template-columns: minmax(0, 1fr); }
+}
+
+.admin-activity-more summary:focus-visible { outline: 2px solid var(--hi-focus); outline-offset: 3px; border-radius: .25rem; }

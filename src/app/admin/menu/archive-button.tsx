@@ -26,7 +26,7 @@ export function ArchiveButton({ id, name }: { id: string; name: string }) {
       <Modal
         open={confirmOpen}
         title={`Archive "${name}"?`}
-        body="Remove this item from the live menu? Its details and order history will be kept. You can restore it from Archived items."
+        body="Hide this item from the menu? Order history stays intact. Restore it from Archived items."
         confirmLabel="Archive"
         cancelLabel="Keep it"
         danger

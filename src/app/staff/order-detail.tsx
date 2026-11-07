@@ -14,6 +14,7 @@ import {
 import { orderCode } from "@/lib/format";
 import type { QueueOrder } from "@/types/staff";
 import { PaymentPanel, type PaymentThen } from "./pos/payment-panel";
+import { AdminIcon } from "@/components/admin-icon";
 
 /**
  * Focused payment for a ticket without leaving the three-lane counter.
@@ -98,8 +99,9 @@ export function OrderDetail({
           disabled={busy || pending}
           onClick={onClose}
           aria-label="Close payment"
+          className="h-11 w-11 shrink-0 p-0"
         >
-          Close
+          <AdminIcon name="close" />
         </Button>
       </div>
       {(order.pickup_note || order.special_request_flag) && (

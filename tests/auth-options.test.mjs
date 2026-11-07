@@ -116,7 +116,7 @@ test("admin switches show saved enabled values and can be turned off when provid
 
 test("open forms pick up off switches on refresh and keep known CAPTCHA requirements during an outage", async () => {
   const states = [], windowEvents = new Map(), documentEvents = new Map();
-  let effect, interval, cleanup, signal, intervalMs, response = result(on), failing = false, stateIndex = 0;
+  let effect, interval, cleanup, signal, intervalMs, response = result(on), failing = false, stateIndex = 0, transientFailures = 0, fetches = 0;
   const validator = load("lib/authentication-options.ts", { "@/lib/api-client": {} });
   const hook = load("lib/use-authentication-options.ts", {
     react: {
@@ -128,13 +128,17 @@ test("open forms pick up off switches on refresh and keep known CAPTCHA requirem
     AbortController,
     document: { visibilityState: "visible", addEventListener: (name, callback) => documentEvents.set(name, callback), removeEventListener: name => documentEvents.delete(name) },
     window: { setInterval: (callback, ms) => { interval = callback; intervalMs = ms; return 1; }, clearInterval() {}, addEventListener: (name, callback) => windowEvents.set(name, callback), removeEventListener: name => windowEvents.delete(name) },
-    fetch: async (_url, options) => { signal = options.signal; if (failing) throw Error("outage"); return Response.json(response); },
+    fetch: async (_url, options) => { signal = options.signal; fetches++; if (transientFailures > 0) { transientFailures--; throw Error("temporary startup failure"); } if (failing) throw Error("outage"); return Response.json(response); },
   });
   const controls = hook.useAuthenticationOptions(result(on));
   cleanup = effect();
   const flush = () => new Promise(resolve => setImmediate(resolve));
   await flush();
   assert.equal(intervalMs, 15000);
+  const beforeRetry = fetches;
+  transientFailures = 1; await interval();
+  assert.equal(fetches, beforeRetry + 2);
+  assert.equal(states[0].error, null);
   failing = true; await interval();
   assert.equal(states[0].options.recaptcha_enabled, true);
   assert.match(states[0].error, /Additional sign-in options/);
@@ -148,4 +152,26 @@ test("open forms pick up off switches on refresh and keep known CAPTCHA requirem
   controls.refresh(); assert.equal(states[1], 1);
   cleanup();
   assert.equal(signal.aborted, true); assert.equal(windowEvents.size, 0); assert.equal(documentEvents.size, 0);
+});
+
+test("temporary server options failure recovers once without changing the saved policy", async () => {
+  let calls = 0;
+  const api = load("lib/authentication-options.ts", { "@/lib/api-client": { apiJson: async () => {
+    if (++calls === 1) throw Error("Temporary upstream failure");
+    return on;
+  } } });
+  const loaded = await api.getAuthenticationOptions();
+  assert.equal(calls,2);assert.equal(loaded.options,on);assert.equal(loaded.error,null);
+  calls = 0;
+  const outage = load("lib/authentication-options.ts", { "@/lib/api-client": { apiJson: async () => { calls++; throw Error("Persistent upstream failure"); } } });
+  const failed = await outage.getAuthenticationOptions();
+  assert.equal(calls,2);assert.equal(failed.options,null);assert.match(failed.error,/Retrying automatically/);
+});
+test("initial SSR warning waits for a fresh browser check without inventing provider settings", () => {
+  const hook = load("lib/use-authentication-options.ts", {
+    react: { useState: initial => [initial, () => {}], useCallback: callback => callback, useEffect() {} },
+    "@/lib/authentication-options": {},
+  });
+  const state = hook.useAuthenticationOptions({options:null,error:"Old server-render warning"});
+  assert.equal(state.options,null);assert.equal(state.error,null);
 });

@@ -26,7 +26,7 @@ export type PushTargets = {
 let vapidReady: boolean | null = null;
 
 async function pushAllowed(): Promise<boolean> {
-  try { return (await apiJson<{ push_enabled: boolean }>("/settings/integrations/options", { cache: "no-store" })).push_enabled === true; }
+  try { const policy = await apiJson<{ push_enabled: boolean; push_provider?: string }>("/settings/integrations/options", { cache: "no-store" }); return policy.push_enabled === true && policy.push_provider !== "onesignal"; }
   catch { return false; }
 }
 

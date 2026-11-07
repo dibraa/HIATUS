@@ -20,9 +20,7 @@ export function ResetPasswordForm({ token }: { token: string }) {
         className="rounded-lg border border-line bg-raised p-6 text-center"
       >
         <h2 className="display text-2xl text-ink">Password changed</h2>
-        <p className="mx-auto mt-tight max-w-[42ch] text-sm text-muted">
-          Log in with your new password. The link you used no longer works.
-        </p>
+
 
         <ButtonLink href="/login" size="md" className="mt-stack w-full">
           Log in

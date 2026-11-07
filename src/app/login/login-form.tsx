@@ -55,7 +55,7 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
     <form action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="next" value={next} />
       {options?.recaptcha_enabled && <input type="hidden" name="recaptcha_token" value={captchaToken || ""} />}
-      <FormError>{optionsError}</FormError>
+      {optionsError && <p role="status" className="text-sm text-muted">{optionsError}</p>}
 
       {notice && <FormError>{notice}</FormError>}
 
@@ -100,7 +100,7 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
       )}
     </form>
     {options?.google_enabled && options.google_client_id && <>
-      <p className="border-t border-line pt-4 text-center text-sm text-muted">Or continue with Google</p>
+      <p className="border-t border-line pt-4 text-center text-sm text-muted">or</p>
       <GoogleSignIn key={options.google_client_id} clientId={options.google_client_id} intent="login" next={next}
         captchaToken={captchaToken} captchaRequired={options.recaptcha_enabled} disabled={pending} onAttempt={resetCaptcha} onPendingChange={setGooglePending} />
     </>}

@@ -23,7 +23,7 @@ export function ArchivedMenu() {
   }
   return <>
     <Button variant="outline" onClick={event => { event.currentTarget.focus(); setOpen(true); setSuccess(null); load(); }}>Archived items</Button>
-    {open && <AdminDialog wide closeLabel={restoring ? undefined : "Close archived menu items"} title={restoring ? "Restore menu item?" : "Archived menu items"} description={restoring ? restoring.name + " will return as unavailable. Enable it after checking stock and pricing." : "Archived items are hidden from the live menu."} confirmation={Boolean(restoring)} pending={pending} onClose={() => { sequence.current++; setOpen(false); setRestoring(null); }}>
+    {open && <AdminDialog wide closeLabel={restoring ? undefined : "Close archived menu items"} title={restoring ? "Restore menu item?" : "Archived menu items"} description={restoring ? restoring.name + " will return as unavailable. Enable it after checking stock and pricing." : undefined} confirmation={Boolean(restoring)} pending={pending} onClose={() => { sequence.current++; setOpen(false); setRestoring(null); }}>
       <FormError>{error}</FormError>{success && <p role="status" className="mb-3 text-success-soft-fg">{success}</p>}
       {restoring ? <div className="flex flex-wrap gap-3"><Button loading={pending} disabled={pending} onClick={() => {
         setError(null);start(async () => { const result = await archiveMenuItem(restoring._id,true); if (result.error) { setError(result.error); return; }
@@ -41,7 +41,7 @@ export function ArchivedMenu() {
         </div>
         {data && <div className="mt-4 flex flex-wrap items-center gap-3"><p className="text-sm text-muted">{data.total} {data.total === 1 ? "item" : "items"} · Page {data.page} of {Math.max(1,Math.ceil(data.total/data.page_size))}</p><Button variant="ghost" disabled={pending || data.page <= 1} onClick={() => load(query,data.page-1)}>Previous</Button><Button variant="ghost" disabled={pending || data.page*data.page_size >= data.total} onClick={() => load(query,data.page+1)}>Next</Button></div>}
       </>}
-      
+
     </AdminDialog>}
   </>;
 }

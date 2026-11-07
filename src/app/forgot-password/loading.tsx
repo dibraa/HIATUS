@@ -12,7 +12,7 @@ export default function Loading() {
       <AuthTicket
         label="Reset"
         title="Reset your password"
-        description="Enter your email for a reset link."
+
       >
         <div className="flex flex-col gap-4">
           <FieldSkeleton />

@@ -36,7 +36,7 @@ export default async function StaffLayout({
         <div className="counter-content">
           <header className="counter-masthead">
             <p className="ui-caps">Hiatus Coffee / Staff</p>
-            <p>A good shift starts here.</p>
+
             <div className="counter-mobile-signout"><SignOutButton /></div>
           </header>
           <div className="counter-mobile-nav">

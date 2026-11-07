@@ -23,7 +23,7 @@ function AuthenticationSettingsFormContent({ settings, error }: { settings: Auth
   return (
     <form action={action} className="admin-settings-card">
       <h2 className="display text-xl text-ink">Sign-in and security</h2>
-      <p className="mt-1.5 max-w-[60ch] text-sm text-muted">Email and password remain available when both options are off. Current sessions stay active.</p>
+      <p className="mt-1.5 max-w-[60ch] text-sm text-muted">Both off: email/password only. Active sessions stay signed in.</p>
       <div className="mt-5 flex flex-col gap-4">
         <FormError>{error}</FormError>
         {settings && <fieldset disabled={pending} className="flex min-w-0 flex-col gap-4">

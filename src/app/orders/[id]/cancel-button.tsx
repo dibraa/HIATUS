@@ -24,7 +24,7 @@ export function CancelButton({ orderId, paid }: { orderId: string; paid: boolean
         {pending ? "Cancelling…" : "Cancel order"}
       </Button>
 
-      <p className="text-xs text-muted">Only possible while the order is still pending.</p>
+      <p className="text-xs text-muted">Cancel before preparation starts.</p>
 
       <Modal
         open={confirmOpen}

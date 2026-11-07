@@ -1,3 +1,4 @@
+import { activityToday, activityRangeDates, activityDateError, readActivityFilters } from "@/lib/activity-filters";
 import type { Metadata } from "next";
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { ActivityFilters } from "@/components/admin-activity-filters";
@@ -7,27 +8,31 @@ import { DataError } from "@/components/ui/data-error";
 import { apiJson } from "@/lib/api-client";
 import { getServerToken } from "@/lib/server-token";
 import { formatDateTime } from "@/lib/format";
-import { activityQuery, actionLabel, type ActivityList, type ActivityOptions, type AdminSearch } from "@/lib/activity";
+import { activityQuery, activityDisplayQuery, actionLabel, type ActivityList, type ActivityOptions, type AdminSearch } from "@/lib/activity";
 export const metadata: Metadata = { title: "Activity logs" };
 export const dynamic = "force-dynamic";
 
 export default async function ActivityPage({ searchParams }: { searchParams: Promise<AdminSearch> }) {
-  const query = activityQuery(await searchParams);
+  const search = await searchParams;
+  const query = activityQuery(search,false);
+  const displayQuery = activityDisplayQuery(search,false);
+  const today = activityToday();
+  const selected = readActivityFilters(displayQuery.toString(),today,false);
+  const fallbackDates = activityDateError(selected.from,selected.to) ? activityRangeDates(today,"30d") : { from:selected.from, to:selected.to };
+  const fallbackPeriod = {...fallbackDates,timezone:"Asia/Manila"};
   const token = (await getServerToken()) || undefined;
-  let data: ActivityList, options: ActivityOptions;
-  try {
-    [data, options] = await Promise.all([
-      apiJson<ActivityList>(`/activity?${query}`, { token, cache: "no-store" }),
-      apiJson<ActivityOptions>("/activity/options", { token, cache: "no-store" }),
-    ]);
-  } catch (error) {
-    return <><AdminPageHeader title="Activity logs" /><DataError title="Could not load activity" body={(error as Error).message} showRetry /><a href="/admin/activity" className="admin-secondary-link mt-4">Reset filters</a></>;
-  }
+  const [records, choices] = await Promise.allSettled([
+    apiJson<ActivityList>(`/activity?${query}`, { token, cache: "no-store" }),
+    apiJson<ActivityOptions>("/activity/options", { token, cache: "no-store" }),
+  ]);
+  const data = records.status === "fulfilled" ? records.value : null;
+  const options = choices.status === "fulfilled" ? choices.value : { actors:[],actions:[] };
+  const loadError = records.status === "rejected" ? (records.reason as Error).message : undefined;
+  const choicesError = choices.status === "rejected" ? "Filter choices unavailable" : undefined;
   return <div>
     <AdminPageHeader title="Activity logs"  />
-    <ActivityFilters options={options} query={query} period={data.period} />
-    <section className="admin-panel" aria-label="Activity records">
-      <p className="mb-4 text-sm text-muted">{data.period.from} to {data.period.to} · Asia/Manila</p>
+    <ActivityFilters options={options} query={displayQuery.toString()} period={data?.period || fallbackPeriod} today={today} choicesError={choicesError} />
+    {data ? <section className="admin-panel" aria-label="Activity records">
       <div className="admin-table-scroll" tabIndex={0} role="region" aria-label="Activity log table">
         <table className="relative w-full min-w-[48rem] text-left text-sm">
           <caption className="sr-only">Time, actor, action, affected record, and result.</caption>
@@ -44,7 +49,7 @@ export default async function ActivityPage({ searchParams }: { searchParams: Pro
           </tbody>
         </table>
       </div>
-      <AdminPagination path="/admin/activity" query={query} page={data.page} pageSize={data.page_size} total={data.total} />
-    </section>
+      <AdminPagination path="/admin/activity" query={displayQuery} page={data.page} pageSize={data.page_size} total={data.total} />
+    </section> : <DataError title="Could not load activity" body={loadError || "Try again shortly."} showRetry />}
   </div>;
 }

@@ -4,7 +4,6 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckboxField, FormError, FormSuccess } from "@/components/ui/field";
 import { PushToggle } from "@/components/push-toggle";
-import { PUSH_ENABLED } from "@/lib/push-flag";
 import { saveNotificationPreferences } from "@/app/actions/account";
 import type { NotificationPreferences } from "@/types/database";
 
@@ -83,16 +82,9 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
           </div>
         </div>
 
-        {PUSH_ENABLED ? (
-          <PushToggle />
-        ) : (
-          <ComingSoon
-            label="Browser notifications"
-            hint="Alerts on your phone or computer, even with this site closed."
-          />
-        )}
+        <PushToggle />
 
-        <ComingSoon label="Email" hint="We don't send order emails yet." />
+        <ComingSoon label="Email" />
       </section>
 
       {state.error && <FormError>{state.error}</FormError>}
@@ -106,7 +98,7 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
 }
 
 /** A channel that is planned but not delivering yet: visible, not tickable. */
-function ComingSoon({ label, hint }: { label: string; hint: string }) {
+function ComingSoon({ label, hint }: { label: string; hint?: string }) {
   return (
     <div className="flex items-start gap-2.5">
       <span aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border border-line-strong" />
@@ -115,7 +107,7 @@ function ComingSoon({ label, hint }: { label: string; hint: string }) {
           {label}{" "}
           <span className="ml-1 rounded-sm bg-raised px-1.5 py-0.5 text-2xs font-medium text-muted">Coming soon</span>
         </p>
-        <p className="text-xs text-muted">{hint}</p>
+        {hint && <p className="text-xs text-muted">{hint}</p>}
       </div>
     </div>
   );

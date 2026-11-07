@@ -10,7 +10,7 @@ function ReceiptSettingsFormContent({ enabled }: { enabled: boolean | null }) {
   const [state, action, pending] = useActionState(saveReceiptSettings, { error: null, success: null });
   return <form action={action} className="admin-panel" aria-busy={pending}>
     <h2 className="text-lg font-semibold">Email receipts</h2>
-    <p className="my-4 text-sm text-muted">Emails receipts after payment. Printed receipts remain available when off.</p>
+    <p className="my-4 text-sm text-muted">Send after payment. Printing stays available when off.</p>
     {enabled === null ? <p role="alert">Receipt settings could not load. Reload this page to try again.</p> : <>
       <CheckboxField id="receipt-enabled" name="enabled" label="Send email receipts" checked={checked} onChange={event => setChecked(event.target.checked)} disabled={pending} />
       <div className="mt-4" aria-live="polite"><FormError>{state.error}</FormError><FormSuccess>{state.success}</FormSuccess></div>

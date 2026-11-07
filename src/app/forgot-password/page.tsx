@@ -11,7 +11,7 @@ export default function ForgotPasswordPage() {
     <AuthTicket
       label="Reset"
       title="Reset your password"
-      description="Enter your email for a reset link."
+
     >
       <ForgotPasswordForm />
     </AuthTicket>

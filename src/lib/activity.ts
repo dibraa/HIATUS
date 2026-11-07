@@ -25,3 +25,9 @@ export function activityQuery(search: AdminSearch, metrics = false) {
   return query;
 }
 export function actionLabel(value: string) { return value.replaceAll(".", " · ").replaceAll("-", " "); }
+
+export function activityDisplayQuery(search: AdminSearch, metrics = false) {
+  const query = activityQuery(search,metrics);
+  if (["today","7d","30d","custom"].includes(String(search.range))) query.set("range",String(search.range));
+  return query;
+}
