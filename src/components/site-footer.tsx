@@ -1,4 +1,3 @@
-import { CafeMap } from "./cafe-map";
 import { SHOP_DIRECTIONS_URL, SHOP_SOCIALS } from "@/content/shop";
 import { groupBusinessHours } from "@/lib/hours";
 import { getSettings } from "@/lib/settings";
@@ -78,7 +77,6 @@ export async function SiteFooter() {
               </li>
             ))}
           </ul>
-          <CafeMap />
         </div>
       </div>
     </footer>

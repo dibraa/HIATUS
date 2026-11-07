@@ -9,7 +9,7 @@ export type SettingsState = { error: string | null; success: string | null; vers
 
 export async function saveIntegrationSettings(_prev: SettingsState, formData: FormData): Promise<SettingsState> {
   return writeSetting("integrations", {
-    ...Object.fromEntries(["resend", "cloudinary", "maps", "onesignal", "posthog", "sentry"].map(name => [name + "_enabled", formData.get(name + "_enabled") === "on"])),
+    ...Object.fromEntries(["resend", "cloudinary", "onesignal", "posthog", "sentry"].map(name => [name + "_enabled", formData.get(name + "_enabled") === "on"])),
     email_provider: String(formData.get("email_provider") || "smtp"),
     push_provider: String(formData.get("push_provider") || "native"),
     report_export_enabled: formData.get("report_export_enabled") === "on",

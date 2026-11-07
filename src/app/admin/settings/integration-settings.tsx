@@ -15,7 +15,6 @@ function IntegrationSettingsFormContent({ settings }: { settings: IntegrationSet
     ["password_email_enabled", "Enable password setup and reset email", "Turning off blocks recovery and account setup emails. Existing passwords still work."],
     ["resend_enabled", "Enable Resend", "Select Resend below to send email through its API."],
     ["cloudinary_enabled", "Enable Cloudinary", "Store new menu photos in Cloudinary. Existing photos stay available when off."],
-    ["maps_enabled", "Enable Google Maps", "Show the cafe map in Find us."],
     ["onesignal_enabled", "Enable OneSignal", "Select OneSignal below for order push notifications."],
     ["posthog_enabled", "Enable PostHog", "Anonymous menu, cart and checkout events. No session recording."],
     ["sentry_enabled", "Enable Sentry", "Application errors with sanitized source locations. No form contents or replay."],
