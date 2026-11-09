@@ -11,10 +11,10 @@ import type { CredentialProvider, CredentialStatus } from "@/lib/credential-sett
 
 const fields: Record<CredentialProvider, { key: string; label: string; secret?: boolean; hint?: string }[]> = {
   google: [{ key: "client_id", label: "Google client ID", hint: "Use a Web application client ID. Configure your website origins in Google Cloud." }],
-  smtp: [{ key: "host", label: "SMTP host" }, { key: "port", label: "SMTP port", hint: "465 for TLS, or 587 for STARTTLS." }, { key: "user", label: "SMTP username" }, { key: "password", label: "SMTP password", secret: true }, { key: "from", label: "Sender email" }],
+  resend: [{ key: "api_key", label: "Resend API key", secret: true }, { key: "from", label: "Sender email", hint: "Use a sender address from a verified Resend domain." }],
   recaptcha: [{ key: "site_key", label: "reCAPTCHA site key" }, { key: "secret_key", label: "reCAPTCHA secret key", secret: true }, { key: "hostnames", label: "Allowed hostnames", hint: "Comma-separated hostnames, such as localhost, cafe.example.com. No URLs or ports." }],
 };
-const labels: Record<CredentialProvider, string> = { google: "Google sign-in", smtp: "Email (SMTP)", recaptcha: "reCAPTCHA" };
+const labels: Record<CredentialProvider, string> = { google: "Google sign-in", resend: "Email (Resend)", recaptcha: "reCAPTCHA" };
 const names = Object.keys(fields) as CredentialProvider[];
 function initialDrafts(data: CredentialStatus | null) {
   return Object.fromEntries(names.map(name => [name, Object.fromEntries(fields[name].map(field => [field.key, field.secret ? "" : data?.providers[name]?.values[field.key] || ""]))])) as Record<CredentialProvider, Record<string, string>>;

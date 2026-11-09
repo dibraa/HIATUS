@@ -37,5 +37,5 @@ test("server-side API preflight blocks denied mutations before forwarding the re
 });
 test("browser and backend request policies agree for protected operations",async()=>{
  const {createRequire}=await import("node:module");const require=createRequire(import.meta.url);const backend=require("../../server/src/security/permissions.js");
- for(const [path,method,role,body] of [["/admin/team/1/permissions","PUT","admin",{}],["/menu/archived","GET","admin",{}],["/menu/1/archive","POST","admin",{}],["/orders/1/payment","POST","staff",{kind:"refund"}],["/orders/1/payment","POST","staff",{kind:"void"}],["/admin/finance/export","GET","admin",{view:"refunds"}],["/settings/credentials/smtp","PUT","admin",{}],["/menu","GET","admin",{paginated:"true"}]]) assert.deepEqual([...policy.required(path,method,role,body)],backend.required(path,method,role,body));
+ for(const [path,method,role,body] of [["/admin/team/1/permissions","PUT","admin",{}],["/menu/archived","GET","admin",{}],["/menu/1/archive","POST","admin",{}],["/orders/1/payment","POST","staff",{kind:"refund"}],["/orders/1/payment","POST","staff",{kind:"void"}],["/admin/finance/export","GET","admin",{view:"refunds"}],["/settings/credentials/resend","PUT","admin",{}],["/menu","GET","admin",{paginated:"true"}]]) assert.deepEqual([...policy.required(path,method,role,body)],backend.required(path,method,role,body));
 });

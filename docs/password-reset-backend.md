@@ -4,9 +4,8 @@ The website side is done: `/forgot-password` asks for an email, and
 `/reset-password?token=…` sets the new password. The Express server has to
 **create a one-time link, email it, and check it when it comes back**.
 
-The Express server now provides both routes. Configure the SMTP variables in
-`server/.env` before using this in production. Without SMTP configuration in
-development, the server prints the one-time reset link to its console.
+The Express server now provides both routes. Configure the Resend variables in
+`server/.env` before using this in production.
 
 ## How it works
 
@@ -36,38 +35,19 @@ reset_token_expires: { type: Date, default: null },
 
 ## 2. Email sender — `utils/mailer.js`
 
-```bash
-npm install nodemailer
-```
-
 ```js
-const nodemailer = require("nodemailer");
-
-// Gmail: turn on 2-step verification, then create an "App password"
-// (Google Account → Security → App passwords) and use it as SMTP_PASS.
-const transport = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,          // smtp.gmail.com
-  port: Number(process.env.SMTP_PORT),  // 465
-  secure: Number(process.env.SMTP_PORT) === 465,
-  auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+const response = await fetch("https://api.resend.com/emails", {
+  method: "POST",
+  headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
+  body: JSON.stringify({ from: `Hiatus Coffee <${process.env.RESEND_FROM}>`, to, subject: "Reset your Hiatus password", text }),
 });
-
-exports.sendResetEmail = (to, link) =>
-  transport.sendMail({
-    from: `"Hiatus Coffee" <${process.env.SMTP_USER}>`,
-    to,
-    subject: "Reset your Hiatus password",
-    text: `Someone asked to reset the password for this account.\n\nSet a new password here (the link works once and expires in 1 hour):\n${link}\n\nIf this wasn't you, ignore this email — your password won't change.`,
-  });
 ```
 
 Add to `server/.env` (and `server/.env.example`, without the real password):
 
 ```bash
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=465
-SMTP_USER=the-shop-address@gmail.com
-SMTP_PASS=the-16-character-app-password
+RESEND_API_KEY=re_...
+RESEND_FROM=the-shop-address@example.com
 # CLIENT_URL already exists — it's the website address used in the link
 ```
 

@@ -67,7 +67,7 @@ pages fall back to defaults or empty states rather than crashing. `README.md` an
 - **Express 4** (CommonJS, `node --watch` in dev), **Mongoose 8** / **MongoDB**
 - **jsonwebtoken** + **bcryptjs** — auth (`JWT_SECRET`, 7-day tokens)
 - **multer** — image/video uploads to `server/uploads`, served statically at `/uploads`
-- **nodemailer** — password-reset email over SMTP (Gmail app password)
+- **Resend API** — password-reset and receipt email delivery
 - **cors**, **dotenv**
 
 **Tooling / process**
@@ -170,7 +170,7 @@ returned as copy written for people — network failures are rewritten in
 | `src/middleware/auth.js` | `auth` (Bearer JWT → `req.user`), `requireStaff`, `requireAdmin`. |
 | `src/models/` | `User`, `MenuItem`, `Order` (+embedded `orderItem`), `Payment`, `Rating`, `Favorite`, `OrderPreset`, `NotificationPrefs`, `PushSubscription`. |
 | `src/routes/` | `auth.js` (191), `orders.js` (246), `menu.js` (82), `account.js` (109), `analytics.js` (117). |
-| `src/utils/mailer.js` | SMTP password-reset email; logs a dev link when unconfigured. |
+| `src/utils/mailer.js` | Resend password-reset and receipt email delivery. |
 
 ---
 
@@ -452,7 +452,7 @@ reproducibility risk in the project.
 
 ```bash
 # 1. API (must be running first; lives outside this repo)
-cd ../server && cp .env.example .env   # MONGO_URI, JWT_SECRET, PORT=4000, CLIENT_URL, SMTP_*
+cd ../server && cp .env.example .env   # MONGO_URI, JWT_SECRET, PORT=4000, CLIENT_URL, RESEND_*
 npm install && npm run dev
 
 # 2. Frontend
