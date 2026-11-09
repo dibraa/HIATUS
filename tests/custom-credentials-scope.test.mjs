@@ -6,7 +6,7 @@ import ts from "typescript";
 import * as React from "react";
 import * as jsxRuntime from "react/jsx-runtime";
 import { renderToStaticMarkup } from "react-dom/server";
-test("custom credential editor renders only Google, SMTP and reCAPTCHA even with legacy extra providers", () => {
+test("custom credential editor renders Google, Resend and reCAPTCHA even with legacy extra providers", () => {
   const source = ts.transpileModule(readFileSync(new URL("../src/app/admin/settings/custom-credentials.tsx", import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const modules = {
     react: React, "react/jsx-runtime": jsxRuntime,
@@ -17,9 +17,9 @@ test("custom credential editor renders only Google, SMTP and reCAPTCHA even with
     "@/app/actions/credentials": { readCredentialSettings() {}, saveCredentialSettings() {} },
   };
   const exports = {}; vm.runInNewContext(source, { exports, require: name => { assert(name in modules, name); return modules[name]; } });
-  const providers = Object.fromEntries(["google", "smtp", "recaptcha", "resend", "cloudinary", "maps", "onesignal", "posthog", "sentry"].map(name => [name, { source: "original", configured: false, values: {}, secrets: {} }]));
+  const providers = Object.fromEntries(["google", "resend", "recaptcha", "cloudinary", "maps", "onesignal", "posthog", "sentry"].map(name => [name, { source: "original", configured: false, values: {}, secrets: {} }]));
   const markup = renderToStaticMarkup(React.createElement(exports.CustomCredentials, { initial: { revision: "fixture", providers } }));
-  assert.match(markup, /Google sign-in/); assert.match(markup, /Email \(SMTP\)/); assert.match(markup, /reCAPTCHA/);
-  for (const name of ["resend", "cloudinary", "maps", "onesignal", "posthog", "sentry"]) assert(!markup.includes('aria-controls="credentials-' + name + '"'));
+  assert.match(markup, /Google sign-in/); assert.match(markup, /Email \(Resend\)/); assert.match(markup, /reCAPTCHA/);
+  for (const name of ["cloudinary", "maps", "onesignal", "posthog", "sentry"]) assert(!markup.includes('aria-controls="credentials-' + name + '"'));
   assert.equal((markup.match(/aria-controls="credentials-/g) || []).length, 3);
 });

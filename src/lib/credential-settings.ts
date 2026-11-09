@@ -1,4 +1,4 @@
-export type CredentialProvider = "google" | "smtp" | "recaptcha";
+export type CredentialProvider = "google" | "resend" | "recaptcha";
 export type CredentialStatus = {
   revision: string;
   providers: Record<CredentialProvider, {

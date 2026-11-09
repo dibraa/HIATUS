@@ -22,7 +22,7 @@ test("credential actions block non-admin sessions before reading or forwarding c
   for (const user of [null, { role: "staff", isActive: true }, { role: "customer", isActive: true }, { role: "admin", isActive: false }]) {
     const f = fixture(user);
     assert((await f.exports.readCredentialSettings()).error);
-    assert((await f.exports.saveCredentialSettings("smtp", "save", "old", { password: "must-not-forward" })).error);
+    assert((await f.exports.saveCredentialSettings("resend", "save", "old", { api_key: "must-not-forward" })).error);
     assert.equal(f.calls.length, 0);
     assert.equal(f.refreshes.length, 0);
   }
