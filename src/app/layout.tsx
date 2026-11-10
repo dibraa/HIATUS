@@ -59,6 +59,11 @@ export const metadata: Metadata = {
   },
   description:
     "Order coffee ahead from Hiatus and pick it up without queueing. Pay cash on pickup.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   // iOS reads these, not the manifest, when the site is added to the Home
   // Screen — and only an installed site can receive push there.
   appleWebApp: {

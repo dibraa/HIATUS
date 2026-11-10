@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { usePresence } from "@/lib/use-presence";
+
+import { useState, useTransition } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { savePreset } from "@/app/actions/account";
@@ -24,22 +26,9 @@ export function SavePreset({
   isLoggedIn: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible } = usePresence(open);
   const [name, setName] = useState("");
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
-    } else {
-      setVisible(false);
-      const timeout = setTimeout(() => setMounted(false), 200);
-      return () => clearTimeout(timeout);
-    }
-  }, [open]);
 
   if (!isLoggedIn || lines.length === 0) return null;
 

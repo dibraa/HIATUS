@@ -26,6 +26,7 @@ export function QueueBoard({
   query,
   stage,
   payment,
+  referencedOrderId,
 }: {
   orders: QueueOrder[];
   renderedAt: string;
@@ -34,11 +35,12 @@ export function QueueBoard({
   query: string;
   stage: string;
   payment?: string;
+  referencedOrderId?: string;
 }) {
   const router = useRouter();
   const searchRef = useRef<HTMLInputElement>(null);
   const [shown, setShown] = useState(() => new Set(orders.map((o) => o.id)));
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(referencedOrderId ?? null);
   const [panel, setPanel] = useState<"payment" | "actions">("payment");
   const [busy, setBusy] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);

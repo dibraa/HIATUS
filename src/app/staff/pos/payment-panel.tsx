@@ -3,6 +3,7 @@ import { Permission, usePermissions } from "@/components/permission-controls";
 
 import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatPrice, formatTime, orderCode } from "@/lib/format";
@@ -77,6 +78,7 @@ export function PaymentPanel({
   onDone?: () => void;
 }) {
   const { can } = usePermissions();
+  const router = useRouter();
   const afterPayment = can("counter.prepare") ? then : undefined;
   const [pending, startTransition] = useTransition();
   const method: PaymentMethod = "cash";
@@ -141,8 +143,8 @@ export function PaymentPanel({
   function pay(carryOn: boolean) {
     startTransition(async () => {
       try {
-        const paid = await takePayment(order.id, method, null, "");
-        if (paid.error) return fail(paid.error);
+        const paid = await takePayment(order.id, method, Math.round(order.total_amount * 100) / 100, "");
+        if (paid.error) { router.refresh(); return fail(paid.error); }
         const how = PAYMENT_METHOD_LABELS[method].toLowerCase();
         if (carryOn && afterPayment) {
           if (!(await move(afterPayment))) return;

@@ -1,5 +1,7 @@
 "use client";
 
+import { usePresence } from "@/lib/use-presence";
+
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -27,8 +29,7 @@ export function MobileNav({
   staffOnly: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
+  const { mounted, visible } = usePresence(open);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
 
@@ -41,18 +42,6 @@ export function MobileNav({
     setRenderedPathname(pathname);
     setOpen(false);
   }
-
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
-    } else {
-      setVisible(false);
-      const timeout = setTimeout(() => setMounted(false), 200);
-      return () => clearTimeout(timeout);
-    }
-  }, [open]);
 
   useEffect(() => {
     if (!open) return;

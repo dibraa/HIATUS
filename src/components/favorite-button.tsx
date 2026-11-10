@@ -35,7 +35,7 @@ export function FavoriteButton({
   const [pending, startTransition] = useTransition();
   const [optimistic, setOptimistic] = useOptimistic(isFavorite);
 
-  const dimension = size === "sm" ? "h-8 w-8" : "h-10 w-10";
+  const dimension = "h-11 w-11";
   const icon = size === "sm" ? "h-4 w-4" : "h-5 w-5";
 
   function onClick() {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useState } from "react";
 import { updateProfile, type ProfileState } from "@/app/actions/profile";
 import { Field, TextField, FormError, FormSuccess } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -15,10 +15,12 @@ export function ProfileForm({ profile, email }: { profile: Profile; email: strin
 
   // When the server re-renders with fresh profile props after a successful
   // save, sync the controlled inputs so they show the updated values.
-  useEffect(() => {
+  const [saved, setSaved] = useState({ name: profile.full_name, phone: profile.phone });
+  if (saved.name !== profile.full_name || saved.phone !== profile.phone) {
+    setSaved({ name: profile.full_name, phone: profile.phone });
     setFullName(profile.full_name ?? "");
     setPhone(profile.phone ?? "");
-  }, [profile.full_name, profile.phone]);
+  }
 
   return (
     <form action={formAction} className="flex flex-col gap-4">

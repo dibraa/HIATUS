@@ -236,6 +236,8 @@
   gap: var(--c-gap-section);
 }
 .counter-view-tabs a {
+  min-width: 44px;
+  justify-content: center;
   display: inline-flex;
   align-items: center;
   gap: var(--c-gap-related);

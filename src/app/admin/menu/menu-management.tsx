@@ -44,7 +44,7 @@ function EditMenuItemButtonContent({ item }: { item: MenuItem }) {
   }, [router]);
 
   return <>
-    <Button ref={trigger} variant="ghost" size="sm" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
+    <Button ref={trigger} variant="ghost" size="sm" className="min-h-11 min-w-11" aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
       Edit<span className="sr-only"> {item.name}</span>
     </Button>
     {open && <dialog ref={dialog} className="admin-menu-dialog" aria-modal="true" aria-labelledby={titleId} aria-busy={pending}

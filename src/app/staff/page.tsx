@@ -21,9 +21,10 @@ export default async function StaffQueuePage({
     q?: string;
     view?: string;
     payment?: string;
+    order?: string;
   }>;
 }) {
-  const { tab, q = "", view, payment } = await searchParams;
+  const { tab, q = "", view, payment, order } = await searchParams;
   // Existing payment bookmarks still resolve into the combined workspace.
   const stage =
     tab ??
@@ -87,6 +88,8 @@ export default async function StaffQueuePage({
       {/* One header row; each lane carries its own count. */}
       <StaffPageHeading title="Counter" />
       <QueueBoard
+        key={order || "counter"}
+        referencedOrderId={order}
         orders={allOrders}
         renderedAt={renderedAt.toISOString()}
         lateAfter={prep}
