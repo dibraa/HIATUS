@@ -9,12 +9,12 @@ import { Modal } from "@/components/ui/modal";
 import { readCredentialSettings, saveCredentialSettings } from "@/app/actions/credentials";
 import type { CredentialProvider, CredentialStatus } from "@/lib/credential-settings";
 
-const fields: Record<CredentialProvider, { key: string; label: string; secret?: boolean; hint?: string }[]> = {
+const fields: Record<CredentialProvider, { key: string; label: string; secret?: boolean; hint?: string; optional?: boolean }[]> = {
   google: [{ key: "client_id", label: "Google client ID", hint: "Use a Web application client ID. Configure your website origins in Google Cloud." }],
-  resend: [{ key: "api_key", label: "Resend API key", secret: true }, { key: "from", label: "Sender email", hint: "Use a sender address from a verified Resend domain." }],
+  smtp: [{ key: "host", label: "SMTP host" }, { key: "port", label: "SMTP port" }, { key: "user", label: "SMTP username" }, { key: "password", label: "SMTP password", secret: true }, { key: "from", label: "Sender email", optional: true, hint: "Optional when the SMTP username is an email address." }],
   recaptcha: [{ key: "site_key", label: "reCAPTCHA site key" }, { key: "secret_key", label: "reCAPTCHA secret key", secret: true }, { key: "hostnames", label: "Allowed hostnames", hint: "Comma-separated hostnames, such as localhost, cafe.example.com. No URLs or ports." }],
 };
-const labels: Record<CredentialProvider, string> = { google: "Google sign-in", resend: "Email (Resend)", recaptcha: "reCAPTCHA" };
+const labels: Record<CredentialProvider, string> = { google: "Google sign-in", smtp: "Email (SMTP)", recaptcha: "reCAPTCHA" };
 const names = Object.keys(fields) as CredentialProvider[];
 function initialDrafts(data: CredentialStatus | null) {
   return Object.fromEntries(names.map(name => [name, Object.fromEntries(fields[name].map(field => [field.key, field.secret ? "" : data?.providers[name]?.values[field.key] || ""]))])) as Record<CredentialProvider, Record<string, string>>;
@@ -63,7 +63,7 @@ function CustomCredentialsContent({ initial }: { initial: CredentialStatus | nul
           <span className="font-semibold">{labels[name]}</span><span className="text-sm text-muted">{status.source === "custom" ? "Custom configuration" : "Original configuration"}{!status.configured && " · Not configured"} · {open ? "Close" : "Edit"}</span>
         </button>
         {open && <form id={`credentials-${name}`} onSubmit={event => { event.preventDefault(); save(name, "save"); }} className="mt-4 flex min-w-0 flex-col gap-4">
-          <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-2">{fields[name].map(field => <div key={field.key} className="min-w-0"><TextField id={`custom-${name}-${field.key}`} label={field.label} type={field.secret ? "password" : field.key === "from" ? "email" : "text"} autoComplete="off" spellCheck={false} maxLength={4096} required={!field.secret || status.source !== "custom" || !status.secrets[field.key]} value={drafts[name][field.key]} hint={field.secret ? status.source === "custom" && status.secrets[field.key] ? "Saved. Leave blank to keep it." : "Enter a custom secret." : field.hint} onChange={event => setDrafts(previous => ({ ...previous, [name]: { ...previous[name], [field.key]: event.target.value } }))} /></div>)}</fieldset>
+          <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-2">{fields[name].map(field => <div key={field.key} className="min-w-0"><TextField id={`custom-${name}-${field.key}`} label={field.label} type={field.secret ? "password" : field.key === "from" ? "email" : "text"} autoComplete="off" spellCheck={false} maxLength={4096} required={!field.optional && (!field.secret || status.source !== "custom" || !status.secrets[field.key])} value={drafts[name][field.key]} hint={field.secret ? status.source === "custom" && status.secrets[field.key] ? "Saved. Leave blank to keep it." : "Enter a custom secret." : field.hint} onChange={event => setDrafts(previous => ({ ...previous, [name]: { ...previous[name], [field.key]: event.target.value } }))} /></div>)}</fieldset>
           <p className="text-xs text-muted">Format checked only. Test the provider connection separately.</p>
           <div className="flex flex-wrap gap-3"><Button type="submit" disabled={pending} loading={pending}>Save custom configuration</Button>{status.source === "custom" && <Button variant="outline" disabled={pending} onClick={() => setReset(name)}>Use original configuration</Button>}</div>
         </form>}

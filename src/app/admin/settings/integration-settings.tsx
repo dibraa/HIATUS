@@ -13,7 +13,7 @@ function IntegrationSettingsFormContent({ settings }: { settings: IntegrationSet
     ["report_export_enabled", "Enable report exports", "CSV, PDF, and Excel downloads. On-screen reports remain available when off."],
     ["push_enabled", "Enable browser push notifications", "Order alerts and test messages. In-app notifications remain available when off."],
     ["password_email_enabled", "Enable password setup and reset email", "Turning off blocks recovery and account setup emails. Existing passwords still work."],
-    ["resend_enabled", "Enable Resend", "Send password, receipt, and notification email through the Resend API."],
+    ["email_enabled", "Email delivery", "Send password setup, reset, and receipt emails through SMTP."],
     ["cloudinary_enabled", "Enable Cloudinary", "Store new menu photos in Cloudinary. Existing photos stay available when off."],
     ["onesignal_enabled", "Enable OneSignal", "Select OneSignal below for order push notifications."],
     ["posthog_enabled", "Enable PostHog", "Anonymous menu, cart and checkout events. No session recording."],
