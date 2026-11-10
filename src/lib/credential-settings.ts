@@ -1,11 +1,10 @@
 export type CredentialProvider = "google" | "smtp" | "recaptcha";
-export type CredentialStatus = {
-  revision: string;
-  providers: Record<CredentialProvider, {
-    source: "original" | "custom";
-    configured: boolean;
-    values: Record<string, string>;
-    secrets: Record<string, boolean>;
-  }>;
-};
+export type CredentialSummary = { source: "original" | "custom"; configured: boolean };
+export type LockedCredentialStatus = { locked: true; providers: Record<CredentialProvider, CredentialSummary> };
+export type UnlockedCredentialStatus = { locked: false; revision: string; expires_at: string; providers: Record<CredentialProvider, CredentialSummary & { values: Record<string, string>; secrets: Record<string, boolean> }> };
+export type CredentialStatus = LockedCredentialStatus | UnlockedCredentialStatus;
 export type CredentialResult = { data: CredentialStatus | null; error: string | null };
+export type CredentialOtp = { challenge_id: string; expires_at: string; resend_at: string; recipient: string };
+export type CredentialOtpResult = { data: CredentialOtp | null; error: string | null };
+export type CredentialAccess = { access_token: string; settings: UnlockedCredentialStatus };
+export type CredentialAccessResult = { data: CredentialAccess | null; error: string | null };
