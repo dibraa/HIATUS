@@ -61,10 +61,16 @@ export function RatingForm({
         <input
           id={`${commentId}-attachment`}
           type="file"
-          accept="image/*,video/*"
+          accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
           className="mt-2 block w-full text-sm text-ink-soft file:mr-3 file:rounded-md file:border file:border-line-strong file:bg-card file:px-3 file:py-2 file:text-xs file:font-medium file:text-ink hover:file:border-ink"
           onChange={(event) => {
             const file = event.target.files?.[0] ?? null;
+            if (file && !["image/jpeg", "image/png", "image/webp", "image/gif", "video/mp4", "video/webm"].includes(file.type)) {
+              setAttachment(null);
+              setAttachmentError("Choose a JPEG, PNG, WebP, GIF, MP4, or WebM file.");
+              event.target.value = "";
+              return;
+            }
             if (file && file.size > 10 * 1024 * 1024) {
               setAttachment(null);
               setAttachmentError("Choose a file smaller than 10 MB.");

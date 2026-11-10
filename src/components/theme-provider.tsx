@@ -1,91 +1,66 @@
 "use client";
 
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type ReactNode,
-} from "react";
+import { createContext, useCallback, useContext, useEffect, useSyncExternalStore, type ReactNode } from "react";
 
 type Theme = "light" | "dark" | "system";
-
 interface ThemeContextValue {
   theme: Theme;
   resolvedTheme: "light" | "dark";
   setTheme: (theme: Theme) => void;
 }
-
 const ThemeContext = createContext<ThemeContextValue | null>(null);
-
 const STORAGE_KEY = "hiatus-theme";
+const CHANGE_EVENT = "hiatus:themechange";
 
-function getSystemTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-}
+let storageFallback: Theme | null = null;
 
 function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "system";
-  const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark" || stored === "system") return stored;
-  return "system";
+  if (storageFallback) return storageFallback;
+  try {
+    const value = window.localStorage.getItem(STORAGE_KEY);
+    return value === "light" || value === "dark" ? value : "system";
+  } catch { return "system"; }
 }
+function subscribeTheme(notify: () => void) {
+  window.addEventListener("storage", notify);
+  window.addEventListener(CHANGE_EVENT, notify);
+  return () => {
+    window.removeEventListener("storage", notify);
+    window.removeEventListener(CHANGE_EVENT, notify);
+  };
+}
+function subscribeSystem(notify: () => void) {
+  const media = window.matchMedia("(prefers-color-scheme: dark)");
+  media.addEventListener("change", notify);
+  return () => media.removeEventListener("change", notify);
+}
+const serverTheme = (): Theme => "system";
+const systemDark = () => window.matchMedia("(prefers-color-scheme: dark)").matches;
+const serverDark = () => false;
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>("system");
-  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
-
   // On mount, read the stored theme from localStorage.
-  useEffect(() => {
-    const stored = getStoredTheme();
-    setThemeState(stored);
-  }, []);
+  const theme = useSyncExternalStore(subscribeTheme, getStoredTheme, serverTheme);
+  const dark = useSyncExternalStore(subscribeSystem, systemDark, serverDark);
+  const resolvedTheme = theme === "system" ? dark ? "dark" : "light" : theme;
 
   // Whenever the theme or system preference changes, resolve and apply.
   useEffect(() => {
-    const resolved =
-      theme === "system" ? getSystemTheme() : theme;
-    setResolvedTheme(resolved);
-
-    const root = document.documentElement;
-    root.setAttribute("data-theme", resolved);
-    root.style.colorScheme = resolved;
-  }, [theme]);
+    document.documentElement.dataset.theme = resolvedTheme;
+    document.documentElement.style.colorScheme = resolvedTheme;
+  }, [resolvedTheme]);
 
   // Listen for system theme changes when in "system" mode.
-  useEffect(() => {
-    if (theme !== "system") return;
-    const mq = window.matchMedia("(prefers-color-scheme: dark)");
-    const handler = () => {
-      const resolved = mq.matches ? "dark" : "light";
-      setResolvedTheme(resolved);
-      document.documentElement.setAttribute("data-theme", resolved);
-      document.documentElement.style.colorScheme = resolved;
-    };
-    mq.addEventListener("change", handler);
-    return () => mq.removeEventListener("change", handler);
-  }, [theme]);
-
+  // The external-store subscription keeps browser state separate from rendering.
   const setTheme = useCallback((next: Theme) => {
-    setThemeState(next);
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem(STORAGE_KEY, next);
-    }
+    try { window.localStorage.setItem(STORAGE_KEY, next); storageFallback = null; } catch { storageFallback = next; }
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
-  return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>{children}</ThemeContext.Provider>;
 }
-
 export function useTheme() {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
-  return ctx;
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error("useTheme must be used within ThemeProvider");
+  return context;
 }

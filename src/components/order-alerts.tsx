@@ -1,5 +1,7 @@
 "use client";
 
+import { usePresence } from "@/lib/use-presence";
+
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import toast from "react-hot-toast";
@@ -25,7 +27,15 @@ export function OrderAlerts({
   const storageKey = `hiatus:order-status:${orderId}`;
   const lastSeen = useRef<OrderStatus | null>(null);
   const { order_updates, ready_alerts } = prefs;
-  const [showReadyModal, setShowReadyModal] = useState(false);
+  const [observed, setObserved] = useState({ orderId, status });
+  const [showReadyModal, setShowReadyModal] = useState(() => {
+    const previous = readStored(storageKey);
+    return previous !== null && previous !== status && status === "ready" && enabled && shouldAlert(previous, status, { order_updates, ready_alerts });
+  });
+  if (observed.orderId !== orderId || observed.status !== status) {
+    setObserved({ orderId, status });
+    setShowReadyModal(observed.orderId === orderId && status === "ready" && enabled && shouldAlert(observed.status, status, { order_updates, ready_alerts }));
+  }
 
   useEffect(() => {
     const previous = lastSeen.current ?? readStored(storageKey) ?? status;
@@ -35,9 +45,7 @@ export function OrderAlerts({
     if (previous === status || (!enabled && status !== "cancelled") || !shouldAlert(previous, status, { order_updates, ready_alerts })) return;
 
     const label = STATUS_LABELS[status];
-    if (status === "ready") {
-      setShowReadyModal(true);
-    } else {
+    if (status !== "ready") {
       toast(
         <span>
           <strong className="font-semibold">Order {code}: {label}</strong>
@@ -72,20 +80,7 @@ function ReadyModal({
   message: string;
   onDismiss: () => void;
 }) {
-  const [mounted, setMounted] = useState(false);
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    if (open) {
-      setMounted(true);
-      const raf = requestAnimationFrame(() => setVisible(true));
-      return () => cancelAnimationFrame(raf);
-    } else {
-      setVisible(false);
-      const t = setTimeout(() => setMounted(false), 200);
-      return () => clearTimeout(t);
-    }
-  }, [open]);
+  const { mounted, visible } = usePresence(open);
 
   useEffect(() => {
     if (!open) return;
