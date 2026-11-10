@@ -1,8 +1,8 @@
 import type { StaticImageData } from "next/image";
-import room from "@/assets/shop/room.jpg";
-import tinWall from "@/assets/shop/tin-wall.jpg";
-import curioShelf from "@/assets/shop/curio-shelf.jpg";
-import counterNotes from "@/assets/shop/counter-notes.jpg";
+import exterior from "@/assets/shop/new/exterior.webp";
+import seating from "@/assets/shop/new/seating.webp";
+import quietCorner from "@/assets/shop/new/quiet-corner.webp";
+import drinks from "@/assets/shop/new/drinks.webp";
 
 /**
  * The guest welcome page's words and pictures, kept out of the components so
@@ -14,8 +14,8 @@ import counterNotes from "@/assets/shop/counter-notes.jpg";
  */
 
 export const SHOP_ROOM = {
-  image: room,
-  alt: "Inside Hiatus: a wavy arched mirror, warm lamps, a potted plant and woven baskets on wooden shelves",
+  image: exterior,
+  alt: "The Hiatus exterior with wooden railings, plants, and people sitting outside",
   caption: "Hiatus Headquarters",
 };
 
@@ -24,28 +24,32 @@ export type TourSpot = {
   caption: string;
   image: StaticImageData;
   alt: string;
+  position?: string;
 };
 
 /** "Look around": the corners a guest will find walking in, in walking order.
  *  Captions stay one short line each — the section is an even row of three. */
 export const SHOP_TOUR: TourSpot[] = [
   {
-    title: "The tin wall",
-    caption: "A long mirror on corrugated tin.",
-    image: tinWall,
-    alt: "A long wood-framed mirror on a corrugated tin wall, reflecting plants and shelves",
+    title: "Around the table",
+    caption: "A shared table inside the shop.",
+    image: seating,
+    alt: "People seated around a wooden table beside a mirror and corrugated wall",
+    position: "50% 55%",
   },
   {
-    title: "The curio shelf",
-    caption: "Rizal, Tagu-taguan, and a woven owl.",
-    image: curioShelf,
-    alt: "A wooden curio shelf with a framed print, Filipino books, a woven owl, figurines and illustrated cups",
+    title: "A quiet corner",
+    caption: "Shelves, plants, and a place to sit.",
+    image: quietCorner,
+    alt: "Two chairs and a small table beneath a shelf of decorations",
+    position: "50% 30%",
   },
   {
-    title: "The counter",
-    caption: "Your name and a note, handwritten on the cup.",
-    image: counterNotes,
-    alt: "Close-up of two ube lattes with handwritten notes: \"Have a noice day\" in a heart around the name Jai, and a drawn cat beside the name Sam",
+    title: "On the table",
+    caption: "Drinks and food, ready to enjoy.",
+    image: drinks,
+    alt: "Three cold drinks beside plates of food on a cafe table",
+    position: "50% 45%",
   },
 ];
 

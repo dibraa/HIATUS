@@ -1,0 +1,8 @@
+.panel:not([hidden]) { animation: account-panel-in 180ms ease-out; }
+@keyframes account-panel-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel:not([hidden]) { animation: none; }
+}

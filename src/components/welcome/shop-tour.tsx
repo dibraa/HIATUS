@@ -54,6 +54,7 @@ export function ShopTour() {
                     placeholder="blur"
                     sizes="(min-width: 1152px) 368px, (min-width: 640px) 31vw, 92vw"
                     className="object-cover"
+                    style={{ objectPosition: spot.position ?? "50% 50%" }}
                   />
                 </div>
                 <figcaption className="mt-4">

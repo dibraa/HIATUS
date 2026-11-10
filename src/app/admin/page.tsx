@@ -83,7 +83,6 @@ export default async function AdminDashboardPage() {
     <div className="admin-dashboard">
       <AdminPageHeader
         title="Dashboard"
-        action={<Link href="/admin/orders" className="admin-primary-link">View orders</Link>}
       />
       <section aria-labelledby="today-heading">
         <h2 id="today-heading" className="sr-only">Today at a glance</h2>

@@ -117,14 +117,20 @@ export function MenuItemCard({
       {/* order-first restores the phone layout (thumbnail leading the row);
           from sm it takes its place above the name again. */}
       <div className="relative order-first w-28 shrink-0 sm:order-1 sm:w-full">
-        <ProductImage
-          src={item.image_url}
-          alt={item.name}
-          // 112px thumb on phones; roughly half, a third, then a quarter of the
-          // 1152px container as the grid gains columns
-          sizes="(min-width: 1280px) 264px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 112px"
-          rounded="rounded-md sm:rounded-lg"
-        />
+        <Link
+          href={`/menu/${item.id}`}
+          aria-label={`View ${item.name}`}
+          className="relative z-10 block focus-visible:outline-offset-4"
+        >
+          <ProductImage
+            src={item.image_url}
+            alt={item.name}
+            // 112px thumb on phones; roughly half, a third, then a quarter of the
+            // 1152px container as the grid gains columns
+            sizes="(min-width: 1280px) 264px, (min-width: 1024px) 33vw, (min-width: 640px) 50vw, 112px"
+            rounded="rounded-md sm:rounded-lg"
+          />
+        </Link>
 
         {!item.is_available && (
           <span className="ui-caps absolute left-2 top-2 rounded-md bg-cta px-2 py-1 text-2xs text-cta-fg">

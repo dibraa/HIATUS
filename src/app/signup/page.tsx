@@ -10,6 +10,7 @@ export default async function SignupPage() {
   const authentication = await getAuthenticationOptions();
   return (
     <AuthTicket
+      collage
       label="Sign up"
       title="Create your account"
 
