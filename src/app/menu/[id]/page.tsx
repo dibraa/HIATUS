@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { ButtonLink } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
@@ -81,14 +81,13 @@ export default async function MenuItemPage({ params }: Params) {
 
   return (
     <div className="flex flex-col gap-12">
-      <nav aria-label="Breadcrumb" className="-mb-4">
-        <ol className="ui-caps flex flex-wrap items-center gap-1.5 text-2xs text-muted">
-          <li><Link href="/menu" className="transition-colors hover:text-ink hover:underline underline-offset-4">Menu</Link></li>
-          <li aria-hidden="true">/</li>
-          <li><Link href={`/menu?flavor=${encodeURIComponent(item.flavor)}`} className="transition-colors hover:text-ink hover:underline underline-offset-4">{item.flavor}</Link></li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page" className="text-ink-soft">{item.name}</li>
-        </ol>
+      <nav aria-label="Menu navigation" className="-mb-4">
+        <ButtonLink href="/menu" variant="outline" size="md">
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="1.5">
+            <path d="m11.5 4.5-5.5 5.5 5.5 5.5M6 10h11" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to menu
+        </ButtonLink>
       </nav>
 
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">

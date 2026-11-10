@@ -1,19 +1,14 @@
 import Link from "next/link";
 
 /**
- * Menu filter chips: category on top, flavour beneath.
+ * Menu filter chips for the customer menu category row.
  *
  * Plain links rather than buttons — each filter state is a real URL, so it is
  * back-button-able, shareable, and works without JavaScript. The active chip is
  * marked with `aria-current` so it is never identified by colour alone.
  *
- * The two rows compose rather than reset each other. Picking a flavour keeps
- * the category, picking a category keeps the search, and each row's "All" clears
- * only its own dimension. Filters that silently wipe a sibling are the single
- * most common way a faceted menu becomes annoying to use.
- *
- * On narrow screens each row scrolls horizontally instead of wrapping into
- * three stacked lines that would push the products below the fold.
+ * On narrow screens the row scrolls horizontally instead of wrapping into
+ * stacked lines that would push the products below the fold.
  */
 export type MenuFilterState = {
   category?: string;
@@ -97,12 +92,10 @@ function ChipRow({
 
 export function MenuFilters({
   categories,
-  flavors,
   state,
   categoryRowClassName = "",
 }: {
   categories: string[];
-  flavors: string[];
   state: MenuFilterState;
   /** e.g. `lg:hidden` where a category sidebar takes over (the /menu page). */
   categoryRowClassName?: string;
@@ -122,17 +115,6 @@ export function MenuFilters({
         hrefFor={(category) => buildHref({ query: state.query, category })}
       />
       </div>
-
-      <ChipRow
-        label="Filter drinks by flavour"
-        values={flavors}
-        active={state.flavor}
-        tone="accent"
-        allLabel="All flavours"
-        hrefFor={(flavor) =>
-          buildHref({ query: state.query, category: state.category, flavor })
-        }
-      />
     </div>
   );
 }

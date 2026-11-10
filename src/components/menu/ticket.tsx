@@ -8,7 +8,7 @@ import { getSizeOption } from "@/lib/sizes";
 
 /**
  * The order you are building, printed on a ticket — the same torn-edge
- * object as the log-in pages — beside the menu from `lg`. It reads the cart
+ * object as the log-in pages — beside the menu from `xl`. It reads the cart
  * live, so tapping + on a card shows up here at once; editing quantities
  * stays on /cart, which this links to.
  */
@@ -69,7 +69,7 @@ export function TicketRail() {
 }
 
 /**
- * Below `lg`: the same ticket folded into a bar pinned to the bottom, shown
+ * Below `xl`: the same ticket folded into a bar pinned to the bottom, shown
  * only once something is on it. It sits ABOVE the phone tab bar (whose height
  * it clears with `bottom-[...]`), and /menu adds a matching spacer so the
  * last row of drinks is never hidden behind either. `inverse-card`, not
@@ -80,7 +80,7 @@ export function TicketBar() {
   if (!hydrated || totalItems === 0) return null;
 
   return (
-    <div className="fixed inset-x-3 bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-30 flex items-center justify-between gap-3 rounded-2xl bg-inverse-card py-2 pl-5 pr-2 text-inverse-card-fg ring-1 ring-line lg:hidden">
+    <div className="fixed inset-x-3 bottom-[calc(var(--tabbar-h,0px)+0.75rem)] z-30 flex items-center justify-between gap-3 rounded-2xl bg-inverse-card py-2 pl-5 pr-2 text-inverse-card-fg ring-1 ring-line xl:hidden">
       <span className="ui-caps text-2xs">
         Ticket · {totalItems} {totalItems === 1 ? "item" : "items"} ·{" "}
         <span className="numeric">{formatPrice(totalPrice)}</span>

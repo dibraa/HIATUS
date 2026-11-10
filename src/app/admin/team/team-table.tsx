@@ -47,6 +47,7 @@ export function TeamTable({
   loadError?: string | null;
 }) {
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [role, setRole] = useState<RoleFilter>("all");
   const [status, setStatus] = useState<StatusFilter>("all");
 
@@ -63,7 +64,13 @@ export function TeamTable({
     });
   }, [members, query, role, status]);
 
+  const pageSize = 7;
+  const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const currentPage = Math.min(page, pageCount);
+  const visibleMembers = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   function clearFilters() {
+    setPage(1);
     setQuery("");
     setRole("all");
     setStatus("all");
@@ -79,12 +86,12 @@ export function TeamTable({
           autoComplete="off"
           placeholder="Name, email, or phone"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => { setQuery(event.target.value); setPage(1); }}
         />
-        <SelectField id="team-role-filter" label="Role" value={role} onChange={(event) => setRole(event.target.value as RoleFilter)}>
+        <SelectField id="team-role-filter" label="Role" value={role} onChange={(event) => { setRole(event.target.value as RoleFilter); setPage(1); }}>
           {ROLE_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </SelectField>
-        <SelectField id="team-status-filter" label="Status" value={status} onChange={(event) => setStatus(event.target.value as StatusFilter)}>
+        <SelectField id="team-status-filter" label="Status" value={status} onChange={(event) => { setStatus(event.target.value as StatusFilter); setPage(1); }}>
           {STATUS_FILTERS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
         </SelectField>
         <div className="admin-team-toolbar-actions">
@@ -124,7 +131,7 @@ export function TeamTable({
                     <p className="mt-1 text-sm text-muted">Try a different name, email, phone, or filter.</p>
                     <button type="button" onClick={clearFilters} className="mt-3 inline-flex min-h-11 items-center text-sm text-accent-ink underline underline-offset-4 hover:text-ink">Clear search and filters</button>
                   </td></tr>
-                ) : filtered.map((member) => {
+                ) : visibleMembers.map((member) => {
                   const isMe = member.id === currentUserId;
                   return (
                     <tr key={member.id} className="text-ink-soft">
@@ -155,6 +162,13 @@ export function TeamTable({
               </tbody>
             </table>
           </div>
+          <nav aria-label="User table pages" className="mt-5 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-muted" role="status">Page {currentPage} of {pageCount}</p>
+            <div className="flex gap-2">
+              <button type="button" className="admin-secondary-link disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPage === 1} onClick={() => setPage(currentPage - 1)}>Previous</button>
+              <button type="button" className="admin-secondary-link disabled:cursor-not-allowed disabled:opacity-50" disabled={currentPage === pageCount} onClick={() => setPage(currentPage + 1)}>Next</button>
+            </div>
+          </nav>
         </>
       )}
     </div>

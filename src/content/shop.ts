@@ -84,8 +84,8 @@ export const SHOP_STORY: {
   photo: null,
 };
 
-/** Only handles printed on the shop's own material. The Facebook page is named
- *  "Hiatus Coffee" there but its URL is not, so it is left out until known. */
+/** Social links shown in the site's footer. */
 export const SHOP_SOCIALS = [
   { label: "@hiatuscoffee_ph", href: "https://www.instagram.com/hiatuscoffee_ph/" },
+  { label: "Facebook", href: "https://www.facebook.com/hiatuscoffee" },
 ];

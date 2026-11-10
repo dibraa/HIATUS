@@ -22,7 +22,7 @@ export const metadata: Metadata = { title: "Menu" };
 /**
  * The menu, laid out like the counter: categories on the left, the drinks in
  * the middle, and the order you are building on a ticket on the right.
- * Below `lg` the sidebar becomes the category chip row and the ticket folds
+ * Below `xl` the sidebar becomes the category chip row and the ticket folds
  * into a bar pinned above the phone tab bar.
  *
  * Every filter is a URL (`?category=…&flavor=…&q=…`), so it survives the back
@@ -47,12 +47,6 @@ export default async function MenuPage({
 
   const items = menu ?? [];
   const categories = categoryCounts(items);
-  // Flavours are listed for the CHOSEN category, so the chip row never offers
-  // a combination that returns nothing.
-  const flavors = Array.from(
-    new Set(items.filter((i) => !category || i.category === category).map((i) => i.flavor))
-  ).sort();
-
   const needle = query.toLowerCase();
   const visible = items.filter((item) => {
     if (category && item.category !== category) return false;
@@ -78,9 +72,9 @@ export default async function MenuPage({
         </p>
       </div>
 
-      <div className="grid items-start gap-8 lg:grid-cols-[12rem_minmax(0,1fr)_20rem]">
-        {/* Categories, from lg. Below that the chip row in MenuFilters shows. */}
-        <nav aria-label="Menu categories" className="sticky top-24 hidden gap-1 lg:grid">
+      <div className="grid items-start gap-6 xl:grid-cols-[13rem_minmax(0,1fr)_20rem]">
+        {/* Categories, from xl. Below that the chip row in MenuFilters shows. */}
+        <nav aria-label="Menu categories" className="sticky top-24 hidden gap-1 xl:grid">
           <SideLink href={buildHref({ query })} current={!category} label="All" count={items.length} />
           {categories.map((c) => (
             <SideLink
@@ -93,11 +87,11 @@ export default async function MenuPage({
           ))}
         </nav>
 
-        <div className="min-w-0">
+        <div className="@container/menu-products min-w-0">
           {activeOrder && (
             <Link
               href={`/orders/${activeOrder.id}`}
-              className="ui-caps mb-4 flex min-h-11 items-center justify-between gap-3 rounded-2xl bg-inverse-card px-4 text-2xs text-inverse-card-fg ring-1 ring-line lg:hidden"
+              className="ui-caps mb-4 flex min-h-11 items-center justify-between gap-3 rounded-2xl bg-inverse-card px-4 text-2xs text-inverse-card-fg ring-1 ring-line xl:hidden"
             >
               <span>
                 {orderCode(activeOrder.id, activeOrder.pickup_code)} · {activeOrder.status === "ready" ? "Ready for pickup" : "On its way"}
@@ -110,9 +104,8 @@ export default async function MenuPage({
           <div className="mt-4 flex flex-col gap-3">
             <MenuFilters
               categories={categories.map((c) => c.name)}
-              flavors={flavors}
               state={{ category, flavor, query }}
-              categoryRowClassName="lg:hidden"
+              categoryRowClassName="xl:hidden"
             />
             {isFiltered && (
               <Link
@@ -146,7 +139,7 @@ export default async function MenuPage({
                 action={<ButtonLink href="/menu" variant="outline">Show everything</ButtonLink>}
               />
             ) : (
-              <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 xl:grid-cols-3">
+              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 @min-[600px]/menu-products:grid-cols-3 @min-[880px]/menu-products:grid-cols-4">
                 {visible.map((item) => {
                   const stat = ratingStats.get(item.id);
                   return (
@@ -166,7 +159,7 @@ export default async function MenuPage({
           </div>
         </div>
 
-        <aside aria-label="Your order" className="sticky top-24 hidden gap-3 lg:grid">
+        <aside aria-label="Your order" className="sticky top-24 hidden gap-3 xl:grid">
           {activeOrder && (
             <Link
               href={`/orders/${activeOrder.id}`}
@@ -185,8 +178,8 @@ export default async function MenuPage({
         </aside>
       </div>
 
-      {/* Keeps the last row clear of the pinned ticket bar below lg. */}
-      <div aria-hidden="true" className="h-20 lg:hidden" />
+      {/* Keeps the last row clear of the pinned ticket bar below xl. */}
+      <div aria-hidden="true" className="h-20 xl:hidden" />
       <TicketBar />
     </div>
   );
