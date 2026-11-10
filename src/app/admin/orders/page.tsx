@@ -12,6 +12,7 @@ import { getSizeOption } from "@/lib/sizes";
 import { ORDER_TYPE_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import type { OrderItem, OrderStatus, OrderType, PaymentStatus } from "@/types/database";
 import { OrderStatusFilter } from "./order-status-filter";
+import { AdminPagination } from "@/components/admin-pagination";
 
 export const metadata: Metadata = { title: "Orders" };
 export const dynamic = "force-dynamic";
@@ -39,8 +40,8 @@ function itemSummary(item: OrderItem) {
   return `${item.quantity}× ${item.item_name}${size}`;
 }
 
-export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const { tab = "active" } = await searchParams;
+export default async function AdminOrdersPage({ searchParams }: { searchParams: Promise<{ tab?: string; page?: string }> }) {
+  const { tab = "active", page: requestedPage } = await searchParams;
   const token = await getServerToken();
 
   let allOrders: OrderRow[];
@@ -70,7 +71,13 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
 
   const orderList = filtered
     .map((o) => ({ ...o, id: o._id ?? o.id, items: (o.items ?? []).map((i) => ({ ...i, id: i._id ?? i.id })) }))
-    .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at));
+    .sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at) || String(b.id).localeCompare(String(a.id)));
+
+  const pageSize = 7;
+  const pageCount = Math.max(1, Math.ceil(orderList.length / pageSize));
+  const parsedPage = Number(requestedPage);
+  const page = Math.min(pageCount, Number.isSafeInteger(parsedPage) && parsedPage > 0 ? parsedPage : 1);
+  const visibleOrders = orderList.slice((page - 1) * pageSize, page * pageSize);
 
   return (
     <div>
@@ -104,7 +111,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                 </tr>
               </thead>
               <tbody className="divide-y divide-line">
-                {orderList.map((order) => {
+                {visibleOrders.map((order) => {
                   const customer = order.user_id?.full_name?.trim() || orderCode(order.id!, order.pickup_code);
                   const phone = order.user_id?.phone;
                   const fullItems = order.items.map(itemSummary).join(", ");
@@ -156,6 +163,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
           </div>
         </section>
       )}
+      <AdminPagination path="/admin/orders" query={new URLSearchParams({ tab })} page={page} pageSize={pageSize} total={orderList.length} />
     </div>
   );
 }

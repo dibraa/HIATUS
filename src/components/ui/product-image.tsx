@@ -51,7 +51,8 @@ export function ProductImage({
           src={imageSrc}
           alt={alt}
           fill
-          unoptimized={imageSrc.includes("/uploads/")}
+          // Integration image routes redirect to Cloudinary; let the browser follow them.
+          unoptimized={imageSrc.includes("/uploads/") || imageSrc.startsWith("/api/integrations/images/")}
           sizes={sizes}
           priority={priority}
           onError={() => setFailedSrc(imageSrc)}

@@ -4,6 +4,7 @@ import { Anton, Oswald, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
+import { MainContent } from "@/components/main-content";
 import { SiteFooter } from "@/components/site-footer";
 import { CustomerTabBar } from "@/components/customer-tab-bar";
 import { getCurrentUser, accessOf } from "@/lib/auth";
@@ -135,16 +136,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               the viewport edge (the tan loyalty band, the partner strip) break
               out with `.full-bleed` rather than this being unconstrained.
               Admin and staff skip it entirely and lay out their own workspace. */}
-          <main
-            id="main"
-            className={
-              isAdminRoute || isStaffRoute
-                ? "w-full flex-1"
-                : "mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:py-10"
-            }
-          >
-            {children}
-          </main>
+          <MainContent>{children}</MainContent>
 
           <div className="site-chrome">
             {!isAdminRoute && !isStaffRoute && <SiteFooter />}
