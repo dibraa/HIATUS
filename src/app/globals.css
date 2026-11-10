@@ -731,6 +731,23 @@ body:has(dialog[open] .dialog-toaster) .page-toaster {
   animation: hi-dialog-in var(--hi-dur-base) var(--hi-ease-out) backwards;
 }
 
+/* Shared loading indicator: rotate only the arc, keeping its track still. */
+.hi-spinner {
+  display: inline-block;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+.hi-spinner__arc {
+  transform-origin: 12px 12px;
+  animation: hi-spinner-turn 1s linear infinite;
+}
+@keyframes hi-spinner-turn {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hi-spinner__arc { animation: none; }
+}
+
 /* Skeleton shimmer for loading states. */
 @keyframes hi-pulse {
   50% {

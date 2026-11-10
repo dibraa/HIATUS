@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useTransition } from "react";
 import toast from "react-hot-toast";
+import { Spinner } from "@/components/ui/spinner";
 import { advanceOrderStatus, takePayment } from "@/app/actions/staff";
 import { formatPrice, orderCode } from "@/lib/format";
 import type { PaymentMethod } from "@/types/database";
@@ -114,7 +115,7 @@ export function HandOverPanel({ order, onClose }: { order: QueueOrder; onClose: 
           aria-busy={pending}
           className="ui-caps inline-flex min-h-16 w-full items-center justify-center gap-2.5 rounded-2xl bg-cta text-sm text-cta-fg transition-colors hover:bg-cta-hover disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {pending && <span aria-hidden="true" className="h-4 w-4 animate-spin rounded-full border-2 border-current border-r-transparent" />}
+          {pending && <Spinner size="sm" className="h-4 w-4" />}
           {pending ? "Recording…" : `Paid ${formatPrice(total)} · hand over`}
         </button>
         <button type="button" onClick={onClose} className="min-h-12 text-sm text-ink-soft underline underline-offset-4 hover:text-ink">
