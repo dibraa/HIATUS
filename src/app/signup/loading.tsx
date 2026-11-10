@@ -10,6 +10,7 @@ export default function Loading() {
         Loading…
       </p>
       <AuthTicket
+      collage
         label="Sign up"
         title="Create your account"
 

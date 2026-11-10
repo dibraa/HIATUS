@@ -1,0 +1,64 @@
+.layout {
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  min-height: calc(100svh - 4rem);
+  padding-block: 140px 132px;
+}
+.ticketColumn {
+  position: relative;
+  z-index: 1;
+  width: calc(100% - 32px);
+  max-width: 420px;
+  margin-inline: auto;
+}
+.background {
+  position: absolute;
+  z-index: 0;
+  inset: 16px;
+  overflow: clip;
+  isolation: isolate;
+  pointer-events: none;
+  user-select: none;
+}
+.frame {
+  --size: 96px;
+  --height: calc((var(--size) - 12px) / var(--ratio) + 12px);
+  position: absolute;
+  display: none;
+  left: calc(var(--compact-x) * (100% - var(--size)));
+  top: calc(var(--compact-y) * (100% - var(--height)));
+  width: var(--size);
+  margin: 0;
+  padding: 6px;
+  border-radius: 16px;
+  background: #fffdf8;
+  transform: rotate(var(--tilt));
+  box-shadow: 0 7px 18px rgb(36 29 24 / 19%);
+}
+.photo { position: relative; display: block; overflow: hidden; border-radius: 10px; aspect-ratio: var(--ratio); }
+.image { object-fit: cover; }
+.always { display: block; }
+@media (min-width: 640px) {
+  .layout { padding-block: 112px; }
+  .background { inset: 24px; }
+  .frame {
+    --size: clamp(112px, calc(var(--scale) * 17vw), 160px);
+    left: calc(var(--tablet-x) * (100% - var(--size)));
+    top: calc(var(--tablet-y) * (100% - var(--height)));
+  }
+  .tablet { display: block; }
+}
+@media (min-width: 1024px) {
+  .layout { padding-block: 72px; }
+  .frame {
+    --size: clamp(132px, calc(var(--scale) * 16vw), 230px);
+    left: calc(var(--x) * (100% - var(--size)));
+    top: calc(var(--y) * (100% - var(--height)));
+  }
+  .laptop { display: block; }
+}
+@media (min-width: 1280px) {
+  .frame { --size: clamp(140px, calc(var(--scale) * 14vw), 260px); }
+  .desktop { display: block; }
+}

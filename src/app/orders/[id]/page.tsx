@@ -103,17 +103,6 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <span className="font-mono font-semibold text-ink">{orderCode(order.id, order.pickup_code)}</span>.
             </p>
           )}
-          {["pending", "preparing", "ready"].includes(order.status) && (
-            <p className="mt-4 border-t border-line pt-3 text-sm text-muted">
-
-              <Link
-                href="/profile#notifications"
-                className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
-              >
-                Manage notifications
-              </Link>
-            </p>
-          )}
         </div>
       </section>
 

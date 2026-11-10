@@ -8,7 +8,7 @@ import { priceForSize } from "@/lib/sizes";
  * "On the menu": a sneak peek between the room and the tour — a few drinks
  * with their starting price, and the categories the full menu holds.
  *
- * Every card leads to sign-up: product pages sit behind sign-in
+ * Every card leads to login: product pages sit behind sign-in
  * (AUTH_REQUIRED_PREFIXES), so linking a guest to /menu/[id] would only bounce
  * them to the login page with no context. The price is the SMALL size's — the
  * same "from" figure the signed-in menu card prints under its default price.
@@ -36,7 +36,7 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
           )}
         </div>
         <Link
-          href="/signup"
+          href="/login"
           // Inline text ignores the global 44px coarse-pointer rule, so the hit
           // area is set here: the link sits alone on its row and is easy to miss.
           className="ui-caps inline-flex min-h-11 items-center text-2xs text-accent-ink underline underline-offset-4 transition-colors hover:text-ink"
@@ -49,8 +49,8 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
         {peek.items.map((item) => (
           <li key={item.id} className="flex">
             <Link
-              href="/signup"
-              aria-label={`${item.name}, from ${formatPrice(priceForSize(item.price, "S", item.size_pricing))}. Sign up to order.`}
+              href="/login"
+              aria-label={`${item.name}, from ${formatPrice(priceForSize(item.price, "S", item.size_pricing))}. Log in to order.`}
               // The same matte as the hero photograph: card ground, 10px gutter, 2xl
               // corner around an xl image. Spelled out rather than `.matte` so the
               // hover tint can still win (that class is unlayered). The one-pixel
@@ -88,7 +88,7 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
           }`}
         >
           <Link
-            href="/signup"
+            href="/login"
             className="flex w-full flex-col justify-between gap-6 rounded-2xl bg-inverse-bg p-5 text-inverse-fg transition-[filter,translate] hover:brightness-90 active:translate-y-px focus-visible:outline-offset-4 sm:p-6"
           >
             <span className="display text-4xl text-inverse-display">
@@ -98,10 +98,10 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
             </span>
             <span>
               <span className="block text-sm text-inverse-muted">
-                Sign up to see every drink, pick your size, and order ahead.
+                Log in to see every drink, pick your size, and order ahead.
               </span>
               <span className="ui-caps mt-4 inline-block text-2xs underline underline-offset-4">
-                Sign up &rarr;
+                Log in &rarr;
               </span>
             </span>
           </Link>

@@ -69,7 +69,7 @@ export function WelcomeHero({
               button answers a guest's next question — what is there, and for
               how much — by jumping to the menu peek; with no peek on the page
               (nothing available) it offers returning customers a way in. */}
-          <ButtonLink href="/signup" size="lg">
+          <ButtonLink href="/login" size="lg">
             Order ahead
           </ButtonLink>
           {hasMenuPeek ? (
@@ -97,7 +97,7 @@ export function WelcomeHero({
             fetchPriority="high"
             placeholder="blur"
             sizes="(min-width: 1024px) 680px, 92vw"
-            className="object-cover object-[50%_30%]"
+            className="object-cover object-[50%_55%]"
           />
         </div>
 

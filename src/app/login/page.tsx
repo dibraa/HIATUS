@@ -12,6 +12,7 @@ export default async function LoginPage() {
   const authentication = await getAuthenticationOptions();
   return (
     <AuthTicket
+      collage
       label="Log in"
       title="Welcome back."
 

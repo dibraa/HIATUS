@@ -6,6 +6,7 @@ import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 import { MainContent } from "@/components/main-content";
 import { SiteFooter } from "@/components/site-footer";
+import { FooterVisibility } from "@/components/footer-visibility";
 import { CustomerTabBar } from "@/components/customer-tab-bar";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { isStaffOnly } from "@/lib/roles";
@@ -139,7 +140,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <MainContent>{children}</MainContent>
 
           <div className="site-chrome">
-            {!isAdminRoute && !isStaffRoute && <SiteFooter />}
+            {!isAdminRoute && !isStaffRoute && <FooterVisibility><SiteFooter /></FooterVisibility>}
             {showTabBar && <CustomerTabBar />}
           </div>
         </Providers>
