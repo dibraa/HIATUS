@@ -17,15 +17,16 @@ export function Spinner({
   className?: string;
 }) {
   const sizes = {
-    sm: "h-3.5 w-3.5 border-2",
-    md: "h-5 w-5 border-2",
-    lg: "h-8 w-8 border-[3px]",
+    sm: "h-3.5 w-3.5",
+    md: "h-5 w-5",
+    lg: "h-8 w-8",
   };
 
   return (
     <svg
       aria-hidden="true"
-      className={`animate-spin ${sizes[size]} ${className ?? ""}`}
+      className={`hi-spinner ${sizes[size]} ${className ?? ""}`}
+      focusable="false"
       viewBox="0 0 24 24"
       fill="none"
     >
@@ -34,15 +35,17 @@ export function Spinner({
         cy="12"
         r="10"
         stroke="currentColor"
-        strokeOpacity="0.2"
-        strokeWidth="3"
+        strokeOpacity="0.16"
+        strokeWidth="2.5"
       />
-      <path
-        d="M22 12a10 10 0 0 0-10-10"
-        stroke="currentColor"
-        strokeWidth="3"
-        strokeLinecap="round"
-      />
+      <g className="hi-spinner__arc">
+        <path
+          d="M12 2a10 10 0 1 1-8.66 15"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+      </g>
     </svg>
   );
 }
