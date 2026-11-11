@@ -490,6 +490,11 @@ body:has(.admin-workspace) #main {
   line-height: 0.92;
 }
 
+/* Product names can wrap to multiple lines inside narrow menu cards. */
+.menu-item-title {
+  line-height: 1.05;
+}
+
 /* The light half of a two-weight headline — the comp's "BUY 10 DRINKS," above
    a heavier "GET 1 FREE". Oswald at 300 is the same condensed skeleton at a
    fraction of the weight, which is what makes the pair read as one voice. */
