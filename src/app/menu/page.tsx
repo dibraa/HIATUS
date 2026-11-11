@@ -16,6 +16,8 @@ import {
   fetchRatingStats,
 } from "@/lib/customer-data";
 import { orderCode } from "@/lib/format";
+import { menuPage } from "@/lib/menu-pagination";
+import { MenuPagination } from "@/components/menu/pagination";
 
 export const metadata: Metadata = { title: "Menu" };
 
@@ -32,9 +34,9 @@ export const metadata: Metadata = { title: "Menu" };
 export default async function MenuPage({
   searchParams,
 }: {
-  searchParams: Promise<{ flavor?: string; category?: string; q?: string }>;
+  searchParams: Promise<{ flavor?: string; category?: string; q?: string; page?: string }>;
 }) {
-  const { flavor, category, q } = await searchParams;
+  const { flavor, category, q, page: requestedPage } = await searchParams;
   const query = q?.trim() ?? "";
   const token = (await getServerToken()) ?? "";
 
@@ -57,35 +59,30 @@ export default async function MenuPage({
     );
   });
   const isFiltered = Boolean(flavor || category || query);
+  const pagination = menuPage(visible.length, requestedPage);
+  const pageItems = visible.slice(pagination.start, pagination.end);
 
   return (
     <div>
-      <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-        <h1 className="display text-[clamp(2.5rem,6vw,3.75rem)] leading-[0.9] text-ink">{category ?? "The menu"}</h1>
-        <p className="text-sm text-muted">
-          {visible.length} {visible.length === 1 ? "item" : "items"}
-          {query && (
-            <>
-              {" "}matching <span className="font-semibold text-ink">&ldquo;{query}&rdquo;</span>
-            </>
-          )}
-        </p>
-      </div>
-
       <div className="grid items-start gap-6 xl:grid-cols-[13rem_minmax(0,1fr)_20rem]">
-        {/* Categories, from xl. Below that the chip row in MenuFilters shows. */}
-        <nav aria-label="Menu categories" className="sticky top-24 hidden gap-1 xl:grid">
-          <SideLink href={buildHref({ query })} current={!category} label="All" count={items.length} />
-          {categories.map((c) => (
-            <SideLink
-              key={c.name}
-              href={buildHref({ query, category: c.name })}
-              current={category === c.name}
-              label={c.name}
-              count={c.count}
-            />
-          ))}
-        </nav>
+        <div className="sticky top-0 z-30 min-w-0 xl:top-4 xl:z-auto">
+          <div className="-mx-6 flex h-[5.25rem] items-center bg-surface px-6 py-3 sm:-mx-8 sm:h-24 sm:px-8 xl:mx-0 xl:mb-6 xl:block xl:h-auto xl:px-0 xl:py-0">
+            <h1 className="display text-[clamp(2.5rem,6vw,3.75rem)] leading-[0.9] text-ink [overflow-wrap:anywhere]">{category ?? "The menu"}</h1>
+          </div>
+          {/* Categories, from xl. Below that the chip row in MenuFilters shows. */}
+          <nav aria-label="Menu categories" className="hidden gap-1 xl:grid">
+            <SideLink href={buildHref({ query })} current={!category} label="All" count={items.length} />
+            {categories.map((c) => (
+              <SideLink
+                key={c.name}
+                href={buildHref({ query, category: c.name })}
+                current={category === c.name}
+                label={c.name}
+                count={c.count}
+              />
+            ))}
+          </nav>
+        </div>
 
         <div className="@container/menu-products min-w-0">
           {activeOrder && (
@@ -100,7 +97,7 @@ export default async function MenuPage({
             </Link>
           )}
 
-          <SearchField query={query} flavor={flavor} />
+          <SearchField query={query} flavor={flavor} category={category} />
           <div className="mt-4 flex flex-col gap-3">
             <MenuFilters
               categories={categories.map((c) => c.name)}
@@ -117,7 +114,7 @@ export default async function MenuPage({
             )}
           </div>
 
-          <div className="mt-6">
+          <div id="menu-results" tabIndex={-1} className="mt-6 scroll-mt-[6.25rem] sm:scroll-mt-28 xl:scroll-mt-4">
             {menu === null ? (
               <EmptyState
                 as="h2"
@@ -140,7 +137,7 @@ export default async function MenuPage({
               />
             ) : (
               <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 @min-[600px]/menu-products:grid-cols-3 @min-[880px]/menu-products:grid-cols-4">
-                {visible.map((item) => {
+                {pageItems.map((item) => {
                   const stat = ratingStats.get(item.id);
                   return (
                     <li key={item.id} className="flex">
@@ -157,9 +154,12 @@ export default async function MenuPage({
               </ul>
             )}
           </div>
+          {menu !== null && visible.length > 0 && (
+            <MenuPagination page={pagination.page} pages={pagination.pages} state={{ category, flavor, query }} />
+          )}
         </div>
 
-        <aside aria-label="Your order" className="sticky top-24 hidden gap-3 xl:grid">
+        <aside aria-label="Your order" className="sticky top-4 hidden gap-3 xl:grid">
           {activeOrder && (
             <Link
               href={`/orders/${activeOrder.id}`}

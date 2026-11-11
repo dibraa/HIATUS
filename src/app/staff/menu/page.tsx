@@ -96,7 +96,7 @@ export default async function StaffMenuPage() {
                               className={`block w-14 shrink-0 ${!item.is_available ? "opacity-40 grayscale" : ""}`}
                             >
                               <ProductImage
-                                src={item.image_url}
+                                src={item.image_url} itemType={item.item_type}
                                 alt=""
                                 sizes="56px"
                                 rounded="rounded-md"
@@ -109,7 +109,7 @@ export default async function StaffMenuPage() {
                                 {item.name}
                               </span>
                               <span className="staff-caption mt-0.5 flex flex-wrap items-center gap-x-2">
-                                <span>{item.flavor}</span>
+                                {item.item_type !== "food" && <span>{item.flavor}</span>}
                                 <span aria-hidden="true">&middot;</span>
                                 <span className="numeric">
                                   {formatPrice(item.price)}

@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/ui/modal";
 import { formatPrice, formatTime, orderCode } from "@/lib/format";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import {
   advanceOrderStatus,
@@ -210,7 +210,7 @@ export function PaymentPanel({
                 {item.size && (
                   <span className="text-xs text-muted">
                     {" "}
-                    · {getSizeOption(item.size).label}
+                    · {servingLabel(item, item.size)}
                   </span>
                 )}
               </span>

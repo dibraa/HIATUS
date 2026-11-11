@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart } from "@/lib/cart-context";
-import { priceForSize } from "@/lib/sizes";
+import { priceForSize, servingInfo } from "@/lib/sizes";
 import type { MenuItem, OrderPreset } from "@/types/database";
 
 /**
@@ -16,7 +16,7 @@ export function resolvePreset(preset: OrderPreset, byId: Map<string, MenuItem>) 
     .map((line) => {
       const item = byId.get(line.menu_item_id);
       if (!item) return null;
-      return { item, quantity: line.quantity, size: line.size, unitPrice: priceForSize(item.price, line.size, item.size_pricing) };
+      return { item, quantity: line.quantity, size: item.pricing_mode === "fixed" ? "M" as const : line.size, unitPrice: priceForSize(item.price, line.size, item.size_pricing, item.pricing_mode) };
     })
     .filter((l): l is NonNullable<typeof l> => l !== null);
 
@@ -51,6 +51,7 @@ export function useLoadPreset(menu: MenuItem[]) {
     for (const line of buyable) {
       addItem(
         {
+          ...servingInfo(line.item),
           menuItemId: line.item.id,
           name: line.item.name,
           flavor: line.item.flavor,

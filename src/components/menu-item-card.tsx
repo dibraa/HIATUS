@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import type { MenuItem } from "@/types/database";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
-import { DEFAULT_SIZE, getSizeOption, priceForSize } from "@/lib/sizes";
+import { DEFAULT_SIZE, servingLabel, servingInfo, priceForSize } from "@/lib/sizes";
 import { RatingSummary } from "@/components/star-rating";
 import { ProductImage } from "@/components/ui/product-image";
 import { Button } from "@/components/ui/button";
@@ -46,8 +46,8 @@ export function MenuItemCard({
   isLoggedIn?: boolean;
 }) {
   const { addItem } = useCart();
-  const defaultPrice = priceForSize(item.price, DEFAULT_SIZE, item.size_pricing);
-  const defaultSizeLabel = getSizeOption(DEFAULT_SIZE).label;
+  const defaultPrice = priceForSize(item.price, DEFAULT_SIZE, item.size_pricing, item.pricing_mode);
+  const defaultSizeLabel = servingLabel(item, DEFAULT_SIZE);
 
   return (
     <article className="group relative flex w-full gap-3 rounded-lg border border-line bg-card p-3 transition-colors duration-(--hi-dur-base) hover:bg-raised focus-within:bg-raised sm:flex-col sm:gap-0 sm:p-5">
@@ -55,7 +55,7 @@ export function MenuItemCard({
           the image in the comp, and reordering visually rather than in markup
           would put the product name after its picture for a screen reader. */}
       <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:order-2 sm:items-center sm:gap-2 sm:pt-4 sm:text-center">
-        <p className="eyebrow text-muted">{item.flavor}</p>
+        {item.item_type !== "food" && <p className="eyebrow text-muted">{item.flavor}</p>}
 
         <h3 className="display text-lg text-ink sm:text-xl">
           {/* after:absolute … stretches this link across the whole card */}
@@ -90,6 +90,7 @@ export function MenuItemCard({
             }
             onClick={() => {
               addItem({
+                ...servingInfo(item),
                 menuItemId: item.id,
                 name: item.name,
                 flavor: item.flavor,
@@ -108,7 +109,7 @@ export function MenuItemCard({
               {formatPrice(defaultPrice)}
             </p>
             <p className="eyebrow mt-0.5 text-muted">
-              {defaultSizeLabel} &middot; from {formatPrice(priceForSize(item.price, "S", item.size_pricing))}
+              {item.pricing_mode === "fixed" ? defaultSizeLabel : <>{defaultSizeLabel} &middot; from {formatPrice(priceForSize(item.price, "S", item.size_pricing))}</>}
             </p>
           </div>
         </div>
@@ -124,6 +125,7 @@ export function MenuItemCard({
         >
           <ProductImage
             src={item.image_url}
+            itemType={item.item_type}
             alt={item.name}
             // 112px thumb on phones; roughly half, a third, then a quarter of the
             // 1152px container as the grid gains columns

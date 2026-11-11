@@ -193,6 +193,7 @@ export default async function ReceiptPage({
             >
               <span className="text-ink-soft">
                 {item.quantity}× {item.item_name}
+                {item.serving_label && <span className="block text-xs text-muted">{item.serving_label}</span>}
               </span>
               <span className="numeric text-ink">
                 {formatPrice(item.subtotal)}

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/empty-state";
 import { DataError } from "@/components/ui/data-error";
 import { formatDateTime, formatElapsed, formatPrice, orderCode } from "@/lib/format";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import { ORDER_TYPE_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import type { OrderItem, OrderStatus, OrderType, PaymentStatus } from "@/types/database";
 import { OrderStatusFilter } from "./order-status-filter";
@@ -36,7 +36,7 @@ const TABS = [
 const ACTIVE_STATUSES: OrderStatus[] = ["pending", "preparing", "ready"];
 
 function itemSummary(item: OrderItem) {
-  const size = item.size ? ` · ${getSizeOption(item.size).label}` : "";
+  const size = item.size ? ` · ${servingLabel(item, item.size)}` : "";
   return `${item.quantity}× ${item.item_name}${size}`;
 }
 
@@ -140,7 +140,7 @@ export default async function AdminOrdersPage({ searchParams }: { searchParams: 
                         {visibleItems.map((item) => (
                           <p key={item.id} className="truncate">
                             <span className="numeric text-muted">{item.quantity}&times;</span> {item.item_name}
-                            {item.size && <span className="text-muted"> · {getSizeOption(item.size).label}</span>}
+                            {item.size && <span className="text-muted"> · {servingLabel(item, item.size)}</span>}
                           </p>
                         ))}
                         {hiddenCount > 0 && <p className="mt-0.5 text-muted">+{hiddenCount} more</p>}

@@ -7,7 +7,7 @@ import { OrderStatusBadge } from "@/components/order-status-badge";
 import { OrderProgress } from "@/components/order-progress";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice, formatDateTime, orderCode } from "@/lib/format";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import { getSettings } from "@/lib/settings";
 import { ORDER_TYPE_LABELS, PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
 import type { NotificationPreferences, Order, OrderItem } from "@/types/database";
@@ -125,7 +125,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               <li key={item.id} className="flex items-baseline justify-between gap-4 px-4 py-3">
                 <span className="min-w-0 text-sm text-ink">
                   <span className="numeric text-muted">{item.quantity}&times;</span> {item.item_name}
-                  {item.size && <span className="text-muted"> &middot; {getSizeOption(item.size).label}</span>}
+                  {item.size && <span className="text-muted"> &middot; {servingLabel(item, item.size)}</span>}
                 </span>
                 <span className="shrink-0 text-sm numeric text-ink-soft">{formatPrice(item.subtotal)}</span>
               </li>

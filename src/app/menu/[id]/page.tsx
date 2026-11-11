@@ -27,7 +27,7 @@ type MenuRating = Omit<Rating, "user_id" | "menu_item_id"> & {
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const { id } = await params;
   const raw = await apiJson<(MenuItem & { _id: string }) | null>(`/menu/${id}`).catch(() => null);
-  if (!raw) return { title: "Drink not found" };
+  if (!raw) return { title: "Item not found" };
   return {
     title: raw.name,
     description: raw.description ?? `Order a ${raw.flavor} ${raw.name} ahead from Hiatus Coffee.`,
@@ -66,7 +66,7 @@ export default async function MenuItemPage({ params }: Params) {
     : null;
 
   const relatedRaw = await apiJson<(MenuItem & { _id: string })[]>(
-    `/menu?flavor=${encodeURIComponent(item.flavor)}&available=true`
+    `/menu?${item.item_type === "food" ? "category=" + encodeURIComponent(item.category) : "flavor=" + encodeURIComponent(item.flavor)}&available=true`
   ).catch(() => []);
   const related = relatedRaw
     .filter((m) => (m._id ?? m.id) !== id)
@@ -93,12 +93,12 @@ export default async function MenuItemPage({ params }: Params) {
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="matte lg:sticky lg:top-24 lg:self-start">
           <div className="matte-inner">
-            <ProductImage src={item.image_url} alt={item.name} sizes="(min-width: 1024px) 552px, 100vw" priority rounded="rounded-none" />
+            <ProductImage src={item.image_url} itemType={item.item_type} alt={item.name} sizes="(min-width: 1024px) 552px, 100vw" priority rounded="rounded-none" />
           </div>
         </div>
 
         <div className="flex flex-col">
-          <p className="eyebrow text-muted">{item.flavor}</p>
+          {item.item_type !== "food" && <p className="eyebrow text-muted">{item.flavor}</p>}
           <div className="mt-2 flex items-start justify-between gap-4">
             <h1 className="display text-4xl text-ink">{item.name}</h1>
             <FavoriteButton menuItemId={item.id} itemName={item.name} isFavorite={isFavorite} isLoggedIn={!!user} />
@@ -111,9 +111,9 @@ export default async function MenuItemPage({ params }: Params) {
           </div>
           {item.description && <p className="mt-5 max-w-[60ch] text-base text-ink-soft">{item.description}</p>}
           <div className="mt-7"><AddToCart item={item} /></div>
-          <p className="numeric mt-4 text-2xs text-muted">
+          {item.pricing_mode !== "fixed" && <p className="numeric mt-4 text-2xs text-muted">
             Sizes: small {formatPrice(priceForSize(item.price, "S", item.size_pricing))} &middot; medium {formatPrice(priceForSize(item.price, "M", item.size_pricing))} &middot; large {formatPrice(priceForSize(item.price, "L", item.size_pricing))}
-          </p>
+          </p>}
         </div>
       </div>
 
@@ -151,7 +151,7 @@ export default async function MenuItemPage({ params }: Params) {
 
       {related.length > 0 && (
         <section aria-labelledby="related-heading">
-          <h2 id="related-heading" className="display text-2xl text-ink">More {item.flavor}</h2>
+          <h2 id="related-heading" className="display text-2xl text-ink">More {item.item_type === "food" ? item.category : item.flavor}</h2>
           <ul className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {related.map((relatedItem) => {
               const stat = relatedStats.get(relatedItem.id);

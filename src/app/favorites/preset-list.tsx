@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { Button } from "@/components/ui/button";
 import { resolvePreset, useLoadPreset } from "@/lib/presets";
 import { formatPrice } from "@/lib/format";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import { deletePreset } from "@/app/actions/account";
 import type { MenuItem, OrderPreset } from "@/types/database";
 
@@ -105,7 +105,7 @@ export function PresetList({
                     <span className="numeric text-muted">{line.quantity}&times;</span>{" "}
                     {line.item.name}{" "}
                     <span className="text-muted">
-                      ({getSizeOption(line.size).label})
+                      ({servingLabel(line.item, line.size)})
                     </span>
                     {!line.item.is_available && (
                       <span className="ml-1.5 text-xs font-medium text-danger">

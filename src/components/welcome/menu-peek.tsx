@@ -50,7 +50,7 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
           <li key={item.id} className="flex">
             <Link
               href="/login"
-              aria-label={`${item.name}, from ${formatPrice(priceForSize(item.price, "S", item.size_pricing))}. Log in to order.`}
+              aria-label={`${item.name}, ${item.pricing_mode === "fixed" ? "" : "from "}${formatPrice(priceForSize(item.price, "S", item.size_pricing, item.pricing_mode))}. Log in to order.`}
               // The same matte as the hero photograph: card ground, 10px gutter, 2xl
               // corner around an xl image. Spelled out rather than `.matte` so the
               // hover tint can still win (that class is unlayered). The one-pixel
@@ -60,17 +60,18 @@ export function MenuPeek({ peek }: { peek: MenuPeekData }) {
             >
               <ProductImage
                 src={item.image_url}
+                itemType={item.item_type}
                 alt=""
                 sizes="(min-width: 1024px) 270px, 45vw"
                 rounded="rounded-xl"
               />
               <div className="flex flex-1 flex-col gap-1 px-1.5 pb-1.5 pt-3">
-                <p className="eyebrow text-muted">{item.flavor}</p>
+                {item.item_type !== "food" && <p className="eyebrow text-muted">{item.flavor}</p>}
                 <p className="display text-lg text-ink group-hover:underline group-hover:underline-offset-4">
                   {item.name}
                 </p>
                 <p className="numeric mt-auto pt-1 text-sm text-ink-soft">
-                  from {formatPrice(priceForSize(item.price, "S", item.size_pricing))}
+                  {item.pricing_mode !== "fixed" && "from "}{formatPrice(priceForSize(item.price, "S", item.size_pricing, item.pricing_mode))}
                 </p>
               </div>
             </Link>

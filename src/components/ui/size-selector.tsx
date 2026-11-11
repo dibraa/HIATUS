@@ -17,6 +17,8 @@ export function SizeSelector({
   name,
   basePrice,
   pricing,
+  pricingMode,
+  servingLabel,
   tone = "light",
   disabled = false,
 }: {
@@ -25,10 +27,13 @@ export function SizeSelector({
   name: string;
   basePrice: number;
   pricing?: Partial<Record<DrinkSize, number>> | null;
+  pricingMode?: "sized" | "fixed";
+  servingLabel?: string | null;
   tone?: "light" | "dark";
   disabled?: boolean;
 }) {
   const isDark = tone === "dark";
+  if (pricingMode === "fixed") return <p className={isDark ? "text-sm text-inverse-muted" : "text-sm text-muted"}>{servingLabel || "Per serving"}</p>;
 
   return (
     <fieldset disabled={disabled} className="min-w-0">

@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/format";
 import { resolvePreset, useLoadPreset } from "@/lib/presets";
-import { getSizeOption } from "@/lib/sizes";
+import { getSizeOption, servingLabel } from "@/lib/sizes";
 import type { MenuItem, OrderPreset } from "@/types/database";
 
 /**
@@ -23,7 +23,7 @@ export function UsualOrders({ presets, menu }: { presets: OrderPreset[]; menu: M
         const { lines, total } = resolvePreset(preset, byId);
         const buyable = lines.some((l) => l.item.is_available);
         const description = lines
-          .map((l) => `${l.quantity > 1 ? `${l.quantity} × ` : ""}${l.item.name} (${getSizeOption(l.size).code})`)
+          .map((l) => `${l.quantity > 1 ? `${l.quantity} × ` : ""}${l.item.name} (${l.item.pricing_mode === "fixed" ? servingLabel(l.item, l.size) : getSizeOption(l.size).code})`)
           .join(" · ");
 
         return (

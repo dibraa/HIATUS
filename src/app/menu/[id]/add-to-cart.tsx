@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
-import { DEFAULT_SIZE, getSizeOption, priceForSize, type DrinkSize } from "@/lib/sizes";
+import { DEFAULT_SIZE, servingLabel, servingInfo, priceForSize, type DrinkSize } from "@/lib/sizes";
 import { SizeSelector } from "@/components/ui/size-selector";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { Button } from "@/components/ui/button";
@@ -24,14 +24,15 @@ export function AddToCart({ item }: { item: MenuItem }) {
   const [size, setSize] = useState<DrinkSize>(DEFAULT_SIZE);
   const [quantity, setQuantity] = useState(1);
 
-  const unitPrice = priceForSize(item.price, size, item.size_pricing);
+  const unitPrice = priceForSize(item.price, size, item.size_pricing, item.pricing_mode);
   const lineTotal = unitPrice * quantity;
-  const sizeLabel = getSizeOption(size).label;
+  const sizeLabel = servingLabel(item, size);
   const cartItem = {
+    ...servingInfo(item),
     menuItemId: item.id,
     name: item.name,
     flavor: item.flavor,
-    size,
+    size: item.pricing_mode === "fixed" ? DEFAULT_SIZE : size,
     price: unitPrice,
     imageUrl: item.image_url,
   };
@@ -61,6 +62,8 @@ export function AddToCart({ item }: { item: MenuItem }) {
           name={item.id}
             basePrice={item.price}
             pricing={item.size_pricing}
+            pricingMode={item.pricing_mode}
+            servingLabel={item.serving_label}
           disabled={!item.is_available}
         />
       </div>
@@ -103,7 +106,7 @@ export function AddToCart({ item }: { item: MenuItem }) {
         // Text, not just a greyed-out button — disabled styling alone is not a
         // reliable signal, and colour must never be the only carrier of state.
         <p className="mt-3 text-sm text-danger">
-          This drink is unavailable right now. Try another from the menu.
+          This item is unavailable right now. Try another from the menu.
         </p>
       )}
 

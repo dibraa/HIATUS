@@ -22,7 +22,13 @@ export type Profile = {
   created_at: string;
 };
 
-export type MenuItem = {
+export type ServingInfo = {
+  item_type?: "drink" | "food";
+  pricing_mode?: "sized" | "fixed";
+  serving_label?: string | null;
+};
+
+export type MenuItem = ServingInfo & {
   position?: number;
   id: string;
   name: string;
@@ -62,7 +68,7 @@ export type Order = {
   updated_at: string;
 };
 
-export type OrderItem = {
+export type OrderItem = ServingInfo & {
   id: string;
   order_id: string;
   menu_item_id: string | null;

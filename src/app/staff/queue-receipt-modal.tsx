@@ -22,7 +22,7 @@ import {
   PAYMENT_STATUS_LABELS,
   STATUS_LABELS,
 } from "@/lib/order-meta";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import type { OrderStatus } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 
@@ -243,7 +243,7 @@ export function QueueReceiptModal({
               </span>
               {item.size && (
                 <span className="shrink-0 text-xs text-muted">
-                  {getSizeOption(item.size).label}
+                  {servingLabel(item, item.size)}
                 </span>
               )}
             </li>

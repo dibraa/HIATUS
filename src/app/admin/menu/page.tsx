@@ -1,3 +1,4 @@
+import { servingLabel } from "@/lib/sizes";
 import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
@@ -71,7 +72,7 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
       {menuItems.length === 0 ? (
         <EmptyState
           title="No menu items found"
-          body="Add an item or reset your filters to see other drinks."
+          body="Add an item or reset your filters to see other items."
           action={<AddMenuItemButton>Add the first item</AddMenuItemButton>}
         />
       ) : (
@@ -79,18 +80,18 @@ export default async function AdminMenuPage({ searchParams }: { searchParams: Pr
           {menuItems.map((item) => (
             <li key={item.id} className="admin-menu-row">
               <div className="w-14 shrink-0">
-                <ProductImage src={item.image_url} alt="" sizes="56px" rounded="rounded-md" />
+                <ProductImage src={item.image_url} itemType={item.item_type} alt="" sizes="56px" rounded="rounded-md" />
               </div>
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <span className="font-medium text-ink">{item.name}</span>
                 </p>
-                <p className="admin-menu-flavor">{item.flavor}</p>
+                {item.item_type !== "food" && <p className="admin-menu-flavor">{item.flavor}</p>}
                 <p className="mt-1 text-xs text-muted">{item.category}</p>
                 {item.description && <p className="mt-1 line-clamp-2 text-sm text-ink-soft">{item.description}</p>}
               </div>
               <p className="admin-menu-availability"><span data-available={item.is_available}>{item.is_available ? "Available" : "Sold out"}</span></p>
-              <p className="admin-menu-price">{formatPrice(item.price)} <small>Medium</small></p>
+              <p className="admin-menu-price">{formatPrice(item.price)} <small>{servingLabel(item)}</small></p>
               <div className="admin-menu-actions">
                 <Permission name="menu.availability"><ItemToggles item={item} /></Permission>
                 <Permission name="menu.edit"><EditMenuItemButton item={item} /></Permission>
