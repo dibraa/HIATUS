@@ -57,7 +57,7 @@ export function MenuItemCard({
       <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:order-2 sm:items-center sm:gap-2 sm:pt-4 sm:text-center">
         {item.item_type !== "food" && <p className="eyebrow text-muted">{item.flavor}</p>}
 
-        <h3 className="display text-lg text-ink sm:text-xl">
+        <h3 className="menu-item-title display text-lg text-ink sm:text-xl">
           {/* after:absolute … stretches this link across the whole card */}
           <Link
             href={`/menu/${item.id}`}
