@@ -17,7 +17,7 @@ import {
   PAYMENT_STATUS_LABELS,
   STATUS_LABELS,
 } from "@/lib/order-meta";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import type { QueueOrder } from "@/types/staff";
 
 /**
@@ -169,8 +169,8 @@ export function QueueCard({
                 {(item.size || item.flavor) && (
                   <small>
                     {[
-                      item.size ? getSizeOption(item.size).label : null,
-                      item.flavor,
+                      item.size ? servingLabel(item, item.size) : null,
+                      item.item_type !== "food" ? item.flavor : null,
                     ]
                       .filter(Boolean)
                       .join(" · ")}

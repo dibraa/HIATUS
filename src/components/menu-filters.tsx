@@ -14,6 +14,7 @@ export type MenuFilterState = {
   category?: string;
   flavor?: string;
   query?: string;
+  page?: number;
 };
 
 export function buildHref(state: MenuFilterState): string {
@@ -21,6 +22,7 @@ export function buildHref(state: MenuFilterState): string {
   if (state.query) params.set("q", state.query);
   if (state.category) params.set("category", state.category);
   if (state.flavor) params.set("flavor", state.flavor);
+  if (state.page && state.page > 1) params.set("page", String(state.page));
   const qs = params.toString();
   return `/menu${qs ? `?${qs}` : ""}`;
 }
@@ -104,7 +106,7 @@ export function MenuFilters({
     <div className="flex flex-col gap-3">
       <div className={categoryRowClassName}>
       <ChipRow
-        label="Filter drinks by category"
+        label="Filter menu by category"
         values={categories}
         active={state.category}
         tone="green"

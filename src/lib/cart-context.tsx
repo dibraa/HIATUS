@@ -1,10 +1,11 @@
 "use client";
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import type { ServingInfo } from "@/types/database";
 import { trackEvent } from "./integration-client";
 import { DEFAULT_SIZE, isDrinkSize, type DrinkSize } from "@/lib/sizes";
 
-export type CartLine = {
+export type CartLine = ServingInfo & {
   menuItemId: string;
   name: string;
   flavor: string;
@@ -66,7 +67,10 @@ function migrateStoredLines(raw: unknown): CartLine[] {
         menuItemId: line.menuItemId,
         name: line.name,
         flavor: typeof line.flavor === "string" ? line.flavor : "",
-        size: isDrinkSize(line.size) ? line.size : DEFAULT_SIZE,
+        pricing_mode: line.pricing_mode === "fixed" ? "fixed" : "sized",
+        item_type: line.item_type === "food" ? "food" : "drink",
+        serving_label: typeof line.serving_label === "string" ? line.serving_label.slice(0, 80) : null,
+        size: line.pricing_mode === "fixed" ? "M" : isDrinkSize(line.size) ? line.size : DEFAULT_SIZE,
         price: line.price,
         imageUrl: typeof line.imageUrl === "string" ? line.imageUrl : null,
         quantity: Math.max(1, Math.floor(line.quantity)),

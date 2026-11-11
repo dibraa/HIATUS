@@ -39,7 +39,9 @@ export function priceForSize(
   basePrice: number,
   size: DrinkSize,
   pricing?: Partial<Record<DrinkSize, number>> | null,
+  pricingMode: "sized" | "fixed" = "sized",
 ): number {
+  if (pricingMode === "fixed") return basePrice;
   const configuredDelta = pricing?.[size];
   return Math.max(0, basePrice + (typeof configuredDelta === "number" ? configuredDelta : getSizeOption(size).priceDelta));
 }
@@ -47,4 +49,13 @@ export function priceForSize(
 /** Type guard for values arriving from localStorage or a URL. */
 export function isDrinkSize(value: unknown): value is DrinkSize {
   return value === "S" || value === "M" || value === "L";
+}
+
+/** Fixed servings use their recorded label; historical sized lines keep their original display. */
+export function servingLabel(item: { pricing_mode?: "sized" | "fixed"; serving_label?: string | null; item_type?: "drink" | "food" }, size: DrinkSize | null | undefined = "M"): string {
+  return item.serving_label || (item.pricing_mode === "fixed" ? item.item_type === "food" ? "Per serving" : "Per drink" : getSizeOption(size || "M").label);
+}
+
+export function servingInfo(item: { pricing_mode?: "sized" | "fixed"; serving_label?: string | null; item_type?: "drink" | "food" }) {
+  return { pricing_mode: item.pricing_mode ?? "sized", serving_label: item.serving_label ?? null, item_type: item.item_type ?? "drink" };
 }

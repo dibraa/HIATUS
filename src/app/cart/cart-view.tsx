@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCart, lineKey } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import { ProductImage } from "@/components/ui/product-image";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { ButtonLink } from "@/components/ui/button";
@@ -49,7 +49,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
       <ul className="mt-6 flex flex-col gap-3">
         {lines.map((line) => {
           const key = lineKey(line.menuItemId, line.size);
-          const sizeLabel = getSizeOption(line.size).label;
+          const sizeLabel = servingLabel(line, line.size);
           // Size is part of the identity of the line, so it belongs in every
           // accessible name that refers to it
           const fullLabel = `${line.name} (${sizeLabel})`;
@@ -61,7 +61,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
             >
               <div className="w-16 shrink-0 sm:w-20">
                 <ProductImage
-                  src={line.imageUrl}
+                  src={line.imageUrl} itemType={line.item_type}
                   alt={line.name}
                   sizes="80px"
                   rounded="rounded-md"
@@ -76,7 +76,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
                   {line.name}
                 </Link>
                 <p className="eyebrow text-muted">
-                  {line.flavor} &middot; {sizeLabel}
+                  {line.item_type !== "food" && <>{line.flavor} &middot; </>}{sizeLabel}
                 </p>
                 <p className="text-sm numeric text-ink-soft">
                   {formatPrice(line.price)} each

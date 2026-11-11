@@ -6,7 +6,7 @@ import toast from "react-hot-toast";
 import type { MenuItem } from "@/types/database";
 import { useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
-import { DEFAULT_SIZE, getSizeOption, priceForSize, type DrinkSize } from "@/lib/sizes";
+import { DEFAULT_SIZE, servingLabel, servingInfo, priceForSize, type DrinkSize } from "@/lib/sizes";
 import { RatingSummary } from "@/components/star-rating";
 import { ProductImage } from "@/components/ui/product-image";
 import { SizeSelector } from "@/components/ui/size-selector";
@@ -142,8 +142,8 @@ function FeaturedCard({
   const { addItem } = useCart();
   const [size, setSize] = useState<DrinkSize>(DEFAULT_SIZE);
 
-  const unitPrice = priceForSize(item.price, size, item.size_pricing);
-  const sizeLabel = getSizeOption(size).label;
+  const unitPrice = priceForSize(item.price, size, item.size_pricing, item.pricing_mode);
+  const sizeLabel = servingLabel(item, size);
 
   /* The card rises 2.5rem into the space the heading block reserves for it with
    * a matching `@3xl:pb-10` — the two values are a pair, and changing this one
@@ -158,6 +158,7 @@ function FeaturedCard({
         <div className="matte-inner aspect-[4/3]">
           <ProductImage
             src={item.image_url}
+            itemType={item.item_type}
             alt={item.name}
             sizes="(min-width: 1024px) 380px, (min-width: 640px) 60vw, 90vw"
             priority={isLcp}
@@ -173,7 +174,7 @@ function FeaturedCard({
           this panel that should never be covered. Depth here comes from the
           matte and the colour break, which cost the photograph nothing. */}
       <div className="relative z-10 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg sm:p-6">
-        <p className="eyebrow text-inverse-display">{item.flavor}</p>
+        {item.item_type !== "food" && <p className="eyebrow text-inverse-display">{item.flavor}</p>}
 
         {/* h3: the panel's h2 is the section heading, and this must not skip
             a level */}
@@ -204,6 +205,8 @@ function FeaturedCard({
             name={item.id}
             basePrice={item.price}
             pricing={item.size_pricing}
+            pricingMode={item.pricing_mode}
+            servingLabel={item.serving_label}
             tone="dark"
             disabled={!item.is_available}
           />
@@ -224,10 +227,11 @@ function FeaturedCard({
             className="flex-1 sm:flex-none"
             onClick={() => {
               addItem({
+                ...servingInfo(item),
                 menuItemId: item.id,
                 name: item.name,
                 flavor: item.flavor,
-                size,
+                size: item.pricing_mode === "fixed" ? DEFAULT_SIZE : size,
                 price: unitPrice,
                 imageUrl: item.image_url,
               });

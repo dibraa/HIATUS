@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart, lineKey } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { placeOrder } from "@/app/actions/orders";
@@ -227,7 +227,7 @@ export function CheckoutForm({
                 <span className="min-w-0 text-ink-soft">
                   {line.quantity} &times; {line.name}{" "}
                   <span className="text-muted">
-                    ({getSizeOption(line.size).label})
+                    ({servingLabel(line, line.size)})
                   </span>
                 </span>
                 <span className="shrink-0 numeric text-ink">

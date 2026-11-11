@@ -13,6 +13,7 @@ import { resolveImageUrl } from "@/lib/image-url";
  */
 export function ProductImage({
   src,
+  itemType = "drink",
   alt,
   /**
    * Matches the CSS width the image will occupy at each breakpoint so the
@@ -27,6 +28,7 @@ export function ProductImage({
   tone = "light",
 }: {
   src: string | null;
+  itemType?: "drink" | "food";
   alt: string;
   sizes: string;
   priority?: boolean;
@@ -68,9 +70,9 @@ export function ProductImage({
           className={`flex h-full w-full items-center justify-center ${placeholderFg}`}
         >
           <svg viewBox="0 0 24 24" fill="none" className="h-1/3 w-1/3" stroke="currentColor" strokeWidth="1.25">
-            <path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z" strokeLinejoin="round" />
+            {itemType === "food" ? <><circle cx="12" cy="12" r="7" /><path d="M2 3v6m3-6v6M2 6h3M3.5 9v12M21 3v18M21 3c-3 3-3 8 0 9" strokeLinecap="round" /></> : <><path d="M4 8h13v6a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8z" strokeLinejoin="round" />
             <path d="M17 9h1.5a2.5 2.5 0 0 1 0 5H17" strokeLinecap="round" />
-            <path d="M8 2.5c0 1-1 1.5-1 2.5M12 2.5c0 1-1 1.5-1 2.5" strokeLinecap="round" />
+            <path d="M8 2.5c0 1-1 1.5-1 2.5M12 2.5c0 1-1 1.5-1 2.5" strokeLinecap="round" /></>}
           </svg>
         </div>
       )}

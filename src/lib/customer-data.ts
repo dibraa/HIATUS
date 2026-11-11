@@ -19,7 +19,12 @@ function idOf(value: unknown): string {
 
 /** `null` (not `[]`) when the API is unreachable: "down" and "empty" need different messages. */
 export async function fetchMenu(): Promise<MenuItem[] | null> {
-  const raw = await apiJson<(MenuItem & { _id: string })[]>("/menu").catch(() => null);
+  const [raw, categories] = await Promise.all([
+    apiJson<(MenuItem & { _id: string })[]>("/menu", { cache: "no-store" }).catch(() => null),
+    apiJson<{ name: string; position: number }[]>("/menu/categories", { cache: "no-store" }).catch(() => []),
+  ]);
+  const positions = new Map(categories.map(category => [category.name, category.position]));
+  raw?.sort((a, b) => (positions.get(a.category) ?? 100000) - (positions.get(b.category) ?? 100000) || a.category.localeCompare(b.category) || (a.position ?? 0) - (b.position ?? 0) || a.name.localeCompare(b.name));
   return raw ? raw.map((m) => ({ ...m, id: m._id ?? m.id })) : null;
 }
 
@@ -62,9 +67,9 @@ export function popularItems(items: MenuItem[], stats: Map<string, RatingStat>, 
     .map(({ item }) => item);
 }
 
-/** Categories with how many items each holds, alphabetical. */
+/** Categories with how many items each holds, preserving menu order. */
 export function categoryCounts(items: MenuItem[]): { name: string; count: number }[] {
   const counts = new Map<string, number>();
   for (const item of items) if (item.category) counts.set(item.category, (counts.get(item.category) ?? 0) + 1);
-  return [...counts].map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
+  return [...counts].map(([name, count]) => ({ name, count }));
 }

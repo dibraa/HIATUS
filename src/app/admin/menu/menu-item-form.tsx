@@ -7,6 +7,7 @@ import {
   TextField,
   TextAreaField,
   CheckboxField,
+  SelectField,
   FormError,
 } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,9 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
   const [fields, setFields] = useState({
     name: item?.name ?? "", flavor: item?.flavor ?? "", category: item?.category ?? "coffee",
     description: item?.description ?? "",
+    item_type: item?.item_type ?? "drink",
+    pricing_mode: item?.pricing_mode ?? (item ? "sized" : "fixed"),
+    serving_label: item?.serving_label ?? (item?.item_type === "food" ? "Per serving" : "Per drink"),
     price: {
       S: String(item ? item.price + (item.size_pricing?.S ?? -15) : ""),
       M: String(item ? item.price + (item.size_pricing?.M ?? 0) : ""),
@@ -64,7 +68,10 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
         <h2 id="product-details-heading">Product details</h2>
         <div className="admin-form-fields">
           <TextField id="name" name="name" label="Name" maxLength={120} required value={fields.name} onChange={updateText} placeholder="e.g. Spanish Latte" />
-          <TextField id="flavor" name="flavor" label="Flavor" maxLength={80} required placeholder="e.g. Caramel" value={fields.flavor} onChange={updateText} />
+          <SelectField id="item_type" name="item_type" label="Item type" value={fields.item_type} onChange={event => setFields(previous => ({ ...previous, item_type: event.target.value as "food" | "drink", pricing_mode: event.target.value === "food" ? "fixed" : previous.pricing_mode, serving_label: event.target.value === "food" ? "Per serving" : "Per drink" }))}>
+            <option value="drink">Drink</option><option value="food">Food</option>
+          </SelectField>
+          {fields.item_type === "food" ? <input type="hidden" name="flavor" value="Original" /> : <TextField id="flavor" name="flavor" label="Flavor" maxLength={80} required placeholder="e.g. Caramel" value={fields.flavor} onChange={updateText} />}
           <TextField id="category" name="category" label="Category" list="menu-categories" maxLength={80} required value={fields.category} onChange={updateText} />
           <datalist id="menu-categories">{categories.map(category => <option key={category.name} value={category.name} />)}</datalist>
           <TextAreaField id="description" name="description" label="Description" maxLength={2000} rows={3} value={fields.description} onChange={updateText} />
@@ -112,8 +119,12 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
         <section className="admin-form-section" aria-labelledby="pricing-heading">
           <h2 id="pricing-heading">Pricing and availability</h2>
           <div className="admin-form-fields">
-            {(["S", "M", "L"] as const).map(size => (
-              <TextField key={size} id={`price-${size}`} name={`price-${size}`} label={`${size === "S" ? "Small" : size === "M" ? "Medium" : "Large"} price (PHP)`} type="number" min="0" max="1000000" step="0.01" required inputMode="decimal" value={fields.price[size]} onChange={updateText} />
+            <SelectField id="pricing_mode" name="pricing_mode" label="Pricing" value={fields.pricing_mode} onChange={event => setFields(previous => ({ ...previous, pricing_mode: event.target.value as "fixed" | "sized" }))}>
+              <option value="fixed">One fixed price</option><option value="sized" disabled={fields.item_type === "food"}>Small / Medium / Large</option>
+            </SelectField>
+            {fields.pricing_mode === "fixed" && <TextField id="serving_label" name="serving_label" label="Serving" maxLength={80} required value={fields.serving_label} onChange={updateText} placeholder="e.g. 22 oz or 2–3 persons" />}
+            {(fields.pricing_mode === "fixed" ? ["M"] as const : ["S", "M", "L"] as const).map(size => (
+              <TextField key={size} id={`price-${size}`} name={`price-${size}`} label={fields.pricing_mode === "fixed" ? "Price (PHP)" : `${size === "S" ? "Small" : size === "M" ? "Medium" : "Large"} price (PHP)`} type="number" min="0" max="1000000" step="0.01" required inputMode="decimal" value={fields.price[size]} onChange={updateText} />
             ))}
             <div className="flex items-center pt-1">
               <fieldset disabled={!can("menu.availability")}>

@@ -13,11 +13,13 @@ export function SearchField({
   query,
   /** Carried through so searching does not silently drop the active flavour filter. */
   flavor,
+  category,
   className = "",
   id = "menu-search",
 }: {
   query?: string;
   flavor?: string;
+  category?: string;
   className?: string;
   id?: string;
 }) {
@@ -44,11 +46,12 @@ export function SearchField({
         type="search"
         name="q"
         defaultValue={query}
-        placeholder="Search drinks or flavours"
+        placeholder="Search food, drinks or flavours"
         autoComplete="off"
         className="h-12 w-full rounded-md border border-line-strong bg-card pl-10 pr-24 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink focus:border-ink focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       />
 
+      {category && <input type="hidden" name="category" value={category} />}
       {flavor && <input type="hidden" name="flavor" value={flavor} />}
 
       <button

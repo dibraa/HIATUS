@@ -37,7 +37,10 @@ export async function saveMenuItem(
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const flavor = String(formData.get("flavor") ?? "").trim();
+  const itemType = String(formData.get("item_type") || "drink");
+  const pricingMode = String(formData.get("pricing_mode") || "sized");
+  const servingLabel = String(formData.get("serving_label") || "").trim();
+  const flavor = itemType === "food" ? "Original" : String(formData.get("flavor") ?? "").trim();
   const category = String(formData.get("category") ?? "coffee").trim();
   const sizePrices = {
     S: Number(formData.get("price-S")),
@@ -45,12 +48,15 @@ export async function saveMenuItem(
     L: Number(formData.get("price-L")),
   };
   const price = sizePrices.M;
+  if (pricingMode === "fixed") { sizePrices.S = price; sizePrices.L = price; }
+  if (!["food", "drink"].includes(itemType) || !["fixed", "sized"].includes(pricingMode) || (itemType === "food" && pricingMode !== "fixed") || (pricingMode === "fixed" && (!servingLabel || servingLabel.length > 80 || formData.get("price-M") === null || String(formData.get("price-M")).trim() === "")))
+    return { error: "Choose a valid item type, price, and serving." };
   let imageUrl = String(formData.get("image_url") ?? "").trim();
   const photo = formData.get("photo");
   const isAvailable = formData.get("is_available") === "on";
 
   if (!name || !flavor || !category || Object.values(sizePrices).some((value) => !Number.isFinite(value) || value < 0 || value > 1000000 || Math.abs(value * 100 - Math.round(value * 100)) > 0.000001))
-    return { error: "Name, flavor, and valid prices for every size are required." };
+    return { error: "Enter the item name, flavor, and valid prices." };
 
   const token = await getServerToken();
 
@@ -77,6 +83,7 @@ export async function saveMenuItem(
   const maySetAvailability = (await getCurrentUser())?.permissions.includes("menu.availability") === true;
   const payload = {
     name, description: description || null, flavor, category, price,
+    item_type: itemType, pricing_mode: pricingMode, serving_label: pricingMode === "fixed" ? servingLabel : null,
     size_pricing: { S: sizePrices.S - price, M: 0, L: sizePrices.L - price },
     image_url: imageUrl || null, ...(!id || maySetAvailability ? { is_available: maySetAvailability && isAvailable } : {}), position: Number(formData.get("position") || 0),
   };

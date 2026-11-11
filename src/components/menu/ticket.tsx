@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ButtonLink } from "@/components/ui/button";
 import { lineKey, useCart } from "@/lib/cart-context";
 import { formatPrice } from "@/lib/format";
-import { getSizeOption } from "@/lib/sizes";
+import { servingLabel } from "@/lib/sizes";
 
 /**
  * The order you are building, printed on a ticket — the same torn-edge
@@ -28,7 +28,7 @@ export function TicketRail() {
         <div className="skeleton my-4 h-16 rounded-md" aria-hidden="true" />
       ) : lines.length === 0 ? (
         <p className="py-6 text-sm text-muted">
-          Nothing on it yet. Tap <span className="font-semibold text-ink">+</span> on a drink to start.
+          Nothing on it yet. Tap <span className="font-semibold text-ink">+</span> on an item to start.
         </p>
       ) : (
         <>
@@ -41,7 +41,7 @@ export function TicketRail() {
                 <span className="numeric text-muted">{line.quantity}×</span>
                 <span className="min-w-0">
                   <span className="block truncate text-ink">{line.name}</span>
-                  <span className="block text-xs text-muted">{getSizeOption(line.size).label}</span>
+                  <span className="block text-xs text-muted">{servingLabel(line, line.size)}</span>
                 </span>
                 <span className="numeric text-ink">{formatPrice(line.price * line.quantity)}</span>
               </li>
