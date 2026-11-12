@@ -126,6 +126,8 @@ test("open forms pick up off switches on refresh and keep known CAPTCHA requirem
     "@/lib/authentication-options": validator,
   }, {
     AbortController,
+    // Retry back-off runs instantly here; the waits themselves are not under test.
+    setTimeout: callback => setImmediate(callback),
     document: { visibilityState: "visible", addEventListener: (name, callback) => documentEvents.set(name, callback), removeEventListener: name => documentEvents.delete(name) },
     window: { setInterval: (callback, ms) => { interval = callback; intervalMs = ms; return 1; }, clearInterval() {}, addEventListener: (name, callback) => windowEvents.set(name, callback), removeEventListener: name => windowEvents.delete(name) },
     fetch: async (_url, options) => { signal = options.signal; fetches++; if (transientFailures > 0) { transientFailures--; throw Error("temporary startup failure"); } if (failing) throw Error("outage"); return Response.json(response); },

@@ -17,7 +17,10 @@ export function useAuthenticationOptions(initial: AuthenticationResult) {
       if (loading || document.visibilityState === "hidden") return;
       loading = true;
       try {
-        for (let attempt = 0; attempt < 2; attempt++) {
+        for (let attempt = 0; attempt < 3; attempt++) {
+          // Back off so a backend that is still starting or briefly cold does not show the warning.
+          if (attempt) await new Promise(resolve => setTimeout(resolve, attempt * 2000));
+          if (disposed) return;
           try {
             const response = await fetch("/api/auth/options", {
               cache: "no-store",
