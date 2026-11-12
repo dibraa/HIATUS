@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { usePermissions } from "@/components/permission-controls";
 import { EmptyState } from "@/components/ui/empty-state";
+import { advanceOrderStatus } from "@/app/actions/staff";
 import { orderCode } from "@/lib/format";
 import { ACTIVE_STATUSES } from "@/lib/order-meta";
 import { IncomingOrders } from "./incoming-orders";
-import { QueueCard } from "./queue-card";
+import { QueueCard, READY_CLEARS_AFTER } from "./queue-card";
 import { QueueReceiptModal } from "./queue-receipt-modal";
 import { OrderDetail } from "./order-detail";
 import type { QueueOrder } from "@/types/staff";
 
 const LANES = [
-  { status: "pending", label: "New", description: "Ready to start" },
+  { status: "pending", label: "New", description: "Pay to start" },
   { status: "preparing", label: "Making", description: "At the coffee bar" },
-  { status: "ready", label: "Ready", description: "Ready to hand over" },
+  { status: "ready", label: "Ready", description: "Waiting for pickup" },
 ] as const;
 
 export function QueueBoard({
@@ -38,6 +40,8 @@ export function QueueBoard({
   referencedOrderId?: string;
 }) {
   const router = useRouter();
+  const { can } = usePermissions();
+  const cleared = useRef(new Set<string>());
   const searchRef = useRef<HTMLInputElement>(null);
   const [shown, setShown] = useState(() => new Set(orders.map((o) => o.id)));
   const [selectedId, setSelectedId] = useState<string | null>(referencedOrderId ?? null);
@@ -107,6 +111,18 @@ export function QueueBoard({
       window.removeEventListener("keydown", shortcut);
     };
   }, []);
+
+  // Paid Ready orders nobody marked "Picked up" clear to History after 10 minutes.
+  // shortcut: runs only while a Counter screen is open; move to a backend job if the counter is ever left closed during service.
+  useEffect(() => {
+    if (!can("counter.prepare")) return;
+    for (const o of orders) {
+      if (o.status !== "ready" || o.payment_status !== "paid" || !o.ready_at || cleared.current.has(o.id)) continue;
+      if (now - Date.parse(o.ready_at) < READY_CLEARS_AFTER * 60000) continue;
+      cleared.current.add(o.id);
+      void advanceOrderStatus(o.id, "completed");
+    }
+  }, [orders, now, can]);
 
   function href(view: string, unpaid = false) {
     const params = new URLSearchParams({ tab: view });

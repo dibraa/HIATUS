@@ -9,6 +9,7 @@ import { Modal } from "@/components/ui/modal";
 import { formatPrice, formatTime, orderCode } from "@/lib/format";
 import { servingLabel } from "@/lib/sizes";
 import { PAYMENT_METHOD_LABELS, PAYMENT_STATUS_LABELS } from "@/lib/order-meta";
+import { cashReference } from "@/lib/cash";
 import {
   advanceOrderStatus,
   applyManualDiscount,
@@ -143,7 +144,8 @@ export function PaymentPanel({
   function pay(carryOn: boolean) {
     startTransition(async () => {
       try {
-        const paid = await takePayment(order.id, method, Math.round(order.total_amount * 100) / 100, "");
+        const amount = Math.round(order.total_amount * 100) / 100;
+        const paid = await takePayment(order.id, method, amount, cashReference(tenderedNumber, amount));
         if (paid.error) { router.refresh(); return fail(paid.error); }
         const how = PAYMENT_METHOD_LABELS[method].toLowerCase();
         if (carryOn && afterPayment) {

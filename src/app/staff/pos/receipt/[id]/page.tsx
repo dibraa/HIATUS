@@ -253,6 +253,9 @@ export default async function ReceiptPage({
                   <p className="mt-1 break-all">
                     Transaction: {entry._id ?? entry.id ?? "Preview"}
                   </p>
+                  {entry.reference && (
+                    <p className="mt-1">{entry.reference}</p>
+                  )}
                   {entry.reason && (
                     <p className="mt-1">Reason: {entry.reason}</p>
                   )}
