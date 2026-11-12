@@ -185,18 +185,6 @@ function OrderingFormContent({ ordering, version = 0 }: { ordering: OrderingSett
         label="Accepting orders"
         defaultChecked={ordering.accepting_orders}
       />
-      <CheckboxField
-        id="dine_in_enabled"
-        name="dine_in_enabled"
-        label="Offer dine-in"
-        defaultChecked={ordering.dine_in_enabled}
-      />
-      <CheckboxField
-        id="takeout_enabled"
-        name="takeout_enabled"
-        label="Offer takeout"
-        defaultChecked={ordering.takeout_enabled}
-      />
 
       <TextField
         id="default_prep_minutes"

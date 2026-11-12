@@ -65,11 +65,9 @@ export async function saveOrderingSettings(_prev: SettingsState, formData: FormD
   const ordering = {
     accepting_orders: formData.get("accepting_orders") === "on",
     default_prep_minutes: Number.isFinite(prepMinutes) && prepMinutes > 0 ? Math.round(prepMinutes) : 10,
-    dine_in_enabled: formData.get("dine_in_enabled") === "on",
-    takeout_enabled: formData.get("takeout_enabled") === "on",
+    dine_in_enabled: true,
+    takeout_enabled: true,
   };
-  if (!ordering.dine_in_enabled && !ordering.takeout_enabled)
-    return { error: "Keep at least one of dine-in or takeout switched on.", success: null };
   return writeSetting("ordering", ordering, ["/", "/checkout"], Number(formData.get("version")));
 }
 
