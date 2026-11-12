@@ -21,6 +21,7 @@ export async function placeOrder(
   input: PlaceOrderInput
 ): Promise<{ orderId: string | null; error: string | null }> {
   const token = await getServerToken();
+  if (!token) return { orderId: null, error: "Log in to place an order." };
   try {
     const data = await apiJson<{ orderId: string }>("/orders", {
       method: "POST",

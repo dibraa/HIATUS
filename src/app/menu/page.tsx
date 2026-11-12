@@ -7,6 +7,7 @@ import { OrderProgress } from "@/components/order-progress";
 import { TicketBar, TicketRail } from "@/components/menu/ticket";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
+import { getCurrentUser } from "@/lib/auth";
 import { getServerToken } from "@/lib/server-token";
 import {
   categoryCounts,
@@ -28,8 +29,7 @@ export const metadata: Metadata = { title: "Menu" };
  * into a bar pinned above the phone tab bar.
  *
  * Every filter is a URL (`?category=…&flavor=…&q=…`), so it survives the back
- * button and can be shared. Sign-in is enforced by the proxy (/menu is in
- * AUTH_REQUIRED_PREFIXES).
+ * button and can be shared. Guests can browse; ordering requires sign-in.
  */
 export default async function MenuPage({
   searchParams,
@@ -38,13 +38,14 @@ export default async function MenuPage({
 }) {
   const { flavor, category, q, page: requestedPage } = await searchParams;
   const query = q?.trim() ?? "";
-  const token = (await getServerToken()) ?? "";
+  const user = await getCurrentUser();
+  const token = user ? (await getServerToken()) ?? "" : "";
 
   const [menu, ratingStats, favoriteIds, activeOrder] = await Promise.all([
     fetchMenu(),
     fetchRatingStats(),
-    fetchFavoriteIds(token),
-    fetchActiveOrder(token),
+    user ? fetchFavoriteIds(token) : Promise.resolve(new Set<string>()),
+    user ? fetchActiveOrder(token) : Promise.resolve(null),
   ]);
 
   const items = menu ?? [];
@@ -146,7 +147,7 @@ export default async function MenuPage({
                         averageRating={stat?.average ?? null}
                         ratingCount={stat?.count ?? 0}
                         isFavorite={favoriteIds.has(item.id)}
-                        isLoggedIn
+                        isLoggedIn={!!user}
                       />
                     </li>
                   );
@@ -174,13 +175,18 @@ export default async function MenuPage({
               </span>
             </Link>
           )}
-          <TicketRail />
+          {user ? <TicketRail /> : (
+            <div className="ticket-edges bg-card px-5 py-7">
+              <h2 className="display text-2xl text-ink">Ready to order?</h2>
+              <ButtonLink href="/login?next=/menu" className="mt-5 w-full">Log in to order</ButtonLink>
+            </div>
+          )}
         </aside>
       </div>
 
       {/* Keeps the last row clear of the pinned ticket bar below xl. */}
-      <div aria-hidden="true" className="h-20 xl:hidden" />
-      <TicketBar />
+      {user && <div aria-hidden="true" className="h-20 xl:hidden" />}
+      {user && <TicketBar />}
     </div>
   );
 }

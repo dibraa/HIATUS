@@ -1,6 +1,8 @@
 import { cache } from "react";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { getServerToken } from "@/lib/server-token";
-import { apiJson } from "@/lib/api-client";
+import { checkSession, sessionReturnTo } from "@/lib/session";
 import type { Profile, Role } from "@/types/database";
 
 export type CurrentUser = {
@@ -12,46 +14,27 @@ export type CurrentUser = {
   permissions: string[];
 };
 
-/**
- * Memoised per request: the navbar, the page and the footer all ask who is
- * signed in, and without `cache` each would make its own `/auth/me` round trip.
- */
+/** Memoised per request so all server-rendered account controls agree. */
 export const getCurrentUser = cache(async (): Promise<CurrentUser | null> => {
-  const token = await getServerToken();
-  if (!token) return null;
-
-  try {
-    const user = await apiJson<{
-      _id: string;
-      email: string;
-      full_name: string | null;
-      phone: string | null;
-      role: Role;
-      is_active: boolean;
-      created_at: string;
-      permissions: string[];
-    }>("/auth/me", { token });
-
-    const profile: Profile = {
-      id: user._id,
-      full_name: user.full_name,
-      phone: user.phone,
-      role: user.role,
-      is_active: user.is_active,
-      created_at: user.created_at,
-    };
-
-    return {
-      id: user._id,
-      email: user.email,
-      profile,
-      role: user.role,
-      isActive: user.is_active,
-      permissions: user.permissions ?? [],
-    };
-  } catch {
-    return null;
+  const requestHeaders = await headers();
+  // This public recovery page must render even while the session service is down.
+  if (requestHeaders.get("x-pathname") === "/session-unavailable") return null;
+  const result = await checkSession(await getServerToken());
+  if (result.status === "unavailable") {
+    const next = sessionReturnTo(requestHeaders.get("x-session-return-to"));
+    redirect(`/session-unavailable?next=${encodeURIComponent(next)}`);
   }
+  if (result.status !== "authenticated") return null;
+  const user = result.account;
+  return {
+    id: user._id,
+    email: user.email,
+    profile: { id: user._id, full_name: user.full_name, phone: user.phone, role: user.role,
+      is_active: user.is_active, created_at: user.created_at },
+    role: user.role,
+    isActive: user.is_active,
+    permissions: user.permissions,
+  };
 });
 
 export function accessOf(user: CurrentUser | null) {

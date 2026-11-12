@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { headers } from "next/headers";
+import { SiteChrome } from "@/components/site-chrome";
 import { Anton, Oswald, JetBrains_Mono, Geist } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers";
@@ -109,14 +109,11 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // The admin and staff workspaces paint their own shells, so they opt out of
   // the site footer below. Admin also owns its full-bleed layout and therefore
   // opts out of the site navbar and centred container.
-  const pathname = (await headers()).get("x-pathname") ?? "";
-  const isAdminRoute = pathname.startsWith("/admin");
-  const isStaffRoute = pathname.startsWith("/staff");
   // The phone tab bar is a CUSTOMER's navigation: signed in, not a staff-only
   // account, and not inside the staff or admin workspaces. getCurrentUser is
   // cached per request, so the navbar's own call costs nothing extra.
   const user = await getCurrentUser();
-  const showTabBar = !!user && !isStaffOnly(accessOf(user)) && !isAdminRoute && !isStaffRoute;
+  const showTabBar = !!user && !isStaffOnly(accessOf(user));
 
   return (
     // suppressHydrationWarning: the script above legitimately mutates <html>
@@ -136,7 +133,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             Skip to main content
           </a>
 
-          <div className="site-chrome">{!isAdminRoute && !isStaffRoute && <Navbar />}</div>
+          <SiteChrome kind="navigation" guest={<Navbar guest />}><Navbar /></SiteChrome>
 
           {/* The container every page centres in. Sections that need to reach
               the viewport edge (the tan loyalty band, the partner strip) break
@@ -144,10 +141,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               Admin and staff skip it entirely and lay out their own workspace. */}
           <MainContent>{children}</MainContent>
 
-          <div className="site-chrome">
-            {!isAdminRoute && !isStaffRoute && <FooterVisibility><SiteFooter /></FooterVisibility>}
-            {showTabBar && <CustomerTabBar />}
-          </div>
+          <SiteChrome kind="footer"><FooterVisibility><SiteFooter /></FooterVisibility></SiteChrome>
+          <SiteChrome kind="customer-tabs">{showTabBar && <CustomerTabBar />}</SiteChrome>
         </Providers>
       </body>
     </html>

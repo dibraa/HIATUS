@@ -8,9 +8,9 @@ import {
   isAdmin,
   isStaff,
   CUSTOMER_ONLY_PREFIXES,
-  homePathFor,
 } from "@/lib/roles";
 import type { Role } from "@/types/database";
+import { checkSession, sessionReturnTo } from "@/lib/session";
 import { USE_MOCKS } from "@/lib/mock-staff-data";
 
 // The fallback is public (it is in this file), so a token signed with it can
@@ -34,6 +34,7 @@ const secret = new TextEncoder().encode(
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   requestHeaders.set("x-pathname", request.nextUrl.pathname);
+  requestHeaders.set("x-session-return-to", request.nextUrl.pathname + request.nextUrl.search);
 
   const path = request.nextUrl.pathname;
   const wantsAdmin = path.startsWith(ADMIN_PREFIX);
@@ -52,32 +53,38 @@ export async function proxy(request: NextRequest) {
   let permissions: string[] = [];
   const isActive = true;
 
-  if (token) {
-    try {
-      const { payload } = await jwtVerify(token, secret);
-      role = (payload as { role: Role }).role ?? null;
-      if (requiresAuth || wantsCustomerArea) {
-        const base =
-          process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000/api";
-        const response = await fetch(`${base}/auth/me`, {
-          headers: { Authorization: `Bearer ${token}` },
-          cache: "no-store",
-        });
-        if (!response.ok) role = null;
-        else {
-          const account = (await response.json()) as {
-            role: Role;
-            is_active: boolean;
-            permissions: string[];
-          };
-          role = account.is_active ? account.role : null;
-          permissions = account.permissions || [];
-        }
+  let rejected = false;
+  if (token && path !== "/session-unavailable") {
+    try { await jwtVerify(token, secret); }
+    catch { rejected = true; }
+    if (!rejected && (requiresAuth || wantsCustomerArea || path === "/login" || path === "/signup")) {
+      const session = await checkSession(token);
+      if (session.status === "unavailable") {
+        const url = request.nextUrl.clone();
+        url.pathname = "/session-unavailable";
+        url.search = "";
+        url.searchParams.set("next", sessionReturnTo(path + request.nextUrl.search));
+        return NextResponse.redirect(url);
       }
-    } catch {
-      role = null;
-      // expired or invalid token — treat as logged out
+      if (session.status === "authenticated") {
+        role = session.account.role;
+        permissions = session.account.permissions;
+      } else rejected = true;
     }
+  }
+  const finish = (response: NextResponse) => {
+    if (rejected) response.cookies.delete("token");
+    return response;
+  };
+  if (rejected) {
+    const cookie = (requestHeaders.get("cookie") ?? "").split(";").filter(part => part.trim().split("=")[0] !== "token").join(";");
+    requestHeaders.set("cookie", cookie);
+  }
+  if (role && path === "/login") {
+    const url = request.nextUrl.clone();
+    url.pathname = role === "customer" ? "/" : firstAllowed(role, permissions);
+    url.search = "";
+    return NextResponse.redirect(url);
   }
 
   const access = role ? { role, isActive } : null;
@@ -91,13 +98,14 @@ export async function proxy(request: NextRequest) {
   if (requiresAuth && !role) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
-    url.searchParams.set("next", path);
-    return NextResponse.redirect(url);
+    url.search = "";
+    url.searchParams.set("next", path + request.nextUrl.search);
+    return finish(NextResponse.redirect(url));
   }
 
   if (wantsCustomerArea && isStaff(access)) {
     const url = request.nextUrl.clone();
-    url.pathname = homePathFor(role!);
+    url.pathname = firstAllowed(role!, permissions);
     url.search = "";
     return NextResponse.redirect(url);
   }
@@ -111,7 +119,7 @@ export async function proxy(request: NextRequest) {
 
   if (wantsStaff && isAdmin(access)) {
     const url = request.nextUrl.clone();
-    url.pathname = path.startsWith("/staff/pos/receipt/") ? "/admin/orders/" + path.split("/").pop() + "/receipt" : ADMIN_PREFIX;
+    url.pathname = path.startsWith("/staff/pos/receipt/") ? "/admin/orders/" + path.split("/").pop() + "/receipt" : firstAllowed(role!, permissions);
     url.search = "";
     return NextResponse.redirect(url);
   }
@@ -129,7 +137,7 @@ export async function proxy(request: NextRequest) {
     url.search = "";
     return NextResponse.redirect(url);
   }
-  return NextResponse.next({ request: { headers: requestHeaders } });
+  return finish(NextResponse.next({ request: { headers: requestHeaders } }));
 }
 
 export const config = {

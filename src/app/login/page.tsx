@@ -4,11 +4,16 @@ import { AuthTicket } from "@/components/auth-ticket";
 import { TextLink } from "@/components/ui/text-link";
 import { ControlSkeleton, FieldSkeleton } from "@/components/ui/skeleton";
 import { LoginForm } from "./login-form";
+import { redirect } from "next/navigation";
+import { getCurrentUser } from "@/lib/auth";
+import { firstAllowed } from "@/lib/permissions";
 import { getAuthenticationOptions } from "@/lib/authentication-options";
 
 export const metadata: Metadata = { title: "Log in" };
 
 export default async function LoginPage() {
+  const user = await getCurrentUser();
+  if (user) redirect(user.role === "customer" ? "/" : firstAllowed(user.role, user.permissions));
   const authentication = await getAuthenticationOptions();
   return (
     <AuthTicket
