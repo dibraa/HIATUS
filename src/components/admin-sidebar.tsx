@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { firstAllowed } from "@/lib/permissions";
 import { usePermissions } from "@/components/permission-controls";
@@ -8,6 +7,7 @@ import { catalog } from "@/lib/permissions";
 import { useEffect, useRef, useState } from "react";
 import { AdminNav } from "@/components/admin-nav";
 import { AdminIcon } from "@/components/admin-icon";
+import { BrandMark } from "@/components/brand";
 import { SignOutButton } from "@/components/sign-out-button";
 
 type AdminAccount = { full_name?: string | null; email?: string | null };
@@ -18,8 +18,8 @@ function SidebarContent({ account, onNavigate }: { account: AdminAccount; onNavi
   return (
     <>
       <Link href={home} onClick={onNavigate} className="admin-brand" aria-label="Hiatus administration home">
-        <Image src="/logo.png" alt="" width={44} height={44} className="admin-brand-logo" />
-        <div><span className="admin-brand-name">HIATUS</span><span className="admin-brand-caption">Administration</span></div>
+        <BrandMark className="admin-brand-mark" />
+        <span className="admin-brand-caption">Administration</span>
       </Link>
       <AdminNav onNavigate={onNavigate} />
       <div className="admin-account">
