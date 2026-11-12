@@ -51,20 +51,27 @@ function isSafeNext(next: string): boolean {
   return next.startsWith("/") && !next.startsWith("//") && !next.startsWith("/\\");
 }
 
-export async function beginGoogleAuthentication(intent: "login" | "signup"): Promise<{ nonce?: string; error?: string }> {
+function googleChallengeCookie(nonce: string): string | null {
+  return /^[A-Za-z0-9_-]{1,128}$/.test(nonce) ? `google_auth_${nonce}` : null;
+}
+
+export async function beginGoogleAuthentication(intent: "login" | "signup", previousNonce?: string): Promise<{ nonce?: string; error?: string }> {
   if (intent !== "login" && intent !== "signup") return { error: "Invalid sign-in request." };
   try {
     const verifier = randomBytes(32).toString("base64url");
     const result = await apiJson<{ nonce: string }>("/auth/google/challenge", {
-      method: "POST",
+      method: "POST", signal: AbortSignal.timeout(12000),
       body: JSON.stringify({ intent, browser_hash: createHash("sha256").update(verifier).digest("hex") }),
     });
-    (await cookies()).set("google_auth", verifier, {
-      httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600,
-    });
-    return result;
-  } catch (error) {
-    return { error: (error as Error).message };
+    const name = typeof result?.nonce === "string" ? googleChallengeCookie(result.nonce) : null;
+    if (!name) return { error: "Google sign-in is unavailable. Please try again." };
+    const store = await cookies();
+    store.set(name, verifier, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 600 });
+    const previous = previousNonce ? googleChallengeCookie(previousNonce) : null;
+    if (previous && previous !== name) store.delete(previous);
+    return { nonce: result.nonce };
+  } catch {
+    return { error: "Google sign-in is unavailable. Please try again." };
   }
 }
 
@@ -73,25 +80,28 @@ export async function signInWithGoogle(formData: FormData): Promise<{ error: str
   const next = String(formData.get("next") ?? "");
   try {
     const store = await cookies();
-    const verifier = store.get("google_auth")?.value;
-    if (!verifier) return { error: "Google sign-in expired. Please start again.", code: "CHALLENGE_EXPIRED" };
+    const nonce = String(formData.get("nonce") ?? "");
+    const name = googleChallengeCookie(nonce);
+    const verifier = name ? store.get(name)?.value : null;
+    if (!verifier || !name) return { error: "Google sign-in expired. Please try again.", code: "CHALLENGE_EXPIRED" };
     const res = await apiFetch("/auth/google", {
-      method: "POST",
-      body: JSON.stringify({
-        credential: String(formData.get("credential") ?? ""), nonce: String(formData.get("nonce") ?? ""),
+      method: "POST", signal: AbortSignal.timeout(12000),
+      body: JSON.stringify({ credential: String(formData.get("credential") ?? ""), nonce,
         password: String(formData.get("password") ?? ""), recaptcha_token: String(formData.get("recaptcha_token") ?? ""),
-        browser_hash: createHash("sha256").update(verifier).digest("hex"),
-      }),
+        browser_hash: createHash("sha256").update(verifier).digest("hex") }),
     });
-    const data = await res.json() as { error?: string; code?: string; token: string; user: { role: Role } };
-    if (!res.ok) return { error: data.error || "Google sign-in failed. Please try again.", code: data.code };
-    store.delete("google_auth");
-    store.set("token", data.token, {
-      httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax", secure: process.env.NODE_ENV === "production",
-    });
+    const data = await res.json() as { error?: string; code?: string; token?: string; user?: { role?: Role } };
+    if (!res.ok) return { error: typeof data?.error === "string" ? data.error : "Google sign-in failed. Please try again.",
+      code: typeof data?.code === "string" ? data.code : res.status >= 500 || res.status === 429 ? "GOOGLE_UNAVAILABLE" : undefined };
+    if (!data || typeof data.token !== "string" || !data.token.trim() || !data.user?.role || !["customer", "staff", "admin"].includes(data.user.role)) {
+      return { error: "Google sign-in could not finish. Please try again.", code: "GOOGLE_UNAVAILABLE" };
+    }
     role = data.user.role;
-  } catch (error) {
-    return { error: (error as Error).message };
+    store.set("token", data.token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7,
+      sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+    store.delete(name);
+  } catch {
+    return { error: "Google sign-in is unavailable. Please try again.", code: "GOOGLE_UNAVAILABLE" };
   }
   if (isSafeNext(next)) redirect(next);
   redirect(homePathFor(role));
