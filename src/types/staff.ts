@@ -14,6 +14,9 @@ export type QueueOrder = {
   discount_amount: number;
   subtotal_amount?: number;
   paid_at?: string | null;
+  ready_at?: string | null;
+  /** The order's payment log; a cash payment's reference holds the cash and change. */
+  transactions?: { kind: "payment" | "refund" | "void"; reference: string | null }[];
   pickup_note: string | null;
   created_at: string;
   profiles: { full_name: string | null; phone: string | null } | null;
