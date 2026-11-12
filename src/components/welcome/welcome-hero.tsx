@@ -21,12 +21,9 @@ import type { BusinessHours } from "@/types/database";
 export function WelcomeHero({
   open,
   today,
-  hasMenuPeek,
 }: {
   open: boolean;
   today: BusinessHours | null;
-  /** Whether the "On the menu" section renders, so the hero only links to it when it exists. */
-  hasMenuPeek: boolean;
 }) {
   const todayHours =
     today && !today.closed ? `${formatTime(today.open)} – ${formatTime(today.close)}` : null;
@@ -65,22 +62,13 @@ export function WelcomeHero({
           Breathe, slow down, and sip. Welcome to your daily hiatus in the heart of Malaybalay.
         </p>
         <div className="rise mt-stack flex flex-wrap gap-3 [--rise:3] max-sm:flex-col max-sm:items-stretch">
-          {/* Ordering is the page's goal, so it carries the fill. The second
-              button answers a guest's next question — what is there, and for
-              how much — by jumping to the menu peek; with no peek on the page
-              (nothing available) it offers returning customers a way in. */}
+          {/* Guests can browse before signing in to order. */}
           <ButtonLink href="/login" size="lg">
             Order ahead
           </ButtonLink>
-          {hasMenuPeek ? (
-            <ButtonLink href="#menu-peek" variant="outline" size="lg">
-              See the menu
-            </ButtonLink>
-          ) : (
-            <ButtonLink href="/login" variant="outline" size="lg">
-              Sign in
-            </ButtonLink>
-          )}
+          <ButtonLink href="/menu" variant="outline" size="lg">
+            See the menu
+          </ButtonLink>
         </div>
       </div>
 

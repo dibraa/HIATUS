@@ -70,6 +70,7 @@ test("direct Counter and legacy POS links redirect Admin while allowing Staff", 
     vm.runInNewContext(compile("../src/lib/permissions.ts"), { exports: permissionExports, require: () => permissionCatalog });
     const modules = {
       "@/lib/permissions": permissionExports,
+      "@/lib/session": { checkSession: async () => ({ status: "authenticated", account: { role, is_active: true, permissions: permissionCatalog.filter(p => p.role === role).map(p => p.key) } }), sessionReturnTo: value => value },
       "next/server": { NextResponse: { next: () => ({ allowed: true }), redirect: url => ({ redirected: url.pathname }) } },
       "jose": { jwtVerify: async () => ({ payload: { role } }) },
       "@/lib/roles": roles,

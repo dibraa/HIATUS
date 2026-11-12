@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getCurrentUser, accessOf } from "@/lib/auth";
 import { apiJson } from "@/lib/api-client";
 import { getServerToken } from "@/lib/server-token";
+import { firstAllowed } from "@/lib/permissions";
 import { isAdmin, isStaff, isStaffOnly } from "@/lib/roles";
 import { BrandMark } from "@/components/brand";
 import { CartBadge } from "@/components/cart-badge";
@@ -27,8 +28,8 @@ import type { OrderNotification } from "@/types/database";
  * that will bounce you is worse than no link at all. The same rule hides the
  * menu and cart from guests: both sit behind sign-in.
  */
-export async function Navbar() {
-  const user = await getCurrentUser();
+export async function Navbar({ guest = false }: { guest?: boolean } = {}) {
+  const user = guest ? null : await getCurrentUser();
   const access = accessOf(user);
 
   const staff = isStaff(access);
@@ -47,14 +48,8 @@ export async function Navbar() {
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4">
         {/* Identity */}
         <Link
-          href={staffOnly ? "/staff" : "/"}
-          aria-label={
-            staffOnly
-              ? "Hiatus Coffee, go to counter"
-              : user
-                ? "Hiatus Coffee, go to menu"
-                : "Hiatus Coffee, go to home page"
-          }
+          href={user && (staff || admin) ? firstAllowed(user.role, user.permissions) : "/"}
+          aria-label={user && (staff || admin) ? "Hiatus Coffee, go to workspace" : "Hiatus Coffee, go to home page"}
           className="group flex shrink-0 items-center text-ink"
         >
           {/* The mark IS the word, so no text sits beside it; the label above

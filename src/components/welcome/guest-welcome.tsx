@@ -29,7 +29,7 @@ export function GuestWelcome({
 
   return (
     <div className="flex flex-col gap-section">
-      <WelcomeHero open={open} today={today} hasMenuPeek={hasMenuPeek} />
+      <WelcomeHero open={open} today={today} />
       {hasMenuPeek && <MenuPeek peek={peek} />}
       <BrandLine />
       <ShopTour />

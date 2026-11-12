@@ -18,7 +18,7 @@ import type { MenuItem } from "@/types/database";
  * depends on the chosen size — keeping one price on screen avoids the classic
  * bug where a static headline price contradicts the configured line total.
  */
-export function AddToCart({ item }: { item: MenuItem }) {
+export function AddToCart({ item, isLoggedIn = false }: { item: MenuItem; isLoggedIn?: boolean }) {
   const { addItem } = useCart();
   const router = useRouter();
   const [size, setSize] = useState<DrinkSize>(DEFAULT_SIZE);
@@ -37,7 +37,14 @@ export function AddToCart({ item }: { item: MenuItem }) {
     imageUrl: item.image_url,
   };
 
-  const addCurrentItem = () => addItem(cartItem, quantity);
+  const addCurrentItem = () => {
+    if (!isLoggedIn) {
+      router.push(`/login?next=${encodeURIComponent(`/menu/${item.id}`)}`);
+      return false;
+    }
+    addItem(cartItem, quantity);
+    return true;
+  };
 
   return (
     <div className="rounded-lg border border-line bg-card p-5">
@@ -69,37 +76,36 @@ export function AddToCart({ item }: { item: MenuItem }) {
       </div>
 
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <QuantityStepper
+        {isLoggedIn && <QuantityStepper
           value={quantity}
           onChange={setQuantity}
           itemLabel={item.name}
-        />
+        />}
 
         <Button
           size="lg"
           className="min-w-[12rem] flex-1"
           disabled={!item.is_available}
           onClick={() => {
-            addCurrentItem();
+            if (!addCurrentItem()) return;
             toast.success(
               `${quantity} × ${item.name} (${sizeLabel}) added to cart`
             );
           }}
         >
-          {item.is_available ? "Add to cart" : "Sold out"}
+          {item.is_available ? isLoggedIn ? "Add to cart" : "Log in to order" : "Sold out"}
         </Button>
-        <Button
+        {isLoggedIn && <Button
           size="lg"
           variant="secondary"
           className="min-w-[12rem] flex-1"
           disabled={!item.is_available}
           onClick={() => {
-            addCurrentItem();
-            router.push("/checkout");
+            if (addCurrentItem()) router.push("/checkout");
           }}
         >
           Buy now
-        </Button>
+        </Button>}
       </div>
 
       {!item.is_available && (

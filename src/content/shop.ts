@@ -1,6 +1,6 @@
 import type { StaticImageData } from "next/image";
 import exterior from "@/assets/shop/new/exterior.webp";
-import seating from "@/assets/shop/new/seating.webp";
+import aroundTheTable from "@/assets/shop/new/around-the-table.webp";
 import quietCorner from "@/assets/shop/new/quiet-corner.webp";
 import drinks from "@/assets/shop/new/drinks.webp";
 
@@ -33,9 +33,9 @@ export const SHOP_TOUR: TourSpot[] = [
   {
     title: "Around the table",
     caption: "A shared table inside the shop.",
-    image: seating,
-    alt: "People seated around a wooden table beside a mirror and corrugated wall",
-    position: "50% 55%",
+    image: aroundTheTable,
+    alt: "Guests sharing drinks around a wooden table beneath a stained-glass pendant lamp",
+    position: "50% 64%",
   },
   {
     title: "A quiet corner",

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import type { MenuItem } from "@/types/database";
 import { useCart } from "@/lib/cart-context";
@@ -46,6 +47,7 @@ export function MenuItemCard({
   isLoggedIn?: boolean;
 }) {
   const { addItem } = useCart();
+  const router = useRouter();
   const defaultPrice = priceForSize(item.price, DEFAULT_SIZE, item.size_pricing, item.pricing_mode);
   const defaultSizeLabel = servingLabel(item, DEFAULT_SIZE);
 
@@ -85,10 +87,14 @@ export function MenuItemCard({
             disabled={!item.is_available}
             aria-label={
               item.is_available
-                ? `Add ${item.name}, ${defaultSizeLabel}, to cart`
+                ? isLoggedIn ? `Add ${item.name}, ${defaultSizeLabel}, to cart` : `Log in to order ${item.name}`
                 : `${item.name} is sold out`
             }
             onClick={() => {
+              if (!isLoggedIn) {
+                router.push(`/login?next=${encodeURIComponent(`/menu/${item.id}`)}`);
+                return;
+              }
               addItem({
                 ...servingInfo(item),
                 menuItemId: item.id,
@@ -101,7 +107,7 @@ export function MenuItemCard({
               toast.success(`${item.name} (${defaultSizeLabel}) added to cart`);
             }}
           >
-            {item.is_available ? "Add to cart" : "Sold out"}
+            {item.is_available ? isLoggedIn ? "Add to cart" : "Log in to order" : "Sold out"}
           </Button>
 
           <div className="order-1 min-w-0 text-left sm:text-center">

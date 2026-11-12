@@ -1,6 +1,6 @@
 "use client";
 import { usePermissions } from "./permission-controls";
-import { pagePermission } from "@/lib/permissions";
+import { firstAllowed, pagePermission } from "@/lib/permissions";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -46,13 +46,14 @@ export function StaffSidebar({
 }) {
   const pathname = usePathname();
   const { can } = usePermissions();
+  const home = firstAllowed("staff", SECTIONS.flatMap(section => pagePermission(section.href)).filter(can));
   return (
     <div className="counter-sidebar-inner">
       {/* The welcome page's mark; it is the word, so no text sits beside it. */}
       <Link
-        href="/staff"
+        href={home}
         className="counter-brand group"
-        aria-label="Hiatus staff counter"
+        aria-label="Hiatus staff workspace"
       >
         <BrandMark />
       </Link>

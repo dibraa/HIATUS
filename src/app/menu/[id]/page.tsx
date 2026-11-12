@@ -110,7 +110,7 @@ export default async function MenuItemPage({ params }: Params) {
             )}
           </div>
           {item.description && <p className="mt-5 max-w-[60ch] text-base text-ink-soft">{item.description}</p>}
-          <div className="mt-7"><AddToCart item={item} /></div>
+          <div className="mt-7"><AddToCart item={item} isLoggedIn={!!user} /></div>
           {item.pricing_mode !== "fixed" && <p className="numeric mt-4 text-2xs text-muted">
             Sizes: small {formatPrice(priceForSize(item.price, "S", item.size_pricing))} &middot; medium {formatPrice(priceForSize(item.price, "M", item.size_pricing))} &middot; large {formatPrice(priceForSize(item.price, "L", item.size_pricing))}
           </p>}
