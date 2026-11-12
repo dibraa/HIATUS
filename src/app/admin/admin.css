@@ -45,10 +45,12 @@
   padding: 1.25rem 1rem 1rem; overflow-y: auto;
   color: var(--hi-inverse-fg); background: var(--hi-inverse-bg);
 }
-.admin-brand { display: flex; align-items: center; gap: .75rem; padding: 0 .625rem; }
-.admin-brand-logo { width: 2.75rem; height: 2.75rem; border-radius: .75rem; background: white; object-fit: contain; }
-.admin-brand-name { display: block; font-family: var(--font-anton), sans-serif; font-size: 1.75rem; line-height: 1.15; }
-.admin-brand-caption { display: block; margin-top: .35rem; font-size: .8125rem; color: var(--hi-inverse-muted); }
+/* The Hiatus mark (cream face over the caramel side, as on the staff rail),
+   a hairline, then the workspace name. Chosen in live mode. */
+.admin-brand { display: flex; align-items: center; gap: .875rem; padding: 0 .625rem; }
+.admin-brand-mark { display: block; flex: none; height: 36px; }
+.admin-brand-mark .fill-ink { fill: var(--hi-inverse-fg); }
+.admin-brand-caption { display: block; padding-left: .875rem; border-left: 1px solid var(--hi-inverse-line); font-size: .875rem; font-weight: 500; line-height: 1.25; color: var(--hi-inverse-muted); }
 .admin-nav-list { display: grid; gap: .25rem; }
 .admin-nav-link {
   display: flex; align-items: center; gap: .875rem; min-height: 2.75rem;
