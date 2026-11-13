@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { after } from "next/server";
 import { getServerToken } from "@/lib/server-token";
 import { getCurrentUser } from "@/lib/auth";
 import { apiJson } from "@/lib/api-client";
-import { getPushTargets, sendOrderPush, sendReadyOrderPush } from "@/lib/push-server";
 import type { OrderStatus, PaymentMethod } from "@/types/database";
 
 export type ActionResult = { error: string | null };
@@ -31,10 +29,8 @@ export async function advanceOrderStatus(orderId: string, newStatus: OrderStatus
   try {
     const auth = await token();
     // Read before the change so the push knows what the status moved from.
-    const pushTargets = await getPushTargets(orderId, auth);
     await apiJson(`/orders/${orderId}/status`, { method: "PUT", token: auth, body: JSON.stringify({ status: newStatus }) });
     revalidateOrderViews(orderId);
-    if (pushTargets) after(() => sendOrderPush(orderId, pushTargets, newStatus, auth));
     return { error: null };
   } catch (err: unknown) { return { error: (err as Error).message }; }
 }
@@ -42,12 +38,10 @@ export async function advanceOrderStatus(orderId: string, newStatus: OrderStatus
 export async function notifyCustomerReady(orderId: string): Promise<ActionResult> {
   try {
     const auth = await token();
-    const pushTargets = await getPushTargets(orderId, auth);
     await apiJson(`/orders/${orderId}/notify-ready`, {
       method: "POST",
       token: auth,
     });
-    if (pushTargets) after(() => sendReadyOrderPush(orderId, pushTargets, auth));
     return { error: null };
   } catch (err: unknown) {
     return { error: (err as Error).message };

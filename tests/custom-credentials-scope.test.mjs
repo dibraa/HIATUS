@@ -6,7 +6,7 @@ import ts from "typescript";
 import * as React from "react";
 import * as jsxRuntime from "react/jsx-runtime";
 import { renderToStaticMarkup } from "react-dom/server";
-test("custom credential editor renders Google, SMTP and reCAPTCHA even with legacy extra providers", () => {
+test("all eight credential editors remain locked and redact values", () => {
   const source = ts.transpileModule(readFileSync(new URL("../src/app/admin/settings/custom-credentials.tsx", import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } }).outputText;
   const modules = {
     "./credential-otp-dialog": { CredentialOtpDialog: () => null },
@@ -18,12 +18,13 @@ test("custom credential editor renders Google, SMTP and reCAPTCHA even with lega
     "@/app/actions/credentials": { readCredentialSettings() {}, saveCredentialSettings() {} },
   };
   const exports = {}; vm.runInNewContext(source, { exports, require: name => { assert(name in modules, name); return modules[name]; } });
-  const providers = Object.fromEntries(["google", "smtp", "recaptcha", "cloudinary", "maps", "onesignal", "posthog", "sentry"].map(name => [name, { source: "original", configured: false, values: { client_id: "fixture-sensitive-value" }, secrets: {} }]));
+  const providers = Object.fromEntries(["google", "smtp", "recaptcha", "cloudinary", "native_push", "onesignal", "posthog", "sentry"].map(name => [name, { source: "original", configured: false, values: { client_id: "fixture-sensitive-value" }, secrets: {} }]));
   const markup = renderToStaticMarkup(React.createElement(exports.CustomCredentials, { initial: { locked: true, providers } }));
   assert.match(markup, /Google sign-in/); assert.match(markup, /Email \(SMTP\)/); assert.match(markup, /reCAPTCHA/);
   for (const name of ["cloudinary", "maps", "onesignal", "posthog", "sentry"]) assert(!markup.includes('aria-controls="credentials-' + name + '"'));
+  for (const label of ["Cloudinary", "OneSignal", "PostHog", "Sentry", "Browser push (VAPID)"]) assert(markup.includes(label));
   assert.match(markup, /Unlock credentials/);
-  assert.equal((markup.match(/ disabled=""/g) || []).length, 3);
+  assert.equal((markup.match(/ disabled=""/g) || []).length, 8);
   assert(!markup.includes("custom-google-client_id"));
   assert(!markup.includes("fixture-sensitive-value"));
 });

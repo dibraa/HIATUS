@@ -18,7 +18,7 @@ export async function readCredentialSettings(accessToken?: string): Promise<Cred
 export async function saveCredentialSettings(provider: CredentialProvider, action: "save" | "reset", revision: string, values: Record<string, string>, accessToken: string): Promise<CredentialResult> {
   try {
     const token = await adminToken();
-    if (!["google", "smtp", "recaptcha"].includes(provider)) return { data: null, error: "Choose a supported integration." };
+    if (!["google", "smtp", "recaptcha", "cloudinary", "onesignal", "posthog", "sentry", "native_push"].includes(provider)) return { data: null, error: "Choose a supported integration." };
     const data = await apiJson<CredentialStatus>(`/settings/credentials/${provider}`, { token, headers: { "X-Credential-Access": accessToken }, method: "PUT", body: JSON.stringify({ action, revision, values }) });
     revalidatePath("/admin/settings"); revalidatePath("/login"); revalidatePath("/signup");
     return { data, error: null };

@@ -3,9 +3,7 @@
 import { apiJson } from "@/lib/api-client";
 import { getServerToken } from "@/lib/server-token";
 import { sendTestPush } from "@/lib/push-server";
-import { PUSH_ENABLED } from "@/lib/push-flag";
 
-const NOT_AVAILABLE = { error: "Browser notifications aren't available yet." };
 
 export type PushActionResult = { error: string | null };
 
@@ -23,14 +21,13 @@ function isSubscription(value: unknown): value is SubscriptionJSON {
 }
 
 /** Stores this browser's subscription against the signed-in customer. */
-export async function savePushSubscription(subscription: unknown, userAgent: string): Promise<PushActionResult> {
-  if (!PUSH_ENABLED) return NOT_AVAILABLE;
+export async function savePushSubscription(subscription: unknown, userAgent: string, publicKey: string): Promise<PushActionResult> {
   if (!isSubscription(subscription)) return { error: "That browser subscription isn't valid." };
   try {
     await apiJson("/account/push-subscriptions", {
       method: "POST",
       token: (await getServerToken()) ?? undefined,
-      body: JSON.stringify({ ...subscription, user_agent: userAgent.slice(0, 200) }),
+      body: JSON.stringify({ ...subscription, user_agent: userAgent.slice(0, 200), vapid_public_key: publicKey }),
     });
     return { error: null };
   } catch (err: unknown) {
@@ -57,11 +54,10 @@ export async function removePushSubscription(endpoint: string): Promise<PushActi
  * anyone else's browser.
  */
 export async function sendTestNotification(subscription: unknown): Promise<PushActionResult> {
-  if (!PUSH_ENABLED) return NOT_AVAILABLE;
   if (!(await getServerToken())) return { error: "Log in to test notifications." };
   if (!isSubscription(subscription)) return { error: "That browser subscription isn't valid." };
   try {
-    await sendTestPush(subscription);
+    await sendTestPush(subscription, (await getServerToken())!);
     return { error: null };
   } catch (err: unknown) {
     return { error: (err as Error).message || "The test notification couldn't be sent." };

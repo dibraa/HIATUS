@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PUSH_ENABLED } from "@/lib/push-flag";
 import { currentIntegrations } from "@/lib/integration-client";
 import { OneSignalToggle } from "./onesignal-toggle";
 import { Button } from "@/components/ui/button";
@@ -15,9 +14,9 @@ type PushState =
   | "ios-install"
   | "blocked"
   | "off"
-  | "on";
+  | "on"
+  | "reconnect";
 
-const VAPID_PUBLIC_KEY = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
 
 /**
  * Browser notifications for THIS device.
@@ -37,9 +36,9 @@ export function PushToggle() {
   if (!policy) return <p className="text-sm text-muted">Checking notification settings...</p>;
   if (!policy.push_enabled) return <p className="text-sm text-muted">Browser notifications are disabled.</p>;
   if (policy.push_provider === "onesignal") return policy.onesignal_app_id ? <OneSignalToggle /> : <p className="text-sm text-muted">Browser notifications are not configured.</p>;
-  return PUSH_ENABLED ? <NativePushToggle /> : <p className="text-sm text-muted">Browser notifications are not configured.</p>;
+  return policy.native_vapid_public_key ? <NativePushToggle publicKey={policy.native_vapid_public_key} /> : <p className="text-sm text-muted">Browser notifications are not configured.</p>;
 }
-function NativePushToggle() {
+function NativePushToggle({ publicKey }: { publicKey: string }) {
   const [state, setState] = useState<PushState>("checking");
   const [subscription, setSubscription] = useState<PushSubscription | null>(null);
   const [busy, setBusy] = useState(false);
@@ -48,7 +47,7 @@ function NativePushToggle() {
 
   useEffect(() => {
     let cancelled = false;
-    detect().then(([next, sub]) => {
+    detect(publicKey).then(([next, sub]) => {
       if (cancelled) return;
       setState(next);
       setSubscription(sub);
@@ -56,7 +55,7 @@ function NativePushToggle() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [publicKey]);
 
   async function turnOn() {
     setBusy(true);
@@ -65,11 +64,16 @@ function NativePushToggle() {
     let sub: PushSubscription | null = null;
     try {
       const registration = await navigator.serviceWorker.ready;
+      const old = await registration.pushManager.getSubscription();
+      if (old && !matchesKey(old, publicKey)) {
+        if (!await old.unsubscribe()) throw new Error("Could not reconnect notifications. Try again.");
+        await removePushSubscription(old.endpoint);
+      }
       sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY!),
+        applicationServerKey: urlBase64ToUint8Array(publicKey),
       });
-      const result = await savePushSubscription(sub.toJSON(), navigator.userAgent);
+      const result = await savePushSubscription(sub.toJSON(), navigator.userAgent, publicKey);
       if (result.error) {
         // Not stored on the server means nothing would ever arrive: undo the
         // browser side too rather than leave a switch that looks on.
@@ -150,9 +154,9 @@ function NativePushToggle() {
         </p>
       )}
 
-      {state === "off" && (
+      {(state === "off" || state === "reconnect") && (
         <Button type="button" size="md" onClick={turnOn} disabled={busy} className="self-start">
-          {busy ? "Turning on…" : "Turn on"}
+          {busy ? "Connecting…" : state === "reconnect" ? "Reconnect notifications" : "Turn on"}
         </Button>
       )}
 
@@ -173,8 +177,8 @@ function NativePushToggle() {
   );
 }
 
-async function detect(): Promise<[PushState, PushSubscription | null]> {
-  if (!VAPID_PUBLIC_KEY) return ["not-configured", null];
+async function detect(publicKey: string): Promise<[PushState, PushSubscription | null]> {
+  if (!publicKey) return ["not-configured", null];
 
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
     (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
@@ -192,7 +196,7 @@ async function detect(): Promise<[PushState, PushSubscription | null]> {
       updateViaCache: "none",
     });
     const sub = await registration.pushManager.getSubscription();
-    if (sub) return ["on", sub];
+    if (sub) return [matchesKey(sub, publicKey) ? "on" : "reconnect", sub];
   } catch {
     return ["unsupported", null];
   }
@@ -207,4 +211,11 @@ function urlBase64ToUint8Array(base64: string): Uint8Array<ArrayBuffer> {
   const bytes = new Uint8Array(new ArrayBuffer(raw.length));
   for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
   return bytes;
+}
+
+function matchesKey(subscription: PushSubscription, publicKey: string): boolean {
+  const existing = subscription.options?.applicationServerKey;
+  if (!existing) return false;
+  const wanted = urlBase64ToUint8Array(publicKey), actual = new Uint8Array(existing);
+  return actual.length === wanted.length && actual.every((value, index) => value === wanted[index]);
 }

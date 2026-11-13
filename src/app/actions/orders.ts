@@ -1,7 +1,5 @@
 "use server";
 
-import { after } from "next/server";
-import { getPushTargets, sendOrderPush } from "@/lib/push-server";
 import { revalidatePath } from "next/cache";
 import { getServerToken } from "@/lib/server-token";
 import { getCurrentUser } from "@/lib/auth";
@@ -37,8 +35,6 @@ export async function placeOrder(
     revalidatePath("/orders");
     revalidatePath("/staff");
     revalidatePath("/admin/orders");
-    const targets = await getPushTargets(data.orderId, token ?? undefined);
-    if (targets) after(() => sendOrderPush(data.orderId, targets, "pending", token ?? undefined, true));
     return { orderId: data.orderId, error: null };
   } catch (err: unknown) {
     return { orderId: null, error: (err as Error).message };
@@ -48,13 +44,11 @@ export async function placeOrder(
 export async function cancelOrder(orderId: string): Promise<{ error: string | null; refundRequired?: boolean }> {
   const token = await getServerToken();
   try {
-    const targets = await getPushTargets(orderId, token ?? undefined);
     const result = await apiJson<{ refund_required?: boolean }>(`/orders/${orderId}/cancel`, { method: "POST", token: token ?? undefined });
     revalidatePath("/orders");
     revalidatePath("/staff");
     revalidatePath("/admin/orders");
     revalidatePath(`/orders/${orderId}`);
-    if (targets) after(() => sendOrderPush(orderId, targets, "cancelled", token ?? undefined));
     return { error: null, refundRequired: result.refund_required === true };
   } catch (err: unknown) {
     return { error: (err as Error).message };
@@ -70,7 +64,6 @@ export async function updateOrderStatus(
     const user = await getCurrentUser();
     if (!user) return { error: "Sign in to continue." };
     if (!user.isActive || user.role !== "admin") return { error: "Admin access required" };
-    const pushTargets = await getPushTargets(orderId, token ?? undefined);
     await apiJson(`/admin/orders/${orderId}/status`, {
       method: "PUT",
       token: token ?? undefined,
@@ -79,7 +72,6 @@ export async function updateOrderStatus(
     revalidatePath("/admin/orders");
     revalidatePath("/staff");
     revalidatePath(`/orders/${orderId}`);
-    if (pushTargets) after(() => sendOrderPush(orderId, pushTargets, newStatus, token ?? undefined));
     return { error: null };
   } catch (err: unknown) {
     return { error: (err as Error).message };
