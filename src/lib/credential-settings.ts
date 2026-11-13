@@ -1,4 +1,4 @@
-export type CredentialProvider = "google" | "smtp" | "recaptcha";
+export type CredentialProvider = "google" | "smtp" | "recaptcha" | "cloudinary" | "onesignal" | "posthog" | "sentry" | "native_push";
 export type CredentialSummary = { source: "original" | "custom"; configured: boolean };
 export type LockedCredentialStatus = { locked: true; providers: Record<CredentialProvider, CredentialSummary> };
 export type UnlockedCredentialStatus = { locked: false; revision: string; expires_at: string; providers: Record<CredentialProvider, CredentialSummary & { values: Record<string, string>; secrets: Record<string, boolean> }> };

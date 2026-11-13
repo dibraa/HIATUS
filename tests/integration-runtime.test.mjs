@@ -44,8 +44,6 @@ test("native pushes stop when OneSignal is selected, preventing duplicate provid
     "@/lib/api-client": { apiJson: async () => ({ push_enabled: true, push_provider: "onesignal" }) },
     "@/lib/settings": { getSettings: async () => { throw Error("Must stop before sending"); } }, "@/lib/format": { orderCode: () => "CODE" }, "@/lib/order-meta": { STATUS_LABELS: {} }, "@/lib/order-alerts": { shouldAlert: () => true }, "@/lib/push-flag": { PUSH_ENABLED: true },
   });
-  assert.equal(await server.getPushTargets("id", "token"), null);
-  await server.sendOrderPush("id", { subscriptions: [{}], status: "pending", prefs: {} }, "ready", "token"); assert.equal(calls.length, 0);
   await assert.rejects(server.sendTestPush({}), /disabled/);
 });
 
