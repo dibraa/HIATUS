@@ -1,10 +1,10 @@
-import Link from "next/link";
 import type { Metadata } from "next";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
 import { PageHeader } from "@/components/ui/page-header";
 import { DataError } from "@/components/ui/data-error";
 import { NotificationList } from "@/components/notification-list";
+import { ButtonLink } from "@/components/ui/button";
 import type { OrderNotification } from "@/types/database";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -31,9 +31,12 @@ export default async function NotificationsPage() {
   return (
     <div className="mx-auto max-w-2xl py-2">
       <div className="mb-6">
-        <Link href="/orders" className="ui-caps text-2xs text-muted hover:text-ink">
-          ← Back to orders
-        </Link>
+        <ButtonLink href="/orders" variant="outline" size="sm">
+          <svg viewBox="0 0 16 16" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.75" aria-hidden="true">
+            <path d="M10 3L5 8l5 5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          Back to orders
+        </ButtonLink>
       </div>
       <PageHeader
         title="Notifications"

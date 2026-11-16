@@ -21,8 +21,8 @@ export function NotificationList({ notifications, accountId }: { notifications: 
   }, [accountId]);
 
   function markAllRead() {
-    const next = Object.fromEntries(notifications.map((notification) => [notification._id ?? notification.id, true]));
-    setRead(next);
+    const next = Object.fromEntries(notifications.map((notification) => [notificationKey(notification), true]));
+    setRead((current) => ({ ...current, ...next }));
     try {
       window.localStorage.setItem(readStateKey(accountId), JSON.stringify(next));
     } catch {
@@ -42,10 +42,10 @@ export function NotificationList({ notifications, accountId }: { notifications: 
       </div>
       <ul>
         {notifications.map((notification) => (
-          <li key={notification._id ?? notification.id} className="border-b border-line last:border-0">
+          <li key={notificationKey(notification)} className="border-b border-line last:border-0">
             <Link href={`/orders/${notification.order_id}`} className="block px-5 py-4 transition-colors hover:bg-raised">
               <div className="flex items-start gap-3">
-                <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${read[notification._id ?? notification.id] ? "bg-line-strong" : "bg-accent"}`} aria-hidden="true" />
+                <span className={`mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full ${read[notificationKey(notification)] ? "bg-line-strong" : "bg-accent"}`} aria-hidden="true" />
                 <span>
                   <span className="block text-sm font-semibold text-ink">{notification.title}</span>
                   <span className="mt-0.5 block text-sm text-ink-soft">{notification.body}</span>
@@ -58,6 +58,10 @@ export function NotificationList({ notifications, accountId }: { notifications: 
       </ul>
     </section>
   );
+}
+
+function notificationKey(notification: OrderNotification) {
+  return String(notification._id ?? notification.id);
 }
 
 function readStateKey(accountId: string) {

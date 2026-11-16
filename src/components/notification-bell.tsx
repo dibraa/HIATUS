@@ -9,10 +9,10 @@ export function NotificationBell({ notifications: initialNotifications, accountI
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [read, setRead] = useState<Record<string, boolean>>({});
-  const knownNotifications = useRef(new Set(initialNotifications.map((notification) => notification._id ?? notification.id)));
+  const knownNotifications = useRef(new Set(initialNotifications.map(notificationKey)));
 
   const previewNotifications = useMemo(() => notifications.slice(0, 8), [notifications]);
-  const unreadCount = notifications.filter((notification) => !read[notification._id ?? notification.id]).length;
+  const unreadCount = notifications.filter((notification) => !read[notificationKey(notification)]).length;
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
@@ -35,7 +35,7 @@ export function NotificationBell({ notifications: initialNotifications, accountI
         const nextNotifications = (await response.json()) as OrderNotification[];
 
         for (const notification of nextNotifications) {
-          const id = notification._id ?? notification.id;
+          const id = notificationKey(notification);
           if (!knownNotifications.current.has(id)) {
             toast(
               <span>
@@ -60,8 +60,8 @@ export function NotificationBell({ notifications: initialNotifications, accountI
   }, []);
 
   function markAllRead() {
-    const next = Object.fromEntries(notifications.map((notification) => [notification._id ?? notification.id, true]));
-    setRead(next);
+    const next = Object.fromEntries(notifications.map((notification) => [notificationKey(notification), true]));
+    setRead((current) => ({ ...current, ...next }));
     try {
       window.localStorage.setItem(readStateKey(accountId), JSON.stringify(next));
     } catch {
@@ -121,7 +121,7 @@ export function NotificationBell({ notifications: initialNotifications, accountI
             ) : (
               <ul className="max-h-[min(28rem,70vh)] overflow-y-auto">
                 {previewNotifications.map((notification) => {
-                  const id = notification._id ?? notification.id;
+                  const id = notificationKey(notification);
                   return <li key={id} className="border-b border-line last:border-0">
                     <Link
                       href={`/orders/${notification.order_id}`}
@@ -152,6 +152,10 @@ export function NotificationBell({ notifications: initialNotifications, accountI
       )}
     </div>
   );
+}
+
+function notificationKey(notification: OrderNotification) {
+  return String(notification._id ?? notification.id);
 }
 
 function readStateKey(accountId: string) {
