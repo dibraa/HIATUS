@@ -97,7 +97,7 @@ export async function Navbar({ guest = false }: { guest?: boolean } = {}) {
                 </Link>
               )}
               <span className="hidden h-10 items-center lg:inline-flex">
-                <SignOutButton />
+                <SignOutButton variant="nav" />
               </span>
             </>
           ) : (
