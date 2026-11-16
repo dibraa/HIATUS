@@ -9,7 +9,7 @@ export function MainContent({ children }: { children: ReactNode }) {
   const workspace = pathname.startsWith("/admin") || pathname.startsWith("/staff");
   const className = workspace
     ? "w-full flex-1"
-    : pathname === "/login" || pathname === "/signup"
+    : pathname === "/login" || pathname === "/signup" || pathname === "/forgot-password" || pathname === "/reset-password"
       ? "w-full flex-1"
       : pathname === "/menu"
         ? "mx-auto w-full max-w-[1600px] flex-1 px-6 py-8 sm:px-8 sm:py-10 xl:px-10"

@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import type { OrderNotification } from "@/types/database";
 
-export function NotificationBell({ notifications: initialNotifications }: { notifications: OrderNotification[] }) {
+export function NotificationBell({ notifications: initialNotifications, accountId }: { notifications: OrderNotification[]; accountId: string }) {
   const [open, setOpen] = useState(false);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [read, setRead] = useState<Record<string, boolean>>({});
@@ -16,15 +16,16 @@ export function NotificationBell({ notifications: initialNotifications }: { noti
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
+      setRead({});
       try {
-        const stored = window.localStorage.getItem("hiatus:notifications:read");
+        const stored = window.localStorage.getItem(readStateKey(accountId));
         if (stored) setRead(JSON.parse(stored) as Record<string, boolean>);
       } catch {
         // Notifications remain usable when browser storage is unavailable.
       }
     }, 0);
     return () => window.clearTimeout(timeout);
-  }, []);
+  }, [accountId]);
 
   useEffect(() => {
     const poll = async () => {
@@ -62,7 +63,7 @@ export function NotificationBell({ notifications: initialNotifications }: { noti
     const next = Object.fromEntries(notifications.map((notification) => [notification._id ?? notification.id, true]));
     setRead(next);
     try {
-      window.localStorage.setItem("hiatus:notifications:read", JSON.stringify(next));
+      window.localStorage.setItem(readStateKey(accountId), JSON.stringify(next));
     } catch {
       // The in-memory state still keeps the open list consistent.
     }
@@ -151,6 +152,10 @@ export function NotificationBell({ notifications: initialNotifications }: { noti
       )}
     </div>
   );
+}
+
+function readStateKey(accountId: string) {
+  return `hiatus:notifications:read:${accountId}`;
 }
 
 function formatRelativeTime(value: string) {

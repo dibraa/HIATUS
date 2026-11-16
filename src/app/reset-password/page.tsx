@@ -23,6 +23,7 @@ export default async function ResetPasswordPage({
 
   return (
     <AuthTicket
+      collage
       label="New password"
       title="Set a new password"
 

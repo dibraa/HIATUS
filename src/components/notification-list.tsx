@@ -4,26 +4,27 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { OrderNotification } from "@/types/database";
 
-export function NotificationList({ notifications }: { notifications: OrderNotification[] }) {
+export function NotificationList({ notifications, accountId }: { notifications: OrderNotification[]; accountId: string }) {
   const [read, setRead] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {
+      setRead({});
       try {
-        const stored = window.localStorage.getItem("hiatus:notifications:read");
+        const stored = window.localStorage.getItem(readStateKey(accountId));
         if (stored) setRead(JSON.parse(stored) as Record<string, boolean>);
       } catch {
         // Notifications remain usable when browser storage is unavailable.
       }
     }, 0);
     return () => window.clearTimeout(timeout);
-  }, []);
+  }, [accountId]);
 
   function markAllRead() {
     const next = Object.fromEntries(notifications.map((notification) => [notification._id ?? notification.id, true]));
     setRead(next);
     try {
-      window.localStorage.setItem("hiatus:notifications:read", JSON.stringify(next));
+      window.localStorage.setItem(readStateKey(accountId), JSON.stringify(next));
     } catch {
       // The in-memory state still keeps the list consistent.
     }
@@ -57,6 +58,10 @@ export function NotificationList({ notifications }: { notifications: OrderNotifi
       </ul>
     </section>
   );
+}
+
+function readStateKey(accountId: string) {
+  return `hiatus:notifications:read:${accountId}`;
 }
 
 function formatRelativeTime(value: string) {

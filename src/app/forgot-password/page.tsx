@@ -9,6 +9,7 @@ export default function ForgotPasswordPage() {
     // No `footer`: ForgotPasswordForm carries its own way back to log in, in
     // both its form and its "link sent" states.
     <AuthTicket
+      collage
       label="Reset"
       title="Reset your password"
 

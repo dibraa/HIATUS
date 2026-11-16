@@ -118,7 +118,7 @@ export async function Navbar({ guest = false }: { guest?: boolean } = {}) {
             <ThemeToggle />
           </span>
 
-          {user && !staffOnly && <NotificationBell notifications={notifications} />}
+          {user && !staffOnly && <NotificationBell notifications={notifications} accountId={user.id} />}
           {user && !staffOnly && <CartBadge />}
           <MobileNav isLoggedIn={!!user} isStaff={staff} isAdmin={admin} staffOnly={staffOnly} />
         </div>

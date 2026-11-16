@@ -6,11 +6,13 @@ import { PageHeader } from "@/components/ui/page-header";
 import { DataError } from "@/components/ui/data-error";
 import { NotificationList } from "@/components/notification-list";
 import type { OrderNotification } from "@/types/database";
+import { getCurrentUser } from "@/lib/auth";
 
 export const metadata: Metadata = { title: "Notifications" };
 
 export default async function NotificationsPage() {
   const token = await getServerToken();
+  const user = await getCurrentUser();
   let notifications: OrderNotification[] | null = null;
 
   try {
@@ -37,7 +39,7 @@ export default async function NotificationsPage() {
         title="Notifications"
 
       />
-      <NotificationList notifications={notifications} />
+      <NotificationList notifications={notifications} accountId={user?.id ?? ""} />
     </div>
   );
 }
