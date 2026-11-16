@@ -5,7 +5,7 @@ import { currentIntegrations } from "@/lib/integration-client";
 import { OneSignalToggle } from "./onesignal-toggle";
 import { Button } from "@/components/ui/button";
 import { FormError, FormSuccess } from "@/components/ui/field";
-import { removePushSubscription, savePushSubscription, sendTestNotification } from "@/app/actions/push";
+import { removePushSubscription, savePushSubscription } from "@/app/actions/push";
 
 type PushState =
   | "checking"
@@ -110,25 +110,23 @@ function NativePushToggle({ publicKey }: { publicKey: string }) {
     setBusy(false);
   }
 
-  async function sendTest() {
-    if (!subscription) return;
-    setBusy(true);
-    setError(null);
-    setNotice(null);
-    const result = await sendTestNotification(subscription.toJSON());
-    if (result.error) setError(result.error);
-    else setNotice("Test sent. It should appear in a few seconds.");
-    setBusy(false);
-  }
-
   return (
-    <div className="flex flex-col gap-3 rounded-lg border border-line bg-card p-4">
-      <div>
-        <p className="text-sm font-semibold text-ink">Browser notifications on this device</p>
-        <p className="mt-1 text-sm text-muted">
-          Order alerts, even when this site is closed.
-        </p>
+    <div className="rounded-xl border border-line bg-card p-5">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-raised text-ink-soft" aria-hidden="true">
+            <svg viewBox="0 0 20 20" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M15 8a5 5 0 0 0-10 0c0 5-2 5-2 6.5h14C17 13 15 13 15 8ZM8 17h4" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </span>
+          <div>
+            <p className="text-sm font-semibold text-ink">Browser notifications</p>
+            <p className="mt-0.5 text-xs text-muted">This device</p>
+          </div>
+        </div>
+        {state === "on" && <span className="rounded-full bg-success-soft-bg px-2.5 py-1 text-2xs font-semibold text-success">On</span>}
       </div>
+      <p className="mt-4 max-w-md text-sm text-ink-soft">Receive order alerts even when Hiatus is not open in this tab.</p>
 
       {state === "checking" && <p className="text-sm text-muted">Checking this browser…</p>}
 
@@ -155,17 +153,14 @@ function NativePushToggle({ publicKey }: { publicKey: string }) {
       )}
 
       {(state === "off" || state === "reconnect") && (
-        <Button type="button" size="md" onClick={turnOn} disabled={busy} className="self-start">
+        <Button type="button" size="sm" onClick={turnOn} disabled={busy} className="mt-5">
           {busy ? "Connecting…" : state === "reconnect" ? "Reconnect notifications" : "Turn on"}
         </Button>
       )}
 
       {state === "on" && (
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" size="md" onClick={sendTest} disabled={busy}>
-            Send a test
-          </Button>
-          <Button type="button" variant="ghost" size="md" onClick={turnOff} disabled={busy}>
+        <div className="mt-5">
+          <Button type="button" variant="outline" size="sm" onClick={turnOff} disabled={busy}>
             Turn off
           </Button>
         </div>

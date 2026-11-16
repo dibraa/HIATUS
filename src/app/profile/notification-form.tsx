@@ -15,9 +15,8 @@ import type { NotificationPreferences } from "@/types/database";
  * drive every channel at once: on-site alerts and browser push both read
  * them through shouldAlert().
  *
- * HOW lists only channels that actually deliver. Email is shown as coming
- * rather than as a checkbox, and SMS is not shown at all: a switch for a
- * message that is never sent is worse than no switch. Their stored values
+ * HOW lists only channels that actually deliver. Email and SMS are not shown:
+ * a switch for a message that is never sent is worse than no switch. Their stored values
  * are passed through untouched so nothing on the server changes meaning.
  *
  * Browser notifications are per device and act immediately (the permission
@@ -84,7 +83,6 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
 
         <PushToggle />
 
-        <ComingSoon label="Email" />
       </section>
 
       {state.error && <FormError>{state.error}</FormError>}
@@ -97,18 +95,3 @@ export function NotificationForm({ prefs }: { prefs: NotificationPreferences | n
   );
 }
 
-/** A channel that is planned but not delivering yet: visible, not tickable. */
-function ComingSoon({ label, hint }: { label: string; hint?: string }) {
-  return (
-    <div className="flex items-start gap-2.5">
-      <span aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 rounded-sm border border-line-strong" />
-      <div>
-        <p className="text-sm font-medium text-ink-soft">
-          {label}{" "}
-          <span className="ml-1 rounded-sm bg-raised px-1.5 py-0.5 text-2xs font-medium text-muted">Coming soon</span>
-        </p>
-        {hint && <p className="text-xs text-muted">{hint}</p>}
-      </div>
-    </div>
-  );
-}

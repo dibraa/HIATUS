@@ -12,7 +12,9 @@ let sdk: OneSignal | null = null, initializedApp: string | null = null, loading:
 export function stopOneSignal() {
   generation++;
   activeAlias = null;
+  loading = null;
   if (sdk) void sdk.setConsentGiven(false).catch(() => {});
+  document.querySelector("#hiatus-onesignal-sdk")?.remove?.();
   if ("serviceWorker" in navigator) void navigator.serviceWorker.getRegistrations().then(registrations => Promise.all(registrations.filter(r => new URL(r.scope).pathname === "/onesignal/").map(r => r.unregister()))).catch(() => {});
 }
 export async function enableOneSignal(): Promise<OneSignal> {
@@ -23,7 +25,13 @@ export async function enableOneSignal(): Promise<OneSignal> {
   if (initializedApp && initializedApp !== identity.app_id) throw new Error("Push configuration changed. Reload this page.");
   if (!loading) loading = new Promise<OneSignal>((resolve, reject) => {
     let expired = false;
-    const timer = setTimeout(() => { expired = true; loading = null; reject(new Error("Push provider could not load. Try again.")); }, 15000);
+    let script: HTMLScriptElement | null = null;
+    const timer = setTimeout(() => {
+      expired = true;
+      loading = null;
+      script?.remove();
+      reject(new Error("Push provider could not load. Try again."));
+    }, 15000);
     const target = window as Window & { OneSignalDeferred?: ((instance: OneSignal) => void)[] };
     target.OneSignalDeferred = target.OneSignalDeferred || [];
     target.OneSignalDeferred.push(async instance => {
@@ -38,8 +46,8 @@ export async function enableOneSignal(): Promise<OneSignal> {
       } catch { clearTimeout(timer); loading = null; reject(new Error("Push provider setup failed. Check its site configuration.")); }
     });
     if (!document.querySelector('#hiatus-onesignal-sdk')) {
-      const script = document.createElement("script"); script.id = "hiatus-onesignal-sdk"; script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"; script.defer = true;
-      script.onerror = () => { expired = true; clearTimeout(timer); loading = null; script.remove(); reject(new Error("Push provider could not load. Try again.")); }; document.head.appendChild(script);
+      script = document.createElement("script"); script.id = "hiatus-onesignal-sdk"; script.src = "https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js"; script.defer = true;
+      script.onerror = () => { expired = true; clearTimeout(timer); loading = null; script?.remove(); reject(new Error("Push provider could not load. Try again.")); }; document.head.appendChild(script);
     }
   });
   const instance = await loading;
