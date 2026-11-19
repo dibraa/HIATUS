@@ -90,7 +90,9 @@ export async function saveMenuItem(
 
   try {
     if (id) {
-      await apiJson(`/menu/${id}`, { method: "PUT", token: token ?? undefined, body: JSON.stringify(payload) });
+      // Timestamp concurrency control: the server rejects the save if the item was written after this form loaded.
+      const writeTs = Number(formData.get("write_ts"));
+      await apiJson(`/menu/${id}`, { method: "PUT", token: token ?? undefined, body: JSON.stringify(formData.has("write_ts") && Number.isFinite(writeTs) ? { ...payload, write_ts: writeTs } : payload) });
     } else {
       await apiJson("/menu", { method: "POST", token: token ?? undefined, body: JSON.stringify(payload) });
     }

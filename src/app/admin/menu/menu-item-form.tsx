@@ -62,6 +62,7 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
     <form action={formAction} className="admin-menu-form" aria-busy={pending}>
       {onSaved && <input type="hidden" name="presentation" value="dialog" />}
       {item && <input type="hidden" name="id" value={item.id} />}
+      {item?.write_ts != null && <input type="hidden" name="write_ts" value={item.write_ts} />}
       <input type="hidden" name="image_url" value={imageUrl} />
 
       <section className="admin-form-section" aria-labelledby="product-details-heading">
