@@ -1,6 +1,6 @@
 "use client";
 import { withPermission } from "@/components/permission-controls";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FormError } from "@/components/ui/field";
 
@@ -8,20 +8,31 @@ function ExcelExportButtonContent({ period, date, enabled, view = "sales", filte
   const [format, setFormat] = useState("xlsx");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [wait, setWait] = useState(0);
+  useEffect(() => {
+    if (wait <= 0) return;
+    const tick = setTimeout(() => setWait(value => value - 1), 1000);
+    return () => clearTimeout(tick);
+  }, [wait]);
   async function download() {
     setPending(true); setError(null);
     try {
       const query = new URLSearchParams({ ...filters, view, period, date, format });
       const response = await fetch(`/api/admin/reports/export?${query}`, { cache: "no-store" });
-      if (!response.ok) throw new Error((await response.json()).error || "Export failed. Try again.");
+      if (!response.ok) {
+        const body = await response.json();
+        if (response.status === 429) { setWait(body.retry_after_seconds || 10); return; }
+        throw new Error(body.error || "Export failed. Try again.");
+      }
       const url = URL.createObjectURL(await response.blob());
       const link = document.createElement("a"); link.href = url; link.download = `hiatus-${view}-${date || "all-time"}.${format}`; document.body.appendChild(link); link.click(); link.remove();
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+      setWait(10); // Matches the server's one-export-per-10s limit (server/src/routes/finance.js).
     } catch (failure) { setError((failure as Error).message); }
     finally { setPending(false); }
   }
   return <div className="flex max-w-sm flex-col gap-2">
-    <div className="flex flex-wrap gap-2"><label className="sr-only" htmlFor="report-export-format">Export format</label><select id="report-export-format" className="min-h-11 rounded-md border border-line-strong bg-card px-3 text-sm text-ink" value={format} disabled={!enabled || pending} onChange={event => setFormat(event.target.value)}><option value="xlsx">Excel</option><option value="csv">CSV</option><option value="pdf">PDF</option></select><Button variant="outline" disabled={!enabled || pending} loading={pending} onClick={download}>{pending ? "Preparing export…" : "Export report"}</Button></div>
+    <div className="flex flex-wrap gap-2"><label className="sr-only" htmlFor="report-export-format">Export format</label><select id="report-export-format" className="min-h-11 rounded-md border border-line-strong bg-card px-3 text-sm text-ink" value={format} disabled={!enabled || pending} onChange={event => setFormat(event.target.value)}><option value="xlsx">Excel</option><option value="csv">CSV</option><option value="pdf">PDF</option></select><Button variant="outline" disabled={!enabled || pending || wait > 0} loading={pending} onClick={download}>{pending ? "Preparing export…" : wait > 0 ? `Export again in ${wait}s` : "Export report"}</Button></div>
     {!enabled && <p className="text-sm text-muted">{enabled === null ? "Export settings could not load. Reload this page to try again." : "Report exports are disabled. Enable them in Settings → API controls."}</p>}
     <FormError>{error}</FormError>
   </div>;

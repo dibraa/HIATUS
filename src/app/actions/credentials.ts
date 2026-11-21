@@ -15,11 +15,12 @@ export async function readCredentialSettings(accessToken?: string): Promise<Cred
   try { return { data: await apiJson<CredentialStatus>("/settings/credentials", { token: await adminToken(), headers: accessToken ? { "X-Credential-Access": accessToken } : {}, cache: "no-store" }), error: null }; }
   catch (error) { return { data: null, error: error instanceof Error ? error.message : "Credential settings could not load." }; }
 }
-export async function saveCredentialSettings(provider: CredentialProvider, action: "save" | "reset", revision: string, values: Record<string, string>, accessToken: string): Promise<CredentialResult> {
+/** `checkToken`: the reCAPTCHA checkbox token made with the new site key; the backend verifies it with the new secret. */
+export async function saveCredentialSettings(provider: CredentialProvider, action: "save" | "reset", revision: string, values: Record<string, string>, accessToken: string, checkToken?: string): Promise<CredentialResult> {
   try {
     const token = await adminToken();
-    if (!["google", "smtp", "recaptcha", "cloudinary", "onesignal", "posthog", "sentry", "native_push"].includes(provider)) return { data: null, error: "Choose a supported integration." };
-    const data = await apiJson<CredentialStatus>(`/settings/credentials/${provider}`, { token, headers: { "X-Credential-Access": accessToken }, method: "PUT", body: JSON.stringify({ action, revision, values }) });
+    if (!["google", "smtp", "recaptcha", "cloudinary", "posthog", "sentry", "native_push"].includes(provider)) return { data: null, error: "Choose a supported integration." };
+    const data = await apiJson<CredentialStatus>(`/settings/credentials/${provider}`, { token, headers: { "X-Credential-Access": accessToken }, method: "PUT", body: JSON.stringify({ action, revision, values, check_token: checkToken }) });
     revalidatePath("/admin/settings"); revalidatePath("/login"); revalidatePath("/signup");
     return { data, error: null };
   } catch (error) { return { data: null, error: error instanceof Error ? error.message : "Credentials could not be saved." }; }

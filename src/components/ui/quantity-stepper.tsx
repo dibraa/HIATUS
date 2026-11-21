@@ -36,7 +36,8 @@ export function QuantityStepper({
     : "hover:bg-raised disabled:hover:bg-transparent";
 
   return (
-    <div className={`inline-flex items-center rounded-md border ${shell}`}>
+    // Rapid +/- clicks are normal here, so the global click limit (click-limit.tsx) skips them.
+    <div data-click-limit="off" className={`inline-flex items-center rounded-md border ${shell}`}>
       <button
         type="button"
         className={`${pad} flex items-center justify-center rounded-full text-lg leading-none transition-colors disabled:opacity-40 ${hover}`}

@@ -18,8 +18,10 @@ import { apiJson } from "@/lib/api-client";
 
 const initialState: MenuFormState = { error: null };
 
-export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
+export function MenuItemForm({ item, editSession, onSaved, onCancel, onPendingChange }: {
   item?: MenuItem;
+  /** The editing turn this form saves under (edit-turn.ts); the server refuses saves from anyone else. */
+  editSession?: string;
   onSaved?: () => void;
   onCancel?: () => void;
   onPendingChange?: (pending: boolean) => void;
@@ -62,7 +64,9 @@ export function MenuItemForm({ item, onSaved, onCancel, onPendingChange }: {
     <form action={formAction} className="admin-menu-form" aria-busy={pending}>
       {onSaved && <input type="hidden" name="presentation" value="dialog" />}
       {item && <input type="hidden" name="id" value={item.id} />}
-      {item?.write_ts != null && <input type="hidden" name="write_ts" value={item.write_ts} />}
+      {editSession && <input type="hidden" name="edit_session" value={editSession} />}
+      {/* Availability is saved only if changed here, so a sold-out toggle made meanwhile is kept. */}
+      {item && <input type="hidden" name="original_is_available" value={String(item.is_available)} />}
       <input type="hidden" name="image_url" value={imageUrl} />
 
       <section className="admin-form-section" aria-labelledby="product-details-heading">

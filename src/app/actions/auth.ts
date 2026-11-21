@@ -30,7 +30,8 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
     role = response.user.role;
 
     const store = await cookies();
-    store.set("token", token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7, sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+    // No maxAge: a browser-session cookie, so reopening the browser starts signed out on the landing page.
+    store.set("token", token, { httpOnly: true, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production" });
   } catch (err: unknown) {
     // Hand the address back: React resets the form after the action, and
     // retyping an email because the password was wrong is pure friction.
@@ -97,7 +98,7 @@ export async function signInWithGoogle(formData: FormData): Promise<{ error: str
       return { error: "Google sign-in could not finish. Please try again.", code: "GOOGLE_UNAVAILABLE" };
     }
     role = data.user.role;
-    store.set("token", data.token, { httpOnly: true, path: "/", maxAge: 60 * 60 * 24 * 7,
+    store.set("token", data.token, { httpOnly: true, path: "/",
       sameSite: "lax", secure: process.env.NODE_ENV === "production" });
     store.delete(name);
   } catch {
@@ -161,7 +162,9 @@ export async function requestPasswordReset(
       return { error: "No account is registered with that email address.", sent: false };
     }
     if (res.status === 429) {
-      return { error: "Too many reset requests. Wait a few minutes and try again.", sent: false };
+      // The 10-second repeat guard says exactly how long to wait; the per-email reset limit is longer.
+      const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
+      return { error: data.code === "RATE_LIMITED" && data.error ? data.error : "Too many reset requests. Wait a few minutes and try again.", sent: false };
     }
     if (!res.ok) return { error: "We couldn't send the reset email. Try again in a moment.", sent: false };
     return { error: null, sent: true };

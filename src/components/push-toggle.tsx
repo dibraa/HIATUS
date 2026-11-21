@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { currentIntegrations } from "@/lib/integration-client";
-import { OneSignalToggle } from "./onesignal-toggle";
 import { Button } from "@/components/ui/button";
 import { FormError, FormSuccess } from "@/components/ui/field";
 import { removePushSubscription, savePushSubscription } from "@/app/actions/push";
@@ -35,7 +34,6 @@ export function PushToggle() {
   useEffect(() => { const sync = () => setPolicy(currentIntegrations()); sync(); window.addEventListener("hiatus:integrations", sync); return () => window.removeEventListener("hiatus:integrations", sync); }, []);
   if (!policy) return <p className="text-sm text-muted">Checking notification settings...</p>;
   if (!policy.push_enabled) return <p className="text-sm text-muted">Browser notifications are disabled.</p>;
-  if (policy.push_provider === "onesignal") return policy.onesignal_app_id ? <OneSignalToggle /> : <p className="text-sm text-muted">Browser notifications are not configured.</p>;
   return policy.native_vapid_public_key ? <NativePushToggle publicKey={policy.native_vapid_public_key} /> : <p className="text-sm text-muted">Browser notifications are not configured.</p>;
 }
 function NativePushToggle({ publicKey }: { publicKey: string }) {

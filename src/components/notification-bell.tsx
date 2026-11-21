@@ -5,8 +5,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import type { OrderNotification } from "@/types/database";
 
+// Scrolling the page down this far with the panel open folds it away; smaller moves are trackpad jitter.
+const FOLD_AFTER_SCROLL_PX = 24;
+
 export function NotificationBell({ notifications: initialNotifications, accountId }: { notifications: OrderNotification[]; accountId: string }) {
   const [open, setOpen] = useState(false);
+  const [folding, setFolding] = useState(false);
+  const bell = useRef<HTMLButtonElement>(null);
+  const panel = useRef<HTMLElement>(null);
   const [notifications, setNotifications] = useState(initialNotifications);
   const [read, setRead] = useState<Record<string, boolean>>({});
   const knownNotifications = useRef(new Set(initialNotifications.map(notificationKey)));
@@ -59,6 +65,21 @@ export function NotificationBell({ notifications: initialNotifications, accountI
     return () => window.clearInterval(interval);
   }, []);
 
+  // The header is sticky, so an open panel would stay pinned over the page as it scrolls: fold it away
+  // once the page moves down. Scrolling inside the list doesn't count (overscroll-contain keeps it there).
+  useEffect(() => {
+    if (!open || folding) return;
+    const start = window.scrollY;
+    const onScroll = () => {
+      if (window.scrollY - start < FOLD_AFTER_SCROLL_PX) return;
+      if (panel.current?.contains(document.activeElement)) bell.current?.focus({ preventScroll: true });
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) setOpen(false);
+      else setFolding(true);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [open, folding]);
+
   function markAllRead() {
     const next = Object.fromEntries(notifications.map((notification) => [notificationKey(notification), true]));
     setRead((current) => ({ ...current, ...next }));
@@ -70,8 +91,10 @@ export function NotificationBell({ notifications: initialNotifications, accountI
   }
 
   function toggleOpen() {
-    if (!open) markAllRead();
-    setOpen(!open);
+    // A click while the panel is folding away reopens it.
+    if (!open || folding) markAllRead();
+    setFolding(false);
+    setOpen(!open || folding);
   }
 
   return (
@@ -79,7 +102,8 @@ export function NotificationBell({ notifications: initialNotifications, accountI
       <button
         type="button"
         aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
-        aria-expanded={open}
+        ref={bell}
+        aria-expanded={open && !folding}
         aria-controls="notification-panel"
         onClick={toggleOpen}
         className="relative flex h-10 w-10 items-center justify-center rounded-md text-ink transition-colors hover:bg-raised"
@@ -103,9 +127,11 @@ export function NotificationBell({ notifications: initialNotifications, accountI
             onClick={() => setOpen(false)}
           />
           <section
+            ref={panel}
             id="notification-panel"
             aria-label="Notifications"
-            className="absolute right-0 top-12 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-card shadow-lg"
+            className={`absolute right-0 top-12 z-40 w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl border border-line bg-card shadow-lg${folding ? " notification-panel-fold" : ""}`}
+            onAnimationEnd={() => { if (folding) { setFolding(false); setOpen(false); } }}
           >
             <div className="flex items-center justify-between border-b border-line px-4 py-3">
               <h2 className="display text-xl text-ink">Notifications</h2>
@@ -119,7 +145,7 @@ export function NotificationBell({ notifications: initialNotifications, accountI
             {previewNotifications.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-muted">You have no notifications yet.</p>
             ) : (
-              <ul className="max-h-[min(28rem,70vh)] overflow-y-auto">
+              <ul className="max-h-[min(28rem,70vh)] overflow-y-auto overscroll-contain">
                 {previewNotifications.map((notification) => {
                   const id = notificationKey(notification);
                   return <li key={id} className="border-b border-line last:border-0">

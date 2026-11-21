@@ -37,31 +37,13 @@ test("telemetry proxy rejects cross-origin and unsupported operations before con
   assert.equal((await POST(request("https://shop.test", "x".repeat(8193)), context("errors"))).status, 413); assert.equal(calls.length, 0);
   assert.equal((await POST(request("https://shop.test"), context("push-test"))).status, 200); assert.equal(calls[0][1].token, "server-session");
 });
-test("native pushes stop when OneSignal is selected, preventing duplicate provider delivery", async () => {
+test("test pushes stop when browser push is switched off", async () => {
   const calls = [];
   const server = load("lib/push-server.ts", { URL, process: { env: {} }, console }, {
     "web-push": { default: { sendNotification: async () => calls.push("native") } },
-    "@/lib/api-client": { apiJson: async () => ({ push_enabled: true, push_provider: "onesignal" }) },
+    "@/lib/api-client": { apiJson: async () => ({ push_enabled: false }) },
     "@/lib/settings": { getSettings: async () => { throw Error("Must stop before sending"); } }, "@/lib/format": { orderCode: () => "CODE" }, "@/lib/order-meta": { STATUS_LABELS: {} }, "@/lib/order-alerts": { shouldAlert: () => true }, "@/lib/push-flag": { PUSH_ENABLED: true },
   });
   await assert.rejects(server.sendTestPush({}), /disabled/);
 });
 
-test("OneSignal loads only after authenticated identity and uses scoped consent and opaque aliases", async () => {
-  const calls = [], scripts = [], target = {}, sdk = {
-    init: async options => calls.push(["init", options]), setConsentGiven: async consent => calls.push(["consent", consent]), login: async alias => calls.push(["login", alias]), logout: async () => {},
-    User: { PushSubscription: { optedIn: false, optIn: async () => {}, optOut: async () => {} } }, Notifications: { requestPermission: async () => true },
-  };
-  let permitted = false;
-  const identity = { app_id: "12345678-1234-1234-1234-123456789abc", external_id: "a".repeat(64) };
-  const client = load("lib/onesignal-client.ts", {
-    setTimeout, clearTimeout, URL, window: target, navigator: {}, location: { hostname: "localhost" },
-    document: { querySelector: () => scripts[0], createElement: () => ({}), head: { appendChild: script => { scripts.push(script); queueMicrotask(() => target.OneSignalDeferred[0](sdk)); } } },
-    fetch: async () => Response.json(permitted ? identity : {}, { status: permitted ? 200 : 401 }),
-  });
-  await assert.rejects(client.enableOneSignal(), /Sign in/); assert.equal(scripts.length, 0);
-  permitted = true; await client.enableOneSignal(); assert.equal(scripts.length, 1);
-  const init = calls.find(c => c[0] === "init")[1]; assert.equal(init.requiresUserPrivacyConsent, true); assert.equal(init.serviceWorkerParam.scope, "/onesignal/"); assert.equal(init.serviceWorkerPath, "/onesignal/OneSignalSDKWorker.js");
-  assert.equal(calls.find(c => c[0] === "login")[1], identity.external_id);
-  client.stopOneSignal(); assert.equal(calls.at(-1)[1], false);
-});

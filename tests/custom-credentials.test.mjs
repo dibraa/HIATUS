@@ -54,9 +54,15 @@ test("lock revokes the supplied grant; failed updates report errors without succ
   assert.equal((await failed.exports.saveCredentialSettings("google", "save", "revision", {}, "expired-token")).error, "Access expired.");
   assert.equal(failed.refreshes.length, 0);
 });
-test("all eight provider writes require an admin session and the unlock grant; removed integrations stay rejected", async () => {
-  for (const provider of ["google", "smtp", "recaptcha", "cloudinary", "onesignal", "posthog", "sentry", "native_push"]) {
+test("all seven provider writes require an admin session and the unlock grant; removed integrations stay rejected", async () => {
+  for (const provider of ["google", "smtp", "recaptcha", "cloudinary", "posthog", "sentry", "native_push"]) {
     const f=fixture({role:"admin",isActive:true});const result=await f.exports.saveCredentialSettings(provider,"save","revision",{},"memory-token");assert.equal(result.error,null);assert.equal(f.calls[0].path,"/settings/credentials/"+provider);assert.equal(f.calls[0].headers["X-Credential-Access"],"memory-token");
   }
-  for (const provider of ["maps","resend","unknown"]) {const f=fixture({role:"admin",isActive:true});assert((await f.exports.saveCredentialSettings(provider,"save","revision",{},"memory-token")).error);assert.equal(f.calls.length,0);}
+  for (const provider of ["maps","resend","onesignal","unknown"]) {const f=fixture({role:"admin",isActive:true});assert((await f.exports.saveCredentialSettings(provider,"save","revision",{},"memory-token")).error);assert.equal(f.calls.length,0);}
+});
+
+test("a reCAPTCHA save forwards the checkbox token so the backend can prove the new keys", async () => {
+  const f = fixture({ role: "admin", isActive: true });
+  await f.exports.saveCredentialSettings("recaptcha", "save", "revision", { site_key: "site", secret_key: "secret", hostnames: "localhost" }, "memory-token", "checkbox-token");
+  assert.equal(JSON.parse(f.calls[0].body).check_token, "checkbox-token");
 });

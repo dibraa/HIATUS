@@ -121,6 +121,7 @@ export function CheckoutForm({
 
       if (result.error) {
         setError(result.error);
+        toast.error(result.error);
         return;
       }
 
@@ -259,7 +260,6 @@ export function CheckoutForm({
 
           {error && (
             <p
-              role="alert"
               className="mt-4 rounded-md border border-danger/40 bg-danger-soft-bg px-3 py-2.5 text-sm font-medium text-danger-soft-fg"
             >
               {error}

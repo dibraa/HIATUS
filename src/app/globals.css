@@ -1021,3 +1021,15 @@ body:has(dialog[open] .dialog-toaster) .page-toaster {
    away from. Colours are deliberately NOT transitioned on the switch: a
    400ms cross-fade of every surface on the page reads as a slow repaint,
    not as polish. */
+
+/* Notification panel folds up toward the bell when the page scrolls down
+   (notification-bell.tsx). Reduced-motion users skip this: the component
+   closes the panel instantly instead of adding the class. */
+@keyframes notification-fold {
+  to { opacity: 0; transform: translateY(-0.5rem) scaleY(0.9); }
+}
+.notification-panel-fold {
+  transform-origin: top right;
+  animation: notification-fold var(--hi-dur-base) var(--hi-ease) forwards;
+  pointer-events: none;
+}

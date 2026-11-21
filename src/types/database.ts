@@ -41,8 +41,6 @@ export type MenuItem = ServingInfo & {
   image_url: string | null;
   is_available: boolean;
   created_at: string;
-  /** Write timestamp (W-TS) for timestamp concurrency control; the edit form sends it back. */
-  write_ts?: number;
 };
 
 export type Order = {

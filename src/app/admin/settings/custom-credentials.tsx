@@ -3,15 +3,15 @@ import { withPermission } from "@/components/permission-controls";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { TextField } from "@/components/ui/field";
+import { FormError, TextField } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import { readCredentialSettings, saveCredentialSettings, requestCredentialOtp, verifyCredentialOtp, unlockCredentialSettings, lockCredentialSettings } from "@/app/actions/credentials";
 import type { CredentialProvider, CredentialStatus, CredentialOtp, CredentialAccess, LockedCredentialStatus, UnlockedCredentialStatus } from "@/lib/credential-settings";
 import { CredentialOtpDialog } from "./credential-otp-dialog";
+import { LoginCaptcha } from "@/components/login-captcha";
 
 const fields: Record<CredentialProvider, { key: string; label: string; secret?: boolean; hint?: string; optional?: boolean }[]> = {
   cloudinary: [{ key: "cloud_name", label: "Cloud name" }, { key: "api_key", label: "API key", secret: true }, { key: "api_secret", label: "API secret", secret: true }],
-  onesignal: [{ key: "app_id", label: "App ID" }, { key: "api_key", label: "App API key", secret: true }],
   posthog: [{ key: "project_key", label: "Project key", secret: true }, { key: "host", label: "Ingestion host", hint: "https://us.i.posthog.com or https://eu.i.posthog.com" }],
   sentry: [{ key: "dsn", label: "DSN", secret: true }],
   native_push: [{ key: "public_key", label: "VAPID public key" }, { key: "private_key", label: "VAPID private key", secret: true }, { key: "subject", label: "Contact", hint: "A mailto: email address or HTTPS contact URL." }],
@@ -19,8 +19,8 @@ const fields: Record<CredentialProvider, { key: string; label: string; secret?: 
   smtp: [{ key: "host", label: "SMTP host" }, { key: "port", label: "SMTP port" }, { key: "user", label: "SMTP username" }, { key: "password", label: "SMTP password", secret: true }, { key: "from", label: "Sender email", optional: true, hint: "Optional when the SMTP username is an email address." }],
   recaptcha: [{ key: "site_key", label: "reCAPTCHA site key" }, { key: "secret_key", label: "reCAPTCHA secret key", secret: true }, { key: "hostnames", label: "Allowed hostnames", hint: "Comma-separated hostnames, such as localhost, cafe.example.com. No URLs or ports." }],
 };
-const labels: Record<CredentialProvider, string> = { google: "Google sign-in", smtp: "Email (SMTP)", recaptcha: "reCAPTCHA", cloudinary: "Cloudinary", onesignal: "OneSignal", posthog: "PostHog", sentry: "Sentry", native_push: "Browser push (VAPID)" };
-const names: CredentialProvider[] = ["google", "smtp", "recaptcha", "cloudinary", "onesignal", "posthog", "sentry", "native_push"];
+const labels: Record<CredentialProvider, string> = { google: "Google sign-in", smtp: "Email (SMTP)", recaptcha: "reCAPTCHA", cloudinary: "Cloudinary", posthog: "PostHog", sentry: "Sentry", native_push: "Browser push (VAPID)" };
+const names: CredentialProvider[] = ["google", "smtp", "recaptcha", "cloudinary", "posthog", "sentry", "native_push"];
 
 function draftsFor(data?: UnlockedCredentialStatus) {
   return Object.fromEntries(names.map(name => [name, Object.fromEntries(fields[name].map(field => [field.key, field.secret ? "" : data?.providers[name]?.values[field.key] || ""]))])) as Record<CredentialProvider, Record<string, string>>;
@@ -42,6 +42,15 @@ function CustomCredentialsContent({ initial }: { initial: CredentialStatus | nul
   const [success, setSuccess] = useState<string | null>(null);
   const [pending, start] = useTransition();
   const router = useRouter();
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaReset, setCaptchaReset] = useState(0);
+  // Wait until typing pauses, so the reCAPTCHA check is not rebuilt on every keystroke of the site key.
+  const [captchaKey, setCaptchaKey] = useState("");
+  const siteKeyDraft = drafts.recaptcha.site_key ?? "";
+  useEffect(() => {
+    const timer = setTimeout(() => setCaptchaKey(siteKeyDraft.trim()), 600);
+    return () => clearTimeout(timer);
+  }, [siteKeyDraft]);
   const clearAccess = useCallback(() => {
     const token = accessRef.current;
     accessRef.current = null;
@@ -106,9 +115,12 @@ function CustomCredentialsContent({ initial }: { initial: CredentialStatus | nul
     if (name === "native_push" && !confirmed && (action === "reset" || drafts.native_push.public_key !== access.settings.providers.native_push.values.public_key)) { setReset(null); setRotation(action); return; }
     setRotation(null); setReset(null); setError(null); setSuccess(null);
     start(async () => {
-      const result = await saveCredentialSettings(name, action, access.settings.revision, action === "reset" ? {} : drafts[name], access.access_token);
-      clearAccess();
+      const result = await saveCredentialSettings(name, action, access.settings.revision, action === "reset" ? {} : drafts[name], access.access_token, name === "recaptcha" && action === "save" ? captchaToken ?? undefined : undefined);
+      // Google accepts each checkbox token once, so every attempt needs a fresh tick.
+      if (name === "recaptcha") { setCaptchaToken(null); setCaptchaReset(value => value + 1); }
+      // A rejected key leaves the unlock and drafts in place so it can be fixed and saved again.
       if (!result.data) { setError(result.error); return; }
+      clearAccess();
       setSummary(summaryOf(result.data));
       setSuccess(action === "reset" ? "Original configuration restored. Credentials locked." : "Custom configuration saved. Credentials locked.");
       router.refresh();
@@ -121,7 +133,8 @@ function CustomCredentialsContent({ initial }: { initial: CredentialStatus | nul
       <p className="text-sm text-muted">{locked ? "Locked. Verify your email and security PIN to edit." : `Unlocked for one change. Locks in ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}.`}</p>
       <Button variant={locked ? "primary" : "outline"} disabled={pending} loading={pending && !verification} onClick={locked ? beginUnlock : clearAccess}>{locked ? "Unlock credentials" : "Lock credentials"}</Button>
     </div>
-    {error && <p role="alert" className="mt-4 text-sm text-danger">{error}</p>}
+    <FormError>{error}</FormError>
+    {error && <p className="mt-4 text-sm text-danger">{error}</p>}
     {success && <p role="status" className="mt-4 text-sm text-success">{success}</p>}
     <div className="mt-5 divide-y divide-line">{names.map(name => {
       const status = access?.settings.providers[name], info = summary?.providers[name], open = !locked && expanded === name;
@@ -131,6 +144,10 @@ function CustomCredentialsContent({ initial }: { initial: CredentialStatus | nul
         </button>
         {open && status && <form id={`credentials-${name}`} onSubmit={event => { event.preventDefault(); save(name, "save"); }} className="mt-4 flex min-w-0 flex-col gap-4">
           <fieldset disabled={pending} className="grid min-w-0 gap-4 sm:grid-cols-2">{fields[name].map(field => <div key={field.key} className="min-w-0"><TextField id={`custom-${name}-${field.key}`} label={field.label} type={field.secret ? "password" : field.key === "from" ? "email" : "text"} autoComplete="off" spellCheck={false} maxLength={4096} required={!field.optional && (!field.secret || status.source !== "custom" || !status.secrets[field.key])} value={drafts[name][field.key]} hint={field.secret ? status.source === "custom" && status.secrets[field.key] ? "Saved. Leave blank to keep it." : "Enter a custom secret." : field.hint} onChange={event => setDrafts(previous => ({ ...previous, [name]: { ...previous[name], [field.key]: event.target.value } }))} /></div>)}</fieldset>
+          {name === "recaptcha" && <div className="flex min-w-0 flex-col gap-2">
+            <p className="text-sm text-muted">Tick this check before saving. It uses the new site key, and saving verifies it with the new secret key, so invalid keys are refused.</p>
+            {captchaKey ? <LoginCaptcha siteKey={captchaKey} resetKey={captchaReset} onChange={setCaptchaToken} /> : <p className="text-sm text-muted">Enter the site key to show the check.</p>}
+          </div>}
           <div className="flex flex-wrap gap-3"><Button type="submit" disabled={pending} loading={pending}>Save custom configuration</Button>{status.source === "custom" && <Button variant="outline" disabled={pending} onClick={() => setReset(name)}>Use original configuration</Button>}</div>
         </form>}
       </div>;

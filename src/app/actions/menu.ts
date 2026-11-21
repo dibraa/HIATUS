@@ -81,18 +81,21 @@ export async function saveMenuItem(
   }
 
   const maySetAvailability = (await getCurrentUser())?.permissions.includes("menu.availability") === true;
+  // An edit sends availability only when the editor changed it, so a sold-out toggle made meanwhile is kept.
+  const originalAvailability = formData.get("original_is_available");
+  const availabilityChanged = originalAvailability === null || String(isAvailable) !== originalAvailability;
   const payload = {
     name, description: description || null, flavor, category, price,
     item_type: itemType, pricing_mode: pricingMode, serving_label: pricingMode === "fixed" ? servingLabel : null,
     size_pricing: { S: sizePrices.S - price, M: 0, L: sizePrices.L - price },
-    image_url: imageUrl || null, ...(!id || maySetAvailability ? { is_available: maySetAvailability && isAvailable } : {}), position: Number(formData.get("position") || 0),
+    image_url: imageUrl || null, ...(!id || (maySetAvailability && availabilityChanged) ? { is_available: maySetAvailability && isAvailable } : {}), position: Number(formData.get("position") || 0),
   };
 
   try {
     if (id) {
-      // Timestamp concurrency control: the server rejects the save if the item was written after this form loaded.
-      const writeTs = Number(formData.get("write_ts"));
-      await apiJson(`/menu/${id}`, { method: "PUT", token: token ?? undefined, body: JSON.stringify(formData.has("write_ts") && Number.isFinite(writeTs) ? { ...payload, write_ts: writeTs } : payload) });
+      // Only the admin whose editing turn this is can save (server/src/services/menu-edit-turns.js).
+      const editSession = String(formData.get("edit_session") ?? "");
+      await apiJson(`/menu/${id}`, { method: "PUT", token: token ?? undefined, body: JSON.stringify(editSession ? { ...payload, edit_session: editSession } : payload) });
     } else {
       await apiJson("/menu", { method: "POST", token: token ?? undefined, body: JSON.stringify(payload) });
     }
