@@ -6,6 +6,7 @@ import { SearchField } from "@/components/search-field";
 import { OrderProgress } from "@/components/order-progress";
 import { TicketBar, TicketRail } from "@/components/menu/ticket";
 import { ButtonLink } from "@/components/ui/button";
+import { BackLink } from "@/components/back-link";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getCurrentUser } from "@/lib/auth";
 import { getServerToken } from "@/lib/server-token";
@@ -65,6 +66,9 @@ export default async function MenuPage({
 
   return (
     <div>
+      <div className="mb-4">
+        <BackLink href="/" />
+      </div>
       <div className="grid items-start gap-6 xl:grid-cols-[13rem_minmax(0,1fr)_20rem]">
         <div className="sticky top-0 z-30 min-w-0 xl:top-4 xl:z-auto">
           <div className="-mx-6 flex h-[5.25rem] items-center bg-surface px-6 py-3 sm:-mx-8 sm:h-24 sm:px-8 xl:mx-0 xl:mb-6 xl:block xl:h-auto xl:px-0 xl:py-0">

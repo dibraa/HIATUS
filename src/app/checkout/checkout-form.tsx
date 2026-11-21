@@ -9,6 +9,7 @@ import { servingLabel } from "@/lib/sizes";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { placeOrder } from "@/app/actions/orders";
+import { CheckoutFormSkeleton } from "./checkout-form-skeleton";
 import type { Availability } from "@/lib/settings";
 import {
   ORDER_TYPE_HINTS,
@@ -60,15 +61,7 @@ export function CheckoutForm({
   const [error, setError] = useState<string | null>(null);
   const [placing, startPlacing] = useTransition();
 
-  if (!hydrated) {
-    return (
-      <div className="flex flex-col gap-4">
-        <div className="skeleton h-40 rounded-lg" />
-        <div className="skeleton h-32 rounded-lg" />
-        <div className="skeleton h-12 rounded-md" />
-      </div>
-    );
-  }
+  if (!hydrated) return <CheckoutFormSkeleton />;
 
   if (lines.length === 0) {
     return (

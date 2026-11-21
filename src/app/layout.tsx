@@ -141,7 +141,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               Admin and staff skip it entirely and lay out their own workspace. */}
           <MainContent>{children}</MainContent>
 
-          <SiteChrome kind="footer"><FooterVisibility><SiteFooter /></FooterVisibility></SiteChrome>
+          <SiteChrome kind="footer"><FooterVisibility guest={!user}><SiteFooter /></FooterVisibility></SiteChrome>
           <SiteChrome kind="customer-tabs">{showTabBar && <CustomerTabBar />}</SiteChrome>
         </Providers>
       </body>

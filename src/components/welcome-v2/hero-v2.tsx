@@ -1,0 +1,109 @@
+import Image from "next/image";
+import type { CSSProperties } from "react";
+import drinks from "@/assets/shop/new/drinks.webp";
+import { ButtonLink } from "@/components/ui/button";
+import { doorStatus } from "@/components/welcome-v2/door-status";
+import { ScrollScatter } from "@/components/welcome-v2/scroll-scatter";
+import type { BusinessHours } from "@/types/database";
+import styles from "./welcome-v2.module.css";
+
+/** Pill stickers around the photo. x/y place them on the frame; dx/dy is the
+ *  direction they drift as the page scrolls. Decorative only. */
+const STICKERS = [
+  { text: "Lami!", x: "-2%", y: "8%", r: -16, dx: -1, dy: -0.3, tone: "bg-card text-ink" },
+  { text: "(˘ᵕ˘)", x: "10%", y: "44%", r: 12, dx: -1, dy: 0, tone: "bg-warning-soft-bg text-ink" },
+  { text: "Break time", x: "-4%", y: "70%", r: 20, dx: -1, dy: 0.5, tone: "bg-accent text-accent-fg" },
+  { text: "Sarap!", x: "20%", y: "86%", r: -8, dx: -0.4, dy: 1, tone: "bg-secondary text-secondary-fg" },
+  { text: "Salamat!", x: "80%", y: "4%", r: 18, dx: 1, dy: -0.4, tone: "bg-danger-soft-bg text-ink" },
+  { text: "(っ˘ڡ˘ς)", x: "86%", y: "36%", r: -14, dx: 1, dy: 0, tone: "bg-cta text-cta-fg" },
+  { text: "Chill", x: "90%", y: "66%", r: 10, dx: 1, dy: 0.4, tone: "bg-success-soft-bg text-ink" },
+  { text: "Kape pa!", x: "70%", y: "88%", r: -20, dx: 0.5, dy: 1, tone: "bg-card text-ink" },
+];
+
+/**
+ * "Arrive", the playful take: a centred headline with one word on an orange
+ * block, the drinks photo below it, and stickers floating around the frame
+ * that scatter as you scroll away.
+ */
+export function HeroV2({ open, today }: { open: boolean; today: BusinessHours | null }) {
+  return (
+    <section aria-labelledby="v2-hero-heading" className="relative overflow-hidden pb-16 pt-12 sm:pt-16">
+      <div className="mx-auto max-w-6xl px-4 text-center">
+        <p className="eyebrow rise text-muted [--rise:0]">It’s time for a</p>
+        <h1
+          id="v2-hero-heading"
+          className="display rise mt-5 text-[clamp(3.25rem,1.4rem+7.6vw,8.5rem)] text-ink [--rise:1]"
+        >
+          <span className={`${styles.jelly} inline-block -rotate-2 rounded-xl bg-accent px-[0.16em] pt-[0.06em] text-accent-fg`}>
+            Hiatus
+          </span>{" "}
+          coffee
+          <br />
+          break
+        </h1>
+        <p className="rise mx-auto mt-snug max-w-[40ch] text-lg text-ink-soft [--rise:2]">
+          Breathe, slow down, and sip. Welcome to your daily hiatus in the heart of Malaybalay.
+        </p>
+        <div className="rise mt-stack flex flex-wrap items-center justify-center gap-3 [--rise:3]">
+          <span className={`${styles.spring} inline-flex`}>
+            <ButtonLink href="/login" size="lg">
+              Order ahead
+            </ButtonLink>
+          </span>
+          <span className={`${styles.spring} inline-flex`}>
+            <ButtonLink href="/menu" variant="outline" size="lg">
+              See the menu
+            </ButtonLink>
+          </span>
+        </div>
+        <p className="ui-caps mt-5 inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-2xs text-ink">
+          <span aria-hidden="true" className={`h-2 w-2 rounded-full ${open ? "bg-success" : "bg-muted"}`} />
+          {doorStatus(open, today)}
+        </p>
+      </div>
+
+      <ScrollScatter className="relative mx-auto mt-12 max-w-4xl px-6 sm:px-10">
+        <div className={`${styles.spring} ${styles.lift} matte -rotate-1`}>
+          <div className="matte-inner relative aspect-[4/3] sm:aspect-[16/10]">
+            <Image
+              src={drinks}
+              alt="Three cold drinks beside plates of food on a Hiatus table"
+              fill
+              loading="eager"
+              fetchPriority="high"
+              placeholder="blur"
+              sizes="(min-width: 1024px) 860px, 92vw"
+              className="object-cover object-[50%_45%]"
+            />
+          </div>
+        </div>
+
+        <div aria-hidden="true">
+          {STICKERS.map((s, i) => (
+            <span
+              key={s.text}
+              className={styles.sticker}
+              style={
+                {
+                  left: s.x,
+                  top: s.y,
+                  "--r": `${s.r}deg`,
+                  "--dx": s.dx,
+                  "--dy": s.dy,
+                  "--delay": `${i * -0.3}s`,
+                  "--in": `${0.5 + i * 0.08}s`,
+                } as CSSProperties
+              }
+            >
+              <span
+                className={`${styles.bob} ui-caps whitespace-nowrap rounded-full px-3 py-1.5 text-2xs shadow-[var(--hi-shadow-lg)] sm:px-4 sm:py-2 sm:text-xs ${s.tone}`}
+              >
+                {s.text}
+              </span>
+            </span>
+          ))}
+        </div>
+      </ScrollScatter>
+    </section>
+  );
+}
