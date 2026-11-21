@@ -19,15 +19,21 @@ export default function Loading() {
         <div className="counter-view-bar">
           <div className="counter-view-tabs">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex min-h-11 items-center">
+              <div key={i} className="flex min-h-[var(--c-tap-primary)] items-center">
                 <div className="skeleton h-4 w-14 rounded-sm" />
               </div>
             ))}
           </div>
+          {/* Search toggle and the "Refreshes every 15s" note (hidden on phones, as in staff.css). */}
+          <div className="counter-refresh-tools">
+            <div className="skeleton size-[var(--c-tap-min)] rounded-[var(--c-radius-sm)]" />
+            <div className="skeleton h-3 w-32 rounded-sm max-md:hidden" />
+          </div>
         </div>
         <div className="counter-payment-filters">
-          <div className="skeleton h-9 w-[6.5rem] rounded-[10px]" />
-          <div className="skeleton h-9 w-24 rounded-[10px]" />
+          {/* --c-tap-min: 36px with a mouse, 44px on touch screens. */}
+          <div className="skeleton h-[var(--c-tap-min)] w-[6.5rem] rounded-[var(--c-radius-sm)]" />
+          <div className="skeleton h-[var(--c-tap-min)] w-24 rounded-[var(--c-radius-sm)]" />
         </div>
         <div className="counter-lanes">
           {LANES.map((lane) => (

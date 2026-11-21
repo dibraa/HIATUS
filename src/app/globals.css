@@ -768,9 +768,11 @@ body:has(dialog[open] .dialog-toaster) .page-toaster {
    Reduced motion — honour the OS preference rather than merely shortening
    ========================================================================== */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  /* `.motion-ok` opts a page out (the guest welcome at `/`). :where keeps the
+     selector at zero specificity, the same as the bare `*` it replaces. */
+  :where(:not(.motion-ok, .motion-ok *)),
+  :where(:not(.motion-ok, .motion-ok *))::before,
+  :where(:not(.motion-ok, .motion-ok *))::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     /* Delay has to be zeroed too, not just duration. A staggered entrance uses

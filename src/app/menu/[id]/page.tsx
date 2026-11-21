@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ButtonLink } from "@/components/ui/button";
 import { notFound } from "next/navigation";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
@@ -12,10 +11,12 @@ import { aggregateRatings } from "@/lib/ratings";
 import type { MenuItem, Rating } from "@/types/database";
 import { FavoriteButton } from "@/components/favorite-button";
 import { getCurrentUser } from "@/lib/auth";
+import { BackLink } from "@/components/back-link";
 import { AddToCart } from "./add-to-cart";
 import { ReviewCard } from "./review-card";
 
 type Params = { params: Promise<{ id: string }> };
+type PageProps = Params & { searchParams: Promise<{ from?: string }> };
 type MenuRating = Omit<Rating, "user_id" | "menu_item_id"> & {
   _id: string;
   user_id: string | { full_name: string | null };
@@ -34,8 +35,9 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   };
 }
 
-export default async function MenuItemPage({ params }: Params) {
+export default async function MenuItemPage({ params, searchParams }: PageProps) {
   const { id } = await params;
+  const { from } = await searchParams;
   const token = await getServerToken();
 
   const raw = await apiJson<(MenuItem & { _id: string }) | null>(`/menu/${id}`).catch(() => null);
@@ -81,14 +83,10 @@ export default async function MenuItemPage({ params }: Params) {
 
   return (
     <div className="flex flex-col gap-12">
-      <nav aria-label="Menu navigation" className="-mb-4">
-        <ButtonLink href="/menu" variant="outline" size="md">
-          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="1.5">
-            <path d="m11.5 4.5-5.5 5.5 5.5 5.5M6 10h11" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to menu
-        </ButtonLink>
-      </nav>
+      {/* Opened from the landing page (?from=home): back goes home. */}
+      <div className="-mb-4">
+        <BackLink href={from === "home" ? "/" : "/menu"} />
+      </div>
 
       <div className="grid gap-8 lg:grid-cols-2 lg:gap-12">
         <div className="matte lg:sticky lg:top-24 lg:self-start">

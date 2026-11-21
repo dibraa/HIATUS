@@ -28,9 +28,14 @@ export async function fetchMenu(): Promise<MenuItem[] | null> {
   return raw ? raw.map((m) => ({ ...m, id: m._id ?? m.id })) : null;
 }
 
-export async function fetchRatingStats(): Promise<Map<string, RatingStat>> {
+/** Every rating, comments included; `[]` when the API is unreachable. */
+export async function fetchRatings(): Promise<Rating[]> {
   const raw = await apiJson<(Rating & { _id: string })[]>("/menu/ratings/all").catch(() => []);
-  return aggregateRatings(raw.map((r) => ({ ...r, id: r._id ?? r.id, menu_item_id: idOf(r.menu_item_id) })));
+  return raw.map((r) => ({ ...r, id: r._id ?? r.id, menu_item_id: idOf(r.menu_item_id) }));
+}
+
+export async function fetchRatingStats(): Promise<Map<string, RatingStat>> {
+  return aggregateRatings(await fetchRatings());
 }
 
 export async function fetchFavoriteIds(token: string): Promise<Set<string>> {

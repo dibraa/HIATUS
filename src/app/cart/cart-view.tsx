@@ -9,6 +9,7 @@ import { QuantityStepper } from "@/components/ui/quantity-stepper";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { SavePreset } from "./save-preset";
+import CartLoading from "./loading";
 
 export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
   const { lines, setQuantity, removeItem, totalPrice, totalItems, hydrated } = useCart();
@@ -16,18 +17,7 @@ export function CartView({ isLoggedIn }: { isLoggedIn: boolean }) {
   // The cart lives in localStorage, so the server renders it empty. Showing a
   // placeholder until hydration avoids flashing "your cart is empty" at
   // someone who has a full cart.
-  if (!hydrated) {
-    return (
-      <div className="mx-auto max-w-2xl">
-        <div className="skeleton h-8 w-40 rounded-md" />
-        <div className="mt-6 flex flex-col gap-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="skeleton h-24 rounded-lg" />
-          ))}
-        </div>
-      </div>
-    );
-  }
+  if (!hydrated) return <CartLoading />;
 
   if (lines.length === 0) {
     return (

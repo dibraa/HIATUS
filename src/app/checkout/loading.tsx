@@ -1,25 +1,21 @@
-/** Checkout skeleton — header, then the form layout. */
+import { CheckoutFormSkeleton } from "./checkout-form-skeleton";
+
+/**
+ * Checkout skeleton — the page header, then CheckoutForm's cards (shared with
+ * the form's own pre-hydration placeholder).
+ */
 export default function Loading() {
   return (
-    <div aria-busy="true" className="mx-auto max-w-lg py-2">
+    <div aria-busy="true">
       <p className="sr-only" role="status">
         Loading checkout…
       </p>
 
-      <div aria-hidden="true">
-        {/* Page header */}
-        <div className="mb-6 space-y-2">
-          <div className="skeleton h-9 w-32 rounded-md" />
-          <div className="skeleton h-4 w-56 max-w-full rounded" />
+      <div aria-hidden="true" className="mx-auto max-w-lg py-2">
+        <div className="mb-heading">
+          <div className="skeleton display h-lh w-[4.3em] max-w-full rounded-md text-6xl" />
         </div>
-
-        {/* Form fields */}
-        <div className="flex flex-col gap-4">
-          <div className="skeleton h-[70px] rounded-md" />
-          <div className="skeleton h-[70px] rounded-md" />
-          <div className="skeleton h-[70px] rounded-md" />
-          <div className="skeleton h-12 rounded-md" />
-        </div>
+        <CheckoutFormSkeleton />
       </div>
     </div>
   );
