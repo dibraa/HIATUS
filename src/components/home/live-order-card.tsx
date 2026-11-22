@@ -29,6 +29,11 @@ export function LiveOrderCard({ order, typicalMinutes }: { order: ActiveOrder; t
         {order.status !== "ready" && (
           <WaitEstimate createdAt={order.created_at} typicalMinutes={typicalMinutes} tone="inverse" />
         )}
+        {order.status === "ready" && (
+          <p className="mt-3 text-xs font-medium text-inverse-card-fg">
+            Walk to the counter to pay and collect your order.
+          </p>
+        )}
       </div>
       <Link
         href={`/orders/${order.id}`}

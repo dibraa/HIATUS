@@ -19,9 +19,8 @@ import { AdminIcon } from "@/components/admin-icon";
 /**
  * Focused payment for a ticket without leaving the three-lane counter.
  *
- * Customers pay before their drink is made, so an unpaid New order pays and
- * starts in one press, and an unpaid Ready order (the rare one that slipped
- * through) pays and hands over. A Making order only records the payment.
+ * Customers pay when their drink is ready for pickup. Payment stays separate
+ * from the making and handover status changes.
  */
 export function OrderDetail({
   order,
@@ -47,19 +46,10 @@ export function OrderDetail({
   const unpaid = order.payment_status === "unpaid";
   const reversed =
     order.payment_status === "refunded" || order.payment_status === "voided";
-  const then: PaymentThen | undefined =
-    order.status === "pending"
-      ? "preparing"
-      : order.status === "ready"
-        ? "completed"
-        : undefined;
+  const then: PaymentThen | undefined = undefined;
   const title = !unpaid
     ? "Order details"
-    : !can("counter.prepare") ? "Take payment" : then === "preparing"
-      ? "Pay & start"
-      : then === "completed"
-        ? "Pay & hand over"
-        : "Take payment";
+    : "Take payment";
 
   useEffect(() => {
     const el = dialog.current;
@@ -123,8 +113,7 @@ export function OrderDetail({
         onDone={onDone}
       />
       <div className="grid gap-2 border-t border-line pt-4">
-        {/* An unpaid order moves on through the payment button above; this
-            one is only for an order that is already paid. */}
+        {/* This is only for an order that is already paid. */}
         {next && !reversed && !unpaid && can("counter.prepare") && (
           <Button
             loading={pending}

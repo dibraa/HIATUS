@@ -99,7 +99,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {isActive && <WaitEstimate createdAt={order.created_at} typicalMinutes={typicalMinutes} />}
           {order.status === "ready" && order.order_type === "takeout" && (
             <p className="mt-2 text-sm text-muted">
-              Come to the counter and give the code{" "}
+              Walk to the counter to pay and collect. Give the cashier code{" "}
               <span className="font-mono font-semibold text-ink">{orderCode(order.id, order.pickup_code)}</span>.
             </p>
           )}

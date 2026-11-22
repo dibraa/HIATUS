@@ -68,12 +68,9 @@ export function QueueCard({
   // Amber is reserved for this one state, so it stays readable at a glance.
   const late = waiting && minutes >= lateAfter;
   const overdue = waiting && minutes >= overAfter;
-  // Customers pay at the counter before their drink is made, so an unpaid New
-  // order's next step IS payment: one cash tap records it and starts making.
-  // An unpaid Ready order, the rare one that slipped through, pays and is
-  // handed over in the same tap.
+  // Customers pay only when the drink reaches Ready for pickup.
   const payFirst =
-    can("counter.payment") && unpaid && (order.status === "pending" || order.status === "ready");
+    can("counter.payment") && unpaid && order.status === "ready";
   const [keypad, setKeypad] = useState(false);
   const [typed, setTyped] = useState("");
   /** A cash tap waiting out its undo window; `left` counts down to recording. */
@@ -88,8 +85,7 @@ export function QueueCard({
     ? order.order_items.slice(0, 1)
     : order.order_items;
   const hidden = order.order_items.length - shown.length;
-  // "Not paid" only where it is the exception. In New, unpaid is the normal
-  // state and the "Pay & start" button already says so.
+  // "Not paid" is most relevant once an order reaches Ready for pickup.
   const tags = [
     paidLine?.startsWith("Cash ") && paidLine,
     unpaid && order.status !== "pending" && "Not paid",
@@ -110,14 +106,11 @@ export function QueueCard({
     });
   }
 
-  /** Records the cash, then carries the order on: New starts making, Ready is handed over. */
+  /** Records cash at pickup; status changes remain separate. */
   async function record(cash: number): Promise<{ error: string | null }> {
     const total = Math.round(order.total_amount * 100) / 100;
     const paid = await takePayment(order.id, "cash", total, cashReference(cash, total));
-    if (paid.error) return paid;
-    if (!can("counter.prepare")) return { error: null };
-    const moved = await advanceOrderStatus(order.id, order.status === "pending" ? "preparing" : "completed");
-    return moved.error ? { error: `${formatPrice(cash)} cash is recorded, but ${code} couldn't move on: ${moved.error}` } : { error: null };
+    return paid;
   }
 
   function commit(cash: number) {
@@ -160,7 +153,7 @@ export function QueueCard({
   // Contextual links beside "More actions"; Ready has two, both short, so the row still fits.
   const links: { label: string; onClick: () => void }[] = [];
   let link: { label: string; onClick: () => void } | null = null;
-  if (unpaid && order.status === "preparing" && can("counter.payment"))
+  if (unpaid && order.status === "ready" && can("counter.payment"))
     link = { label: "Take payment", onClick: onPayment };
   else if (order.status === "pending" && !reversed && can("counter.prepare"))
     link =

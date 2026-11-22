@@ -9,11 +9,8 @@ import type { PaymentMethod } from "@/types/database";
 import type { QueueOrder } from "@/types/staff";
 
 /**
- * Hand-over with the payment folded in: the customer is at the counter, the
- * barista takes the money and hands the drink over in ONE step — no trip to
- * the POS tab. It calls the same server actions the POS uses (takePayment,
- * then advanceOrderStatus → completed), so the "pay before hand-over" rule
- * stays enforced by the API, not by this screen.
+ * Pickup handover: the customer is at the counter, staff record the payment,
+ * then complete the ready order separately.
  *
  * Beside the table from `lg`; a bottom sheet over a scrim below that. Esc and
  * the labelled close both dismiss it; nothing is recorded until the one

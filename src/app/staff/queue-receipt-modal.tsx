@@ -99,11 +99,10 @@ export function QueueReceiptModal({
     );
 
   const next = can("counter.prepare") ? NEXT_STATUS[order.status] : undefined;
-  // Payment comes before making, so an unpaid New or Ready order goes to the
-  // payment dialog, which moves it on once the money is recorded.
+  // Payment is due when the order reaches Ready for pickup.
   const payFirst =
     can("counter.payment") && order.payment_status === "unpaid" &&
-    (order.status === "pending" || order.status === "ready");
+    order.status === "ready";
   const primary = reversed ? null : next === "completed" && !paid && !payFirst ? <p className="text-sm text-muted">Awaiting payment before handover.</p> : payFirst ? (
     <Button
       size="md"
@@ -111,7 +110,7 @@ export function QueueReceiptModal({
       onClick={onHandOver}
       className="min-h-12 w-full"
     >
-      {!can("counter.prepare") ? "Take payment" : order.status === "pending" ? "Pay & start" : "Pay & hand over"}
+      Take payment
     </Button>
   ) : next === "completed" ? (
     <Button

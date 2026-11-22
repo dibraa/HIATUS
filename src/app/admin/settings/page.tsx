@@ -13,6 +13,7 @@ import { AuthenticationSettingsForm } from "./authentication-settings";
 import { NotificationSettingsForm } from "./notification-settings";
 import { DataError } from "@/components/ui/data-error";
 import { CustomCredentials } from "./custom-credentials";
+import { BackupRestore } from "./backup-restore";
 import { readCredentialSettings } from "@/app/actions/credentials";
 import {
   BusinessHoursForm,
@@ -82,6 +83,7 @@ export default async function SettingsPage() {
             <AuthenticationSettingsForm settings={authentication} error={authenticationError} />
             <CustomCredentials initial={credentials.data} />
           </section>
+          <BackupRestore />
 
 
         </div>

@@ -54,10 +54,8 @@ const THEN_COPY: Record<PaymentThen, { action: string; done: string; failed: str
 /**
  * One order at the till: what is owed, and the one button that records it.
  *
- * Customers pay at the counter before their drink is made, so the payment
- * usually carries the order straight on (`then`): "Paid ₱120 · start making"
- * records the payment and moves the order in one press. The button names the
- * amount and the method, so it is the confirmation; there is no second dialog.
+ * Customers normally pay at the counter when their drink is ready for pickup.
+ * The button names the amount and method; status changes are kept separate.
  * Short cash disables it, and a wrong entry is corrected with refund or void,
  * which still ask for a reason and confirm.
  *

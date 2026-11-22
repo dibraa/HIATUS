@@ -247,7 +247,7 @@ export function CheckoutForm({
 
           <p className="mt-4 rounded-md bg-raised px-3 py-2.5 text-sm text-ink-soft">
             {ORDER_TYPE_LABELS[orderType]} &middot;{" "}
-            {PAYMENT_METHOD_LABELS[method].toLowerCase()} at the counter &middot;
+            Pay {PAYMENT_METHOD_LABELS[method].toLowerCase()} at the counter when your order is ready &middot;
             ready in {formatWait(estimatedMinutes)}
           </p>
 

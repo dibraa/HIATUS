@@ -58,6 +58,7 @@ export function RatingForm({
 
       <div>
         <label htmlFor={`${commentId}-attachment`} className="ui-caps text-2xs text-ink-soft">Add a photo or video (optional)</label>
+        <p className="mt-1.5 text-xs text-muted">Maximum file size: 16 MB.</p>
         <input
           id={`${commentId}-attachment`}
           type="file"
@@ -71,9 +72,9 @@ export function RatingForm({
               event.target.value = "";
               return;
             }
-            if (file && file.size > 10 * 1024 * 1024) {
+            if (file && file.size > 16 * 1024 * 1024) {
               setAttachment(null);
-              setAttachmentError("Choose a file smaller than 10 MB.");
+              setAttachmentError("Choose a file smaller than 16 MB.");
               event.target.value = "";
               return;
             }

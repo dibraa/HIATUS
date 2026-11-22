@@ -9,6 +9,7 @@ const sections = [
   ["settings-shop", "Shop details"],
   ["settings-messages", "Notifications"],
   ["settings-api", "API controls"],
+  ["settings-backup", "Backup & restore"],
 ] as const;
 
 export function SettingsNavigation() {

@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   logging: { serverFunctions: false, incomingRequests: false },
-  experimental: { serverActions: { bodySizeLimit: "6mb" } },
+  experimental: { serverActions: { bodySizeLimit: "16mb" } },
   reactCompiler: true,
   images: {
     remotePatterns: [{ protocol: "https", hostname: "**" }, { protocol: "http", hostname: "**" }],
@@ -22,16 +22,22 @@ const nextConfig: NextConfig = {
     ];
   },
   async rewrites() {
-    return [
-      {
-        source: "/api/:path*",
-        destination: "http://localhost:4000/api/:path*",
-      },
-      {
-        source: "/uploads/:path*",
-        destination: "http://localhost:4000/uploads/:path*",
-      },
-    ];
+    // Fallback rewrites run after Next's static and dynamic routes. Using the
+    // default array form would proxy `/api/*` before dynamic route handlers
+    // such as `/api/admin/backup/[id]/download`, stripping the cookie-based
+    // Authorization header those handlers add server-side.
+    return {
+      fallback: [
+        {
+          source: "/api/:path*",
+          destination: "http://localhost:4000/api/:path*",
+        },
+        {
+          source: "/uploads/:path*",
+          destination: "http://localhost:4000/uploads/:path*",
+        },
+      ],
+    };
   },
 };
 

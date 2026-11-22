@@ -5,8 +5,7 @@ export const dynamic = "force-dynamic";
 
 // Menu edit turns (server/src/services/menu-edit-turns.js). The edit dialog checks in here every few
 // seconds; the token lives in an httpOnly cookie, so the browser cannot call the API directly.
-// The item id travels in the body because this route must stay static: next.config.ts rewrites
-// /api/* to Express before dynamic routes are matched, so an /api/.../[id] route would never run.
+// The item id travels in the body to keep this route static and its URL stable.
 async function forward(request: Request, method: "POST" | "DELETE") {
   const token = await getServerToken();
   if (!token) return Response.json({ error: "Sign in as an administrator to edit the menu." }, { status: 401 });
