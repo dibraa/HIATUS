@@ -67,7 +67,7 @@ export function CustomerTabBar() {
               key={tab.href}
               href={tab.href}
               aria-current={current ? "page" : undefined}
-              className={`ui-caps relative flex flex-col items-center justify-center gap-1 text-[0.6875rem] ${
+              className={`ui-caps relative flex flex-col items-center justify-center gap-1 text-[0.75rem] ${
                 current ? "text-ink" : "text-muted"
               }`}
             >

@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { CSSProperties } from "react";
-import drinks from "@/assets/shop/new/drinks.webp";
+import heroImage from "@/assets/shop/new/ahhhhh.jpeg";
 import { ButtonLink } from "@/components/ui/button";
 import { doorStatus } from "@/components/welcome-v2/door-status";
 import { ScrollScatter } from "@/components/welcome-v2/scroll-scatter";
@@ -66,8 +66,8 @@ export function HeroV2({ open, today }: { open: boolean; today: BusinessHours | 
         <div className={`${styles.spring} ${styles.lift} matte -rotate-1`}>
           <div className="matte-inner relative aspect-[4/3] sm:aspect-[16/10]">
             <Image
-              src={drinks}
-              alt="Three cold drinks beside plates of food on a Hiatus table"
+              src={heroImage}
+              alt="Three friends dining together at a wooden table in a warmly lit cafe"
               fill
               loading="eager"
               fetchPriority="high"

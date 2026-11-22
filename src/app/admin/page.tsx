@@ -43,7 +43,7 @@ function SalesTrend({ data }: { data: SalesReportRow[] }) {
         <polyline points={line} fill="none" stroke="var(--hi-accent)" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
         {points.map((p, i) => { const [x, y] = p.split(","); return <circle key={i} cx={x} cy={y} r="1.3" fill="var(--hi-accent)" vectorEffect="non-scaling-stroke" />; })}
       </svg>
-      <div className="absolute inset-x-0 bottom-0 flex justify-between text-[11px] text-muted"><span>7 days ago</span><span>Today</span></div>
+      <div className="absolute inset-x-0 bottom-0 flex justify-between text-[12px] text-muted"><span>7 days ago</span><span>Today</span></div>
     </div>
   );
 }
