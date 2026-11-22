@@ -1,7 +1,9 @@
+import { ViewTransition } from "react";
 import { DrinkBuilder } from "@/components/welcome-v2/drink-builder";
 import { DrinkParade } from "@/components/welcome-v2/drink-parade";
 import { HeroV2 } from "@/components/welcome-v2/hero-v2";
 import { ReviewsMarquee, type Review } from "@/components/welcome-v2/reviews-marquee";
+import { SectionNav, type NavSection } from "@/components/welcome-v2/section-nav";
 import { VisitV2 } from "@/components/welcome-v2/visit-v2";
 import { popularItems } from "@/lib/customer-data";
 import { aggregateRatings } from "@/lib/ratings";
@@ -41,14 +43,31 @@ export function GuestWelcomeV2({
     .slice(0, 16)
     .map((r) => ({ id: r.id, text: r.comment!.trim(), stars: r.rating, item: names.get(r.menu_item_id) ?? null }));
 
+  // Same conditions as the render below, so the nav lists only sections on the page.
+  const sections: NavSection[] = [
+    { id: "v2-hero-heading", label: "Welcome" },
+    ...(favorites.length > 0
+      ? [
+          { id: "v2-parade-heading", label: "Favorites" },
+          { id: "v2-builder-heading", label: "Build yours" },
+        ]
+      : []),
+    ...(reviews.length > 0 ? [{ id: "v2-reviews-heading", label: "Reviews" }] : []),
+    { id: "v2-visit-heading", label: "Visit" },
+  ];
+
   return (
-    // motion-ok: this page animates even under prefers-reduced-motion (globals.css).
-    <div className={`full-bleed motion-ok -my-8 sm:-my-10 ${styles.page}`}>
-      <HeroV2 open={open} today={today} />
-      {favorites.length > 0 && <DrinkParade drinks={favorites} />}
-      {favorites.length > 0 && <DrinkBuilder drinks={favorites} />}
-      {reviews.length > 0 && <ReviewsMarquee reviews={reviews} />}
-      <VisitV2 open={open} hours={settings.businessHours} today={today} />
-    </div>
+    // Cross-fades the page in and out on navigation to and from `/` (browser default animation).
+    <ViewTransition>
+      {/* motion-ok: this page animates even under prefers-reduced-motion (globals.css). */}
+      <div className={`full-bleed motion-ok -my-8 sm:-my-10 ${styles.page}`}>
+        <HeroV2 open={open} today={today} />
+        {favorites.length > 0 && <DrinkParade drinks={favorites} />}
+        {favorites.length > 0 && <DrinkBuilder drinks={favorites} />}
+        {reviews.length > 0 && <ReviewsMarquee reviews={reviews} />}
+        <VisitV2 open={open} hours={settings.businessHours} today={today} />
+        <SectionNav sections={sections} />
+      </div>
+    </ViewTransition>
   );
 }
