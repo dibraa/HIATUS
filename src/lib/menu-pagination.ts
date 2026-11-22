@@ -1,4 +1,4 @@
-export const MENU_PAGE_SIZE = 8;
+export const MENU_PAGE_SIZE = 12;
 
 /** Keep malformed URLs and shrinking filter results inside the available pages. */
 export function menuPage(total: number, requested?: string) {

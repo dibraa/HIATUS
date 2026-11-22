@@ -109,7 +109,7 @@ export default async function MenuPage({
               state={{ category, flavor, query }}
               categoryRowClassName="xl:hidden"
             />
-            {isFiltered && (
+            {isFiltered && !query && (
               <Link
                 href="/menu"
                 className="ui-caps inline-flex min-h-11 items-center self-start text-2xs text-accent-ink underline underline-offset-4 hover:text-ink"

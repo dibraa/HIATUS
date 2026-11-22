@@ -13,14 +13,14 @@ function load(file) {
 }
 const { menuPage } = load('../src/lib/menu-pagination.ts');
 const { buildHref } = load('../src/components/menu-filters.tsx');
-test('41 products produce six non-overlapping pages with eight items except the last', () => {
+test('41 products produce four non-overlapping pages with twelve items except the last', () => {
   const products = Array.from({ length: 41 }, (_, i) => i);
   const selected = [];
-  for (let i = 1; i <= 6; i++) {
+  for (let i = 1; i <= 4; i++) {
     const p = menuPage(products.length, String(i));
-    assert.equal(p.pages, 6);
+    assert.equal(p.pages, 4);
     const items = products.slice(p.start, p.end);
-    assert.equal(items.length, i === 6 ? 1 : 8);
+    assert.equal(items.length, i === 4 ? 5 : 12);
     selected.push(...items);
   }
   assert.deepEqual(selected, products);
@@ -29,7 +29,7 @@ test('invalid pages and smaller filtered results never create an empty extra pag
   for (const value of [undefined, '', '0', '-1', '1.5', 'abc', 'Infinity', '999999999999999999999']) {
     assert.equal(menuPage(41, value).page, 1);
   }
-  assert.equal(menuPage(41, '999').page, 6);
+  assert.equal(menuPage(41, '999').page, 4);
   assert.equal(menuPage(6, '6').page, 1);
   assert.equal(menuPage(0, '2').start, 0);
 });

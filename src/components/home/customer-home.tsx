@@ -4,6 +4,7 @@ import { MenuItemCard } from "@/components/menu-item-card";
 import { CategoryBlocks } from "@/components/home/category-blocks";
 import { LiveOrderCard } from "@/components/home/live-order-card";
 import { UsualOrders } from "@/components/home/usual-orders";
+import { ButtonLink } from "@/components/ui/button";
 import { formatTime } from "@/lib/hours";
 import type { ActiveOrder } from "@/lib/customer-data";
 import type { RatingStat } from "@/lib/ratings";
@@ -81,7 +82,7 @@ export function CustomerHome({
       )}
 
       {categories.length > 0 && (
-        <Section id="browse" title="Browse" link={{ href: "/menu", label: "Full menu" }}>
+        <Section id="browse" title="Browse" link={{ href: "/menu", label: "Full menu", button: true }}>
           <CategoryBlocks categories={categories} />
         </Section>
       )}
@@ -118,7 +119,7 @@ function Section({
 }: {
   id: string;
   title: string;
-  link?: { href: string; label: string };
+  link?: { href: string; label: string; button?: boolean };
   children: ReactNode;
 }) {
   return (
@@ -126,9 +127,15 @@ function Section({
       <div className="mb-4 flex items-end justify-between gap-3">
         <h2 id={`${id}-heading`} className="display text-4xl text-ink sm:text-5xl">{title}</h2>
         {link && (
-          <Link href={link.href} className="inline-flex min-h-11 items-center text-sm font-medium text-accent-ink underline-offset-4 hover:underline">
-            {link.label}
-          </Link>
+          link.button ? (
+            <ButtonLink href={link.href} variant="outline" size="sm">
+              {link.label}
+            </ButtonLink>
+          ) : (
+            <Link href={link.href} className="inline-flex min-h-11 items-center text-sm font-medium text-accent-ink underline-offset-4 hover:underline">
+              {link.label}
+            </Link>
+          )
         )}
       </div>
       {children}

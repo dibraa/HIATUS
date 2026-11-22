@@ -1,19 +1,20 @@
-import Form from "next/form";
+"use client";
+
+import { useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 /**
  * Menu search.
  *
- * A plain form targeting `/` with a `q` param — `next/form` upgrades the
- * submission to a client-side navigation (and prefetches the result route)
- * where JS is available, and falls back to a normal GET where it is not. The
- * filtering itself happens on the server in the page component, so search
- * works with JS disabled and every result set is a shareable URL.
+ * Typing updates the `q` URL parameter with a short debounce. This keeps the
+ * search shareable and back-button friendly while removing the need for a
+ * submit action.
  */
 export function SearchField({
   query,
   /** Carried through so searching does not silently drop the active flavour filter. */
-  flavor,
-  category,
+  flavor: _flavor,
+  category: _category,
   className = "",
   id = "menu-search",
 }: {
@@ -23,8 +24,35 @@ export function SearchField({
   className?: string;
   id?: string;
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [value, setValue] = useState(query ?? "");
+
+  useEffect(() => {
+    setValue(query ?? "");
+  }, [query]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      const currentQuery = (searchParams.get("q") ?? "").trim();
+      const nextQuery = value.trim();
+      if (currentQuery === nextQuery) return;
+
+      const params = new URLSearchParams(searchParams.toString());
+      if (nextQuery) params.set("q", nextQuery);
+      else params.delete("q");
+      params.delete("page");
+
+      const qs = params.toString();
+      router.replace(`${pathname}${qs ? `?${qs}` : ""}`, { scroll: false });
+    }, 180);
+
+    return () => window.clearTimeout(timeout);
+  }, [pathname, router, searchParams, value]);
+
   return (
-    <Form action="/menu" scroll={false} className={`relative ${className}`}>
+    <div className={`relative ${className}`}>
       <label htmlFor={id} className="sr-only">
         Search the menu
       </label>
@@ -45,21 +73,12 @@ export function SearchField({
         id={id}
         type="search"
         name="q"
-        defaultValue={query}
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
         placeholder="Search food, drinks or flavours"
         autoComplete="off"
-        className="h-12 w-full rounded-md border border-line-strong bg-card pl-10 pr-24 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink focus:border-ink focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+        className="h-12 w-full rounded-md border border-line-strong bg-card pl-10 pr-4 text-sm text-ink placeholder:text-muted transition-colors hover:border-ink focus:border-ink focus:outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
       />
-
-      {category && <input type="hidden" name="category" value={category} />}
-      {flavor && <input type="hidden" name="flavor" value={flavor} />}
-
-      <button
-        type="submit"
-        className="ui-caps absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-md bg-cta px-4 text-2xs text-cta-fg transition-colors hover:bg-cta-hover"
-      >
-        Search
-      </button>
-    </Form>
+    </div>
   );
 }
