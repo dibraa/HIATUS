@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useRef, useState } from "react";
 import { ProductImage } from "@/components/ui/product-image";
+import { gsap, useGSAP, HIATUS_DUR, HIATUS_EASE, MOTION_MEDIA } from "@/lib/gsap";
 import { formatPrice } from "@/lib/format";
 import { priceForSize } from "@/lib/sizes";
 import type { MenuItem } from "@/types/database";
@@ -11,117 +12,154 @@ import styles from "./welcome-v2.module.css";
 /** One soft tint per slide, so the page changes colour as the drinks pass. */
 const TINTS = ["bg-accent-soft", "bg-success-soft-bg", "bg-warning-soft-bg", "bg-danger-soft-bg", "bg-raised"];
 
-/** Spring pull toward the scroll position, and how much speed survives each
- *  frame. Lower damping or higher pull = more wobble when scrolling stops. */
-const PULL = 0.1;
-const DAMPING = 0.68;
-
 const pad = (n: number) => String(n).padStart(2, "0");
-const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
 /**
- * "Crowd favorites": the section pins under the navbar and vertical scrolling
- * slides the drinks past sideways, one per screen, with a counter and a
- * progress bar. The slide position chases the scroll on a spring, so it
- * overshoots and settles; it goes straight into `--p` on the section, and
- * only the active index is React state.
+ * "Crowd favorites": GSAP ScrollTrigger pins the stage below the navbar and
+ * scrubs the drinks horizontally with GPU-composited xPercent + scaleX progress.
+ * Under prefers-reduced-motion, pinning is disabled and slides stack calmly.
  */
 export function DrinkParade({ drinks }: { drinks: MenuItem[] }) {
   const sectionRef = useRef<HTMLElement>(null);
-  const frameRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const progressRef = useRef<HTMLSpanElement>(null);
+  const activeRef = useRef(0);
   const [active, setActive] = useState(0);
   const n = drinks.length;
 
-  useEffect(() => {
-    const section = sectionRef.current;
-    const pinned = frameRef.current;
-    if (!section || !pinned) return;
-    let frame = 0;
-    let target = 0;
-    let pos: number | null = null;
-    let velocity = 0;
+  useGSAP(
+    () => {
+      const stage = stageRef.current;
+      const track = trackRef.current;
+      const progressBar = progressRef.current;
+      if (!stage || !track || n <= 1) return;
 
-    const measure = () => {
-      // Pinned from the moment the section's top reaches the sticky offset
-      // until its bottom does: that stretch is the whole sideways trip.
-      const stickyTop = parseFloat(getComputedStyle(pinned).top) || 0;
-      const travel = section.offsetHeight - pinned.offsetHeight;
-      target = travel > 0 ? clamp01((stickyTop - section.getBoundingClientRect().top) / travel) : 0;
-    };
+      const mm = gsap.matchMedia();
+      mm.add({ motion: MOTION_MEDIA.motion, reduce: MOTION_MEDIA.reduce }, (context) => {
+        if (context.conditions?.reduce) return;
 
-    const tick = () => {
-      frame = 0;
-      if (pos === null) pos = target; // first paint lands in place, no spring
-      velocity = (velocity + (target - pos) * PULL) * DAMPING;
-      pos += velocity;
-      if (Math.abs(target - pos) < 0.0005 && Math.abs(velocity) < 0.0005) {
-        pos = target;
-        velocity = 0;
-      } else {
-        frame = requestAnimationFrame(tick);
-      }
-      // Overshoot past either end would show empty page, so the ends hold.
-      const shown = clamp01(pos);
-      section.style.setProperty("--p", String(shown));
-      setActive(Math.round(shown * (n - 1)));
-    };
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: stage,
+            start: "top 64px",
+            end: () => `+=${Math.round((n - 1) * window.innerHeight * 1.25)}`,
+            pin: true,
+            pinSpacing: true,
+            scrub: 1.4,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+            onUpdate: (self) => {
+              const next = Math.min(n - 1, Math.max(0, Math.round(self.progress * (n - 1))));
+              if (next !== activeRef.current) {
+                activeRef.current = next;
+                setActive(next);
+              }
+            },
+          },
+        });
 
-    const onScroll = () => {
-      measure();
-      if (!frame) frame = requestAnimationFrame(tick);
-    };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-      cancelAnimationFrame(frame);
-    };
-  }, [n]);
+        // Horizontal scroll tween MUST use ease: "none" so scroll position maps 1:1.
+        tl.to(track, {
+          xPercent: -((n - 1) / n) * 100,
+          ease: "none",
+        });
+
+        if (progressBar) {
+          gsap.set(progressBar, { scaleX: 1 / n, transformOrigin: "left center" });
+          tl.to(progressBar, { scaleX: 1, ease: "none" }, 0);
+        }
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef, dependencies: [n] }
+  );
+
+  // Subtle arrival settle on the newly active slide's drink visual and copy.
+  useGSAP(
+    () => {
+      const root = sectionRef.current;
+      if (!root) return;
+      const slide = root.querySelector<HTMLElement>(`[data-parade-slide="${active}"]`);
+      if (!slide) return;
+      const visual = slide.querySelector<HTMLElement>("[data-slide-visual]");
+      const copy = slide.querySelector<HTMLElement>("[data-slide-copy]");
+      const counter = root.querySelector<HTMLElement>("[data-parade-counter]");
+
+      const mm = gsap.matchMedia();
+      mm.add({ motion: MOTION_MEDIA.motion, reduce: MOTION_MEDIA.reduce }, (context) => {
+        if (context.conditions?.reduce) return;
+        if (visual) {
+          gsap.fromTo(
+            visual,
+            { scale: 0.96, rotation: -5.5 },
+            { scale: 1, rotation: -4, duration: HIATUS_DUR.reveal, ease: HIATUS_EASE.tactile, overwrite: "auto" }
+          );
+        }
+        if (copy) {
+          gsap.fromTo(
+            copy,
+            { y: 10, opacity: 0.65 },
+            { y: 0, opacity: 1, duration: HIATUS_DUR.reveal, ease: HIATUS_EASE.arrive, overwrite: "auto" }
+          );
+        }
+        if (counter) {
+          gsap.fromTo(
+            counter,
+            { y: 3, opacity: 0.6 },
+            { y: 0, opacity: 1, duration: HIATUS_DUR.state, ease: HIATUS_EASE.tactile, overwrite: "auto" }
+          );
+        }
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef, dependencies: [active] }
+  );
 
   return (
-    <section
-      ref={sectionRef}
-      aria-labelledby="v2-parade-heading"
-      className="relative"
-      style={{ height: `calc(${n} * (100svh - 4rem))` }}
-    >
-      <div ref={frameRef} className="sticky top-16 h-[calc(100svh-4rem)] overflow-hidden">
+    <section ref={sectionRef} aria-labelledby="v2-parade-heading" className="relative">
+      <div
+        ref={stageRef}
+        className="relative h-[calc(100svh-4rem)] overflow-hidden motion-reduce:h-auto"
+      >
         <div
-          className="flex h-full"
-          style={{
-            width: `${n * 100}%`,
-            transform: `translateX(calc(var(--p, 0) * -${((n - 1) / n) * 100}%))`,
-          }}
+          ref={trackRef}
+          className="flex h-full will-change-transform motion-reduce:block motion-reduce:h-auto motion-reduce:!w-full"
+          style={{ width: `${n * 100}%` }}
         >
           {drinks.map((item, i) => (
-            <div key={item.id} className="h-full" style={{ width: `${100 / n}%` }}>
-              <Slide item={item} index={i} total={n} active={i === active} />
+            <div
+              key={item.id}
+              data-parade-slide={i}
+              className="h-full shrink-0 motion-reduce:h-auto motion-reduce:!w-full"
+              style={{ width: `${100 / n}%` }}
+            >
+              <Slide item={item} index={i} total={n} />
             </div>
           ))}
         </div>
 
-        <div className="pointer-events-none absolute left-4 top-6 sm:left-8">
+        <div className="pointer-events-none absolute left-4 top-6 sm:left-8 motion-reduce:static motion-reduce:px-6 motion-reduce:pt-8">
           <p className="eyebrow text-muted">Our favorites</p>
           <h2 id="v2-parade-heading" className="display mt-2 text-4xl text-ink">
             Crowd{" "}
-            <span
-              className={`${styles.jelly} inline-block rounded-lg bg-secondary px-[0.16em] pt-[0.06em] text-secondary-fg`}
-            >
+            <span className="inline-block rounded-lg bg-secondary px-[0.16em] pt-[0.06em] text-secondary-fg">
               favorites
             </span>
           </h2>
         </div>
 
-        <div className="absolute inset-x-4 bottom-6 flex items-center gap-4 sm:inset-x-8">
-          <span key={active} className={`${styles.bump} numeric text-xs text-ink`} aria-live="polite">
+        <div className="absolute inset-x-4 bottom-6 flex items-center gap-4 sm:inset-x-8 motion-reduce:hidden">
+          <span data-parade-counter className="numeric inline-block text-xs text-ink" aria-live="polite">
             {pad(active + 1)} / {pad(n)}
           </span>
           <span className="h-1 flex-1 overflow-hidden rounded-full bg-ink/10">
             <span
-              className="block h-full rounded-full bg-ink"
-              style={{ width: "calc(var(--p, 0) * 85% + 15%)" } as CSSProperties}
+              ref={progressRef}
+              className="block h-full w-full origin-left rounded-full bg-ink will-change-transform"
+              style={{ transform: `scaleX(${1 / Math.max(1, n)})` }}
             />
           </span>
           <span className="ui-caps text-2xs text-muted">Scroll ↓</span>
@@ -131,16 +169,16 @@ export function DrinkParade({ drinks }: { drinks: MenuItem[] }) {
   );
 }
 
-function Slide({ item, index, total, active }: { item: MenuItem; index: number; total: number; active: boolean }) {
+function Slide({ item, index, total }: { item: MenuItem; index: number; total: number }) {
   const price = `${item.pricing_mode !== "fixed" ? "from " : ""}${formatPrice(
-    priceForSize(item.price, "S", item.size_pricing, item.pricing_mode),
+    priceForSize(item.price, "S", item.size_pricing, item.pricing_mode)
   )}`;
 
   return (
     <article
       aria-roledescription="slide"
       aria-label={`${index + 1} of ${total}: ${item.name}`}
-      className={`relative grid h-full place-items-center overflow-hidden ${TINTS[index % TINTS.length]}`}
+      className={`relative grid h-full place-items-center overflow-hidden motion-reduce:py-16 ${TINTS[index % TINTS.length]}`}
     >
       {/* The giant faded name behind the drink. */}
       <span
@@ -151,23 +189,19 @@ function Slide({ item, index, total, active }: { item: MenuItem; index: number; 
       </span>
 
       <div className="relative grid w-full max-w-5xl items-center gap-6 px-6 pt-16 md:grid-cols-2 md:gap-12 md:pt-0">
-        {/* float bobs forever; arrive springs the image in each time this
-            slide becomes the active one (the class is re-applied). */}
-        <div className={`${styles.float} mx-auto w-[min(58vw,18rem)] md:w-[min(34vw,26rem)]`}>
-          <div className={`${active ? styles.arrive : ""} rotate-[-4deg]`}>
-            <div className={`${styles.spring} ${styles.lift}`}>
-              <ProductImage
-                src={item.image_url}
-                itemType={item.item_type}
-                alt=""
-                sizes="(min-width: 768px) 26rem, 58vw"
-                rounded="rounded-full"
-                className="shadow-[var(--hi-shadow-lg)] ring-8 ring-card"
-              />
-            </div>
+        <div className="mx-auto w-[min(58vw,18rem)] md:w-[min(34vw,26rem)]">
+          <div data-slide-visual className="-rotate-4 will-change-transform">
+            <ProductImage
+              src={item.image_url}
+              itemType={item.item_type}
+              alt=""
+              sizes="(min-width: 768px) 26rem, 58vw"
+              rounded="rounded-full"
+              className="shadow-[var(--hi-shadow-lg)] ring-8 ring-card"
+            />
           </div>
         </div>
-        <div className={`${active ? styles.words : ""} text-center md:text-left`}>
+        <div data-slide-copy className="text-center md:text-left">
           {item.flavor && <p className="eyebrow text-muted">{item.flavor}</p>}
           <h3 className="display mt-3 text-6xl text-ink">{item.name}</h3>
           {item.description && (

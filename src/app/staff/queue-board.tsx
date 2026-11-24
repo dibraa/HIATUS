@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { gsap, useGSAP, HIATUS_DUR, HIATUS_EASE, MOTION_MEDIA } from "@/lib/gsap";
 import { usePermissions } from "@/components/permission-controls";
 import { EmptyState } from "@/components/ui/empty-state";
 import { advanceOrderStatus } from "@/app/actions/staff";
@@ -41,9 +42,11 @@ export function QueueBoard({
 }) {
   const router = useRouter();
   const { can } = usePermissions();
+  const boardRef = useRef<HTMLDivElement>(null);
   const cleared = useRef(new Set<string>());
   const searchRef = useRef<HTMLInputElement>(null);
   const [shown, setShown] = useState(() => new Set(orders.map((o) => o.id)));
+  const [admittedBatch, setAdmittedBatch] = useState<{ ids: string[]; seq: number }>({ ids: [], seq: 0 });
   const [selectedId, setSelectedId] = useState<string | null>(referencedOrderId ?? null);
   const [panel, setPanel] = useState<"payment" | "actions">("payment");
   const [busy, setBusy] = useState(false);
@@ -124,6 +127,41 @@ export function QueueBoard({
     }
   }, [orders, now, can]);
 
+  // Crisp arrival cue only for newly admitted tickets — never slows initial queue load.
+  useGSAP(
+    () => {
+      const root = boardRef.current;
+      if (!root || admittedBatch.ids.length === 0) return;
+      const targets = admittedBatch.ids
+        .map((id) => root.querySelector<HTMLElement>(`[data-ticket-id="${CSS.escape(id)}"]`))
+        .filter((el): el is HTMLElement => el !== null);
+      if (targets.length === 0) return;
+
+      const mm = gsap.matchMedia();
+      mm.add({ motion: MOTION_MEDIA.motion, reduce: MOTION_MEDIA.reduce }, (context) => {
+        if (context.conditions?.reduce) {
+          gsap.fromTo(targets, { opacity: 0.5 }, { opacity: 1, duration: 0.14, clearProps: "opacity" });
+          return;
+        }
+        gsap.fromTo(
+          targets,
+          { y: -6, opacity: 0.55 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.42,
+            stagger: 0.06,
+            ease: HIATUS_EASE.arrive,
+            clearProps: "transform,opacity",
+          }
+        );
+      });
+
+      return () => mm.revert();
+    },
+    { scope: boardRef, dependencies: [admittedBatch] }
+  );
+
   function href(view: string, unpaid = false) {
     const params = new URLSearchParams({ tab: view });
     if (query) params.set("q", query);
@@ -136,19 +174,20 @@ export function QueueBoard({
     setPanel(nextPanel);
   }
   const card = (order: QueueOrder) => (
-    <QueueCard
-      key={order.id}
-      order={order}
-      now={now}
-      lateAfter={lateAfter}
-      overAfter={overAfter}
-      disabled={busy}
-      onPayment={() => select(order.id, "payment")}
-      onMore={() => select(order.id, "actions")}
-    />
+    <div key={order.id} data-ticket-id={order.id}>
+      <QueueCard
+        order={order}
+        now={now}
+        lateAfter={lateAfter}
+        overAfter={overAfter}
+        disabled={busy}
+        onPayment={() => select(order.id, "payment")}
+        onMore={() => select(order.id, "actions")}
+      />
+    </div>
   );
   return (
-    <div>
+    <div ref={boardRef}>
       <div className="counter-view-bar">
         <nav aria-label="Order views" className="counter-view-tabs">
           {[
@@ -268,7 +307,13 @@ export function QueueBoard({
       </p>
       <IncomingOrders
         incoming={incoming}
-        onShow={() => setShown(new Set(orders.map((o) => o.id)))}
+        onShow={() => {
+          const newIds = incoming.map((o) => o.id);
+          setShown(new Set(orders.map((o) => o.id)));
+          if (newIds.length > 0) {
+            setAdmittedBatch((prev) => ({ ids: newIds, seq: prev.seq + 1 }));
+          }
+        }}
       />
       {current === "active" ? (
         <div className="counter-lanes">

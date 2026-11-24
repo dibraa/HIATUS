@@ -1,6 +1,8 @@
 import Link from "next/link";
 import type { CSSProperties } from "react";
+import { GsapStagger } from "@/components/motion/gsap-stagger";
 import { doorStatus } from "@/components/welcome-v2/door-status";
+import { WordmarkWave } from "@/components/welcome-v2/wordmark-wave";
 import { SHOP_DIRECTIONS_URL, SHOP_PLACE, SHOP_QUOTE, SHOP_ROOM, SHOP_SOCIALS } from "@/content/shop";
 import { formatTime } from "@/lib/hours";
 import type { BusinessHours } from "@/types/database";
@@ -39,8 +41,8 @@ export function VisitV2({
           {doorStatus(open, today)}
         </p>
 
-        <div className="mt-heading grid gap-4 text-left sm:grid-cols-3">
-          <div className={`${styles.spring} ${styles.lift} rounded-2xl bg-card p-6 shadow-[var(--hi-shadow-md)]`}>
+        <GsapStagger mode="scroll" className="mt-heading grid gap-4 text-left sm:grid-cols-3">
+          <div className="rounded-2xl bg-card p-6 shadow-[var(--hi-shadow-md)]">
             <p className="ui-caps text-2xs text-accent-ink">Location</p>
             <p className="mt-3 text-ink">{SHOP_ROOM.caption}</p>
             <p className="text-sm text-ink-soft">{SHOP_PLACE.town}</p>
@@ -54,7 +56,7 @@ export function VisitV2({
             </a>
           </div>
 
-          <div className={`${styles.spring} ${styles.lift} rounded-2xl bg-card p-6 shadow-[var(--hi-shadow-md)]`}>
+          <div className="rounded-2xl bg-card p-6 shadow-[var(--hi-shadow-md)]">
             <p className="ui-caps text-2xs text-accent-ink">Open hours</p>
             {hours.length > 0 ? (
               <ul className="mt-3 grid gap-1">
@@ -76,7 +78,7 @@ export function VisitV2({
             )}
           </div>
 
-          <div className={`${styles.spring} ${styles.lift} rounded-2xl bg-card p-6 shadow-[var(--hi-shadow-md)]`}>
+          <div className="rounded-2xl bg-card p-6 shadow-[var(--hi-shadow-md)]">
             <p className="ui-caps text-2xs text-accent-ink">Come by</p>
             <p lang={SHOP_QUOTE.lang} className="display mt-3 text-3xl text-ink">
               “{SHOP_QUOTE.text}”
@@ -89,7 +91,7 @@ export function VisitV2({
               Order ahead
             </Link>
           </div>
-        </div>
+        </GsapStagger>
 
         <ul className="mt-8 flex flex-wrap justify-center gap-2">
           {SHOP_SOCIALS.map((social) => (
@@ -107,20 +109,7 @@ export function VisitV2({
         </ul>
       </div>
 
-      {/* The sign-off wordmark, its foot tucked under the strip. `!` because
-          `.display` is unlayered and would otherwise force uppercase.
-          pointer-events-none: the giant letters' boxes reach up over the
-          social links and would swallow their clicks. */}
-      <p
-        aria-hidden="true"
-        className="display pointer-events-none relative mt-band -mb-[0.12em] select-none text-center text-[clamp(5rem,27vw,26rem)] leading-[0.8]! normal-case! text-secondary"
-      >
-        {[..."hiatus."].map((letter, i) => (
-          <span key={i} className={styles.wave} style={{ "--delay": `${i * 0.12}s` } as CSSProperties}>
-            {letter}
-          </span>
-        ))}
-      </p>
+      <WordmarkWave text="hiatus." />
 
       <div aria-hidden="true" className="relative overflow-hidden bg-cta py-3 text-cta-fg">
         <div className={styles.track} style={{ "--dur": "35s" } as CSSProperties}>

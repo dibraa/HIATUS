@@ -1,9 +1,8 @@
 import Image from "next/image";
-import type { CSSProperties } from "react";
 import heroImage from "@/assets/shop/new/ahhhhh.jpeg";
 import { ButtonLink } from "@/components/ui/button";
 import { doorStatus } from "@/components/welcome-v2/door-status";
-import { ScrollScatter } from "@/components/welcome-v2/scroll-scatter";
+import { HeroStage } from "@/components/welcome-v2/hero-stage";
 import type { BusinessHours } from "@/types/database";
 import styles from "./welcome-v2.module.css";
 
@@ -23,28 +22,32 @@ const STICKERS = [
 /**
  * "Arrive", the playful take: a centred headline with one word on an orange
  * block, the drinks photo below it, and stickers floating around the frame
- * that scatter as you scroll away.
+ * that scatter via GSAP ScrollTrigger as you scroll away.
  */
 export function HeroV2({ open, today }: { open: boolean; today: BusinessHours | null }) {
   return (
-    <section aria-labelledby="v2-hero-heading" className="relative overflow-hidden pb-16 pt-12 sm:pt-16">
+    <HeroStage className="relative overflow-hidden pb-16 pt-12 sm:pt-16">
       <div className="mx-auto max-w-6xl px-4 text-center">
-        <p className="eyebrow rise text-muted [--rise:0]">It’s time for a</p>
+        <p data-hero-item className="eyebrow text-muted">It’s time for a</p>
         <h1
           id="v2-hero-heading"
-          className="display rise mt-5 text-[clamp(3.25rem,1.4rem+7.6vw,8.5rem)] text-ink [--rise:1]"
+          data-hero-item
+          className="display mt-5 text-[clamp(3.25rem,1.4rem+7.6vw,8.5rem)] text-ink"
         >
-          <span className={`${styles.jelly} inline-block -rotate-2 rounded-xl bg-accent px-[0.16em] pt-[0.06em] text-accent-fg`}>
+          <span
+            data-hero-badge
+            className="inline-block -rotate-2 rounded-xl bg-accent px-[0.16em] pt-[0.06em] text-accent-fg"
+          >
             Hiatus
           </span>{" "}
           coffee
           <br />
           break
         </h1>
-        <p className="rise mx-auto mt-snug max-w-[40ch] text-lg text-ink-soft [--rise:2]">
+        <p data-hero-item className="mx-auto mt-snug max-w-[40ch] text-lg text-ink-soft">
           Breathe, slow down, and sip. Welcome to your daily hiatus in the heart of Malaybalay.
         </p>
-        <div className="rise mt-stack flex flex-wrap items-center justify-center gap-3 [--rise:3]">
+        <div data-hero-item className="mt-stack flex flex-wrap items-center justify-center gap-3">
           <span className={`${styles.spring} inline-flex`}>
             <ButtonLink href="/login" size="lg">
               Order ahead
@@ -56,14 +59,14 @@ export function HeroV2({ open, today }: { open: boolean; today: BusinessHours | 
             </ButtonLink>
           </span>
         </div>
-        <p className="ui-caps mt-5 inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-2xs text-ink">
+        <p data-hero-item className="ui-caps mt-5 inline-flex items-center gap-2 rounded-full bg-card px-4 py-2 text-2xs text-ink">
           <span aria-hidden="true" className={`h-2 w-2 rounded-full ${open ? "bg-success" : "bg-muted"}`} />
           {doorStatus(open, today)}
         </p>
       </div>
 
-      <ScrollScatter className="relative mx-auto mt-12 max-w-4xl px-6 sm:px-10">
-        <div className={`${styles.spring} ${styles.lift} matte -rotate-1`}>
+      <div data-hero-scatter className="relative mx-auto mt-12 max-w-4xl px-6 sm:px-10">
+        <div data-hero-frame className="matte -rotate-1">
           <div className="matte-inner relative aspect-[4/3] sm:aspect-[16/10]">
             <Image
               src={heroImage}
@@ -79,31 +82,26 @@ export function HeroV2({ open, today }: { open: boolean; today: BusinessHours | 
         </div>
 
         <div aria-hidden="true">
-          {STICKERS.map((s, i) => (
+          {STICKERS.map((s) => (
             <span
               key={s.text}
-              className={styles.sticker}
-              style={
-                {
-                  left: s.x,
-                  top: s.y,
-                  "--r": `${s.r}deg`,
-                  "--dx": s.dx,
-                  "--dy": s.dy,
-                  "--delay": `${i * -0.3}s`,
-                  "--in": `${0.5 + i * 0.08}s`,
-                } as CSSProperties
-              }
+              data-hero-sticker-wrap
+              data-r={s.r}
+              data-dx={s.dx}
+              data-dy={s.dy}
+              className="pointer-events-none absolute will-change-transform"
+              style={{ left: s.x, top: s.y }}
             >
               <span
-                className={`${styles.bob} ui-caps whitespace-nowrap rounded-full px-3 py-1.5 text-2xs shadow-[var(--hi-shadow-lg)] sm:px-4 sm:py-2 sm:text-xs ${s.tone}`}
+                data-hero-sticker
+                className={`ui-caps inline-block whitespace-nowrap rounded-full px-3 py-1.5 text-2xs shadow-[var(--hi-shadow-lg)] sm:px-4 sm:py-2 sm:text-xs ${s.tone}`}
               >
                 {s.text}
               </span>
             </span>
           ))}
         </div>
-      </ScrollScatter>
-    </section>
+      </div>
+    </HeroStage>
   );
 }

@@ -1,29 +1,60 @@
 "use client";
 
 import Link from "next/link";
+import { useRef } from "react";
 import { useCart } from "@/lib/cart-context";
+import { gsap, useGSAP, HIATUS_DUR, HIATUS_EASE, MOTION_MEDIA } from "@/lib/gsap";
 
 /**
- * Cart entry point with a live item count.
- *
- * Set as `CART (2)` — the comp's own treatment, where the count is part of the
- * label rather than a superscript dot. That also removes the usual overlap
- * problem of a floating badge on a small target.
- *
- * The count only renders once the cart has hydrated from localStorage — the
- * server has no way to know it, so painting a "0" first would flash the wrong
- * number on every page load for anyone with a full cart. Below `sm` the label
- * collapses to the trolley glyph, where the header has no room for words.
- *
- * The accessible name carries the count either way, so it is never conveyed by
- * the parenthetical alone.
+ * Cart entry point with a live item count and a subtle GSAP feedback pop
+ * whenever items are added after hydration.
  */
 export function CartBadge({ className = "" }: { className?: string }) {
   const { totalItems, hydrated } = useCart();
   const showCount = hydrated && totalItems > 0;
+  const linkRef = useRef<HTMLAnchorElement>(null);
+  const countRef = useRef<HTMLSpanElement>(null);
+  const prevCountRef = useRef<number | null>(null);
+
+  useGSAP(
+    () => {
+      if (!hydrated) return;
+      const previous = prevCountRef.current;
+      prevCountRef.current = totalItems;
+      if (previous === null || totalItems <= previous) return;
+
+      const target = countRef.current ?? linkRef.current;
+      if (!target) return;
+
+      const mm = gsap.matchMedia();
+      mm.add({ motion: MOTION_MEDIA.motion, reduce: MOTION_MEDIA.reduce }, (context) => {
+        if (context.conditions?.reduce) {
+          gsap.fromTo(target, { opacity: 0.55 }, { opacity: 1, duration: 0.16, clearProps: "opacity" });
+          return;
+        }
+        gsap.fromTo(
+          target,
+          { scale: 1 },
+          {
+            scale: 1.12,
+            duration: HIATUS_DUR.feedback * 0.75,
+            ease: HIATUS_EASE.tactile,
+            yoyo: true,
+            repeat: 1,
+            overwrite: "auto",
+            clearProps: "transform",
+          }
+        );
+      });
+
+      return () => mm.revert();
+    },
+    { scope: linkRef, dependencies: [totalItems, hydrated] }
+  );
 
   return (
     <Link
+      ref={linkRef}
       href="/cart"
       aria-label={
         showCount
@@ -50,7 +81,7 @@ export function CartBadge({ className = "" }: { className?: string }) {
       </span>
 
       {showCount && (
-        <span aria-hidden="true" className="numeric text-2xs">
+        <span ref={countRef} aria-hidden="true" className="numeric inline-block text-2xs">
           ({totalItems})
         </span>
       )}

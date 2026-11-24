@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getServerToken } from "@/lib/server-token";
 import { apiJson } from "@/lib/api-client";
+import { GsapLineDraw } from "@/components/motion/gsap-line-draw";
+import { GsapStagger } from "@/components/motion/gsap-stagger";
 import { AdminStatCard as StatCard } from "@/components/admin-stat-card";
 import { AdminPageHeader } from "@/components/admin-page-header";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -38,11 +40,13 @@ function SalesTrend({ data }: { data: SalesReportRow[] }) {
   return (
     <div className="relative h-56" aria-hidden="true">
       <div className="absolute inset-x-0 top-5 space-y-9">{[0,1,2,3].map((r) => <div key={r} className="border-t border-dashed border-line" />)}</div>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="relative h-full w-full overflow-visible">
-        <polygon points={area} fill="var(--hi-accent-soft)" fillOpacity="0.72" />
-        <polyline points={line} fill="none" stroke="var(--hi-accent)" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
-        {points.map((p, i) => { const [x, y] = p.split(","); return <circle key={i} cx={x} cy={y} r="1.3" fill="var(--hi-accent)" vectorEffect="non-scaling-stroke" />; })}
-      </svg>
+      <GsapLineDraw className="relative h-full w-full">
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="relative h-full w-full overflow-visible">
+          <polygon points={area} fill="var(--hi-accent-soft)" fillOpacity="0.72" />
+          <polyline points={line} fill="none" stroke="var(--hi-accent)" strokeWidth="1.1" vectorEffect="non-scaling-stroke" />
+          {points.map((p, i) => { const [x, y] = p.split(","); return <circle key={i} cx={x} cy={y} r="1.3" fill="var(--hi-accent)" vectorEffect="non-scaling-stroke" />; })}
+        </svg>
+      </GsapLineDraw>
       <div className="absolute inset-x-0 bottom-0 flex justify-between text-[12px] text-muted"><span>7 days ago</span><span>Today</span></div>
     </div>
   );
@@ -86,11 +90,13 @@ export default async function AdminDashboardPage() {
       />
       <section aria-labelledby="today-heading">
         <h2 id="today-heading" className="sr-only">Today at a glance</h2>
-        <div className="admin-stats admin-stats-three">
-          <StatCard label="Total sales" value={formatPrice(summary?.revenue_today ?? 0)} hint={`${summary?.orders_today ?? 0} completed orders`} tone="positive" />
-          <StatCard label="Total orders" value={summary?.orders_today ?? 0} hint={`${openNow} currently open`} />
-          <StatCard label="Awaiting payment" value={summary?.unpaid_now ?? 0} tone={(summary?.unpaid_now ?? 0) > 0 ? "attention" : "default"} hint="Across all open orders" />
-        </div>
+        <GsapStagger mode="mount" selector=".admin-stats > *" y={8} duration={0.6} stagger={0.08}>
+          <div className="admin-stats admin-stats-three">
+            <StatCard label="Total sales" value={formatPrice(summary?.revenue_today ?? 0)} hint={`${summary?.orders_today ?? 0} completed orders`} tone="positive" />
+            <StatCard label="Total orders" value={summary?.orders_today ?? 0} hint={`${openNow} currently open`} />
+            <StatCard label="Awaiting payment" value={summary?.unpaid_now ?? 0} tone={(summary?.unpaid_now ?? 0) > 0 ? "attention" : "default"} hint="Across all open orders" />
+          </div>
+        </GsapStagger>
       </section>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(280px,0.8fr)]">

@@ -1,79 +1,15 @@
-/* Motion for the guest welcome at `/`. The page root also carries the global
-   `motion-ok` class, which exempts it from the reduced-motion rule in
-   globals.css: this page always animates. */
+/* Supporting CSS for GuestWelcomeV2.
+   Choreographed entrances, scroll-scatter, horizontal DrinkParade, DrinkBuilder
+   transitions, and wordmark reveals are driven by GSAP + ScrollTrigger and honor
+   prefers-reduced-motion via gsap.matchMedia(). */
 
 .page {
-  /* Overshoots a little past 1 and settles back: the page's bounce. */
   --bounce: cubic-bezier(0.34, 1.3, 0.5, 1);
 }
 
-/* The global entrance, sprung instead of eased on this page. */
-.page :global(.rise) {
-  animation-timing-function: var(--bounce);
-  animation-duration: 700ms;
-}
-
-/* Hero stickers: placed by inline left/top, tilted by --r, pushed outward by
-   --dx/--dy as ScrollScatter raises --s from 0 to 1 over the first screen. */
-.sticker {
-  position: absolute;
-  rotate: var(--r, 0deg);
-  translate:
-    calc(var(--dx, 0) * var(--s, 0) * 240px)
-    calc(var(--dy, 0) * var(--s, 0) * 240px);
-  opacity: calc(1 - var(--s, 0) * 0.6);
-}
-
-/* Pops in (scale), then hops with a squash on landing (transform). The two
-   use different properties so they run together. */
-.bob {
-  display: inline-block;
-  animation:
-    pop-in 700ms var(--bounce) var(--in, 0s) backwards,
-    hop 3.4s ease-in-out var(--delay, 0s) infinite;
-}
-
-.sticker:hover .bob {
-  animation: wiggle 600ms var(--bounce);
-}
-
-@keyframes pop-in {
-  from {
-    scale: 0.4;
-    opacity: 0;
-  }
-}
-
-@keyframes hop {
-  0%,
-  100% {
-    transform: translateY(0) scale(1.03, 0.97);
-  }
-  15%,
-  85% {
-    transform: translateY(0) scale(1, 1);
-  }
-  50% {
-    transform: translateY(-7px) rotate(-2deg);
-  }
-}
-
-@keyframes wiggle {
-  33% {
-    transform: rotate(-6deg) scale(1.08);
-  }
-  66% {
-    transform: rotate(4deg) scale(1.05);
-  }
-}
-
-/* Highlight blocks in the headings: a jelly squish on arrival and on hover. */
-.jelly {
-  animation: jelly 900ms ease-out 450ms backwards;
-}
-
+/* Highlight blocks in secondary headings: subtle hover squish. */
 .jelly:hover {
-  animation: jelly 800ms ease-out;
+  animation: jelly 700ms ease-out;
 }
 
 @keyframes jelly {
@@ -82,52 +18,17 @@
     transform: scale(1, 1);
   }
   30% {
-    transform: scale(1.08, 0.92);
+    transform: scale(1.06, 0.94);
   }
   55% {
-    transform: scale(0.96, 1.04);
+    transform: scale(0.97, 1.03);
   }
   80% {
     transform: scale(1.02, 0.98);
   }
 }
 
-/* Parade: every drink floats; the one arriving springs up to full size and
-   its words bounce in after it. */
-.float {
-  animation: float 4.5s ease-in-out infinite;
-}
-
-@keyframes float {
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-.arrive {
-  animation: arrive 700ms var(--bounce);
-}
-
-@keyframes arrive {
-  from {
-    scale: 0.88;
-    rotate: -6deg;
-  }
-}
-
-.words {
-  animation: words 650ms var(--bounce) 100ms backwards;
-}
-
-@keyframes words {
-  from {
-    translate: 0 16px;
-    opacity: 0;
-  }
-}
-
-/* Endless row: the content is rendered twice, so sliding by half its width
-   lands exactly where it started. */
+/* Endless marquee rows (reviews + footer strip). Hover or focus pauses them. */
 .track {
   display: flex;
   width: max-content;
@@ -149,86 +50,39 @@
   }
 }
 
-/* The builder's preview spins in when the drink changes (keyed remount). */
-.pop {
-  animation: pop 600ms var(--bounce);
-}
-
-@keyframes pop {
-  from {
-    scale: 0.85;
-    rotate: -8deg;
-    opacity: 0.4;
-  }
-}
-
-/* A changed price nudges. */
-.bump {
-  display: inline-block;
-  animation: bump 450ms var(--bounce);
-}
-
-@keyframes bump {
-  from {
-    scale: 0.92;
-    translate: 0 3px;
-  }
-}
-
 .beat {
   display: inline-block;
-  animation: beat 1.8s ease-in-out infinite;
+  animation: beat 3.2s ease-in-out infinite;
 }
 
 @keyframes beat {
   0%,
-  40%,
+  45%,
   100% {
     transform: scale(1);
   }
-  15% {
-    transform: scale(1.12);
-  }
-}
-
-/* The wordmark's letters bounce in a wave. */
-.wave {
-  display: inline-block;
-  animation: wave 3.6s ease-in-out var(--delay, 0s) infinite;
-}
-
-@keyframes wave {
-  0%,
-  40%,
-  100% {
-    transform: translateY(0);
-  }
   20% {
-    transform: translateY(-0.05em);
+    transform: scale(1.07);
   }
 }
 
-/* Springy hover for cards, pills and buttons. */
+/* Calm hover feedback for interactive pills and buttons. */
 .spring {
   transition:
-    translate 500ms var(--bounce),
-    rotate 500ms var(--bounce),
-    scale 400ms var(--bounce),
+    transform 280ms ease-out,
     background-color var(--hi-dur-fast),
     color var(--hi-dur-fast),
     box-shadow var(--hi-dur-fast);
 }
 
 .spring:hover {
-  scale: 1.03;
+  transform: scale(1.015);
 }
 
 .spring:active {
-  scale: 0.97;
+  transform: scale(0.985);
 }
 
 .lift:hover {
-  translate: 0 -5px;
-  rotate: -1deg;
-  scale: 1.015;
+  transform: translateY(-2px);
 }

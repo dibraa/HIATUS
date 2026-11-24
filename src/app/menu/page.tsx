@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
+import { GsapStagger } from "@/components/motion/gsap-stagger";
 import { MenuItemCard } from "@/components/menu-item-card";
 import { MenuFilters, buildHref } from "@/components/menu-filters";
 import { SearchField } from "@/components/search-field";
@@ -141,22 +142,31 @@ export default async function MenuPage({
                 action={<ButtonLink href="/menu" variant="outline">Show everything</ButtonLink>}
               />
             ) : (
-              <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 @min-[600px]/menu-products:grid-cols-3 @min-[880px]/menu-products:grid-cols-4">
-                {pageItems.map((item) => {
-                  const stat = ratingStats.get(item.id);
-                  return (
-                    <li key={item.id} className="flex">
-                      <MenuItemCard
-                        item={item}
-                        averageRating={stat?.average ?? null}
-                        ratingCount={stat?.count ?? 0}
-                        isFavorite={favoriteIds.has(item.id)}
-                        isLoggedIn={!!user}
-                      />
-                    </li>
-                  );
-                })}
-              </ul>
+              <GsapStagger
+                mode="scroll"
+                selector="li"
+                y={10}
+                stagger={0.065}
+                duration={0.65}
+                resetKey={`${category ?? ""}:${flavor ?? ""}:${query}:${pagination.page}`}
+              >
+                <ul className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 @min-[600px]/menu-products:grid-cols-3 @min-[880px]/menu-products:grid-cols-4">
+                  {pageItems.map((item) => {
+                    const stat = ratingStats.get(item.id);
+                    return (
+                      <li key={item.id} className="flex">
+                        <MenuItemCard
+                          item={item}
+                          averageRating={stat?.average ?? null}
+                          ratingCount={stat?.count ?? 0}
+                          isFavorite={favoriteIds.has(item.id)}
+                          isLoggedIn={!!user}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </GsapStagger>
             )}
           </div>
           {menu !== null && visible.length > 0 && (

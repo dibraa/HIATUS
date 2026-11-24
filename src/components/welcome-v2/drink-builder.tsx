@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { ProductImage } from "@/components/ui/product-image";
+import { gsap, useGSAP, HIATUS_DUR, HIATUS_EASE, MOTION_MEDIA } from "@/lib/gsap";
 import { formatPrice } from "@/lib/format";
 import { DEFAULT_SIZE, SIZE_OPTIONS, getSizeOption, priceForSize, servingLabel, type DrinkSize } from "@/lib/sizes";
 import type { MenuItem } from "@/types/database";
@@ -10,24 +11,107 @@ import styles from "./welcome-v2.module.css";
 
 /**
  * "Build your own break": pick a drink and a size, see it and its price, then
- * go to its page to order. Only choices the shop really offers; the price
- * comes from the same priceForSize the cart uses, so it matches checkout.
+ * go to its page to order. Uses GSAP for tactile cup swaps and live price tweens
+ * without remounting DOM nodes.
  */
 export function DrinkBuilder({ drinks }: { drinks: MenuItem[] }) {
+  const sectionRef = useRef<HTMLElement>(null);
+  const previewRef = useRef<HTMLDivElement>(null);
+  const priceRef = useRef<HTMLSpanElement>(null);
+
   const [drinkId, setDrinkId] = useState(drinks[0].id);
   const [size, setSize] = useState<DrinkSize>(DEFAULT_SIZE);
   const drink = drinks.find((d) => d.id === drinkId) ?? drinks[0];
   const sized = drink.pricing_mode !== "fixed";
   const price = priceForSize(drink.price, size, drink.size_pricing, drink.pricing_mode);
 
+  const prevDrinkIdRef = useRef(drink.id);
+  const prevPriceRef = useRef(price);
+
+  useGSAP(
+    () => {
+      const preview = previewRef.current;
+      if (!preview || prevDrinkIdRef.current === drink.id) return;
+      prevDrinkIdRef.current = drink.id;
+
+      const mm = gsap.matchMedia();
+      mm.add({ motion: MOTION_MEDIA.motion, reduce: MOTION_MEDIA.reduce }, (context) => {
+        if (context.conditions?.reduce) {
+          gsap.fromTo(preview, { opacity: 0.6 }, { opacity: 1, duration: 0.16, clearProps: "opacity" });
+          return;
+        }
+        gsap.fromTo(
+          preview,
+          { scale: 0.94, rotation: -3, opacity: 0.65 },
+          {
+            scale: 1,
+            rotation: 0,
+            opacity: 1,
+            duration: 0.75,
+            ease: HIATUS_EASE.tactile,
+            overwrite: "auto",
+            clearProps: "transform,opacity",
+          }
+        );
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef, dependencies: [drink.id] }
+  );
+
+  useGSAP(
+    () => {
+      const priceEl = priceRef.current;
+      const fromPrice = prevPriceRef.current;
+      prevPriceRef.current = price;
+      if (!priceEl || fromPrice === price) return;
+
+      const mm = gsap.matchMedia();
+      mm.add({ motion: MOTION_MEDIA.motion, reduce: MOTION_MEDIA.reduce }, (context) => {
+        if (context.conditions?.reduce) {
+          priceEl.textContent = formatPrice(price);
+          return;
+        }
+
+        const counter = { value: fromPrice };
+        gsap.to(counter, {
+          value: price,
+          duration: HIATUS_DUR.state,
+          ease: "power2.out",
+          onUpdate: () => {
+            priceEl.textContent = formatPrice(counter.value);
+          },
+          onComplete: () => {
+            priceEl.textContent = formatPrice(price);
+          },
+        });
+        gsap.fromTo(
+          priceEl,
+          { scale: 0.97, y: 2 },
+          {
+            scale: 1,
+            y: 0,
+            duration: HIATUS_DUR.state,
+            ease: HIATUS_EASE.tactile,
+            clearProps: "transform",
+          }
+        );
+      });
+
+      return () => mm.revert();
+    },
+    { scope: sectionRef, dependencies: [price] }
+  );
+
   return (
-    <section aria-labelledby="v2-builder-heading" className="bg-inverse-card py-band text-inverse-card-fg">
+    <section ref={sectionRef} aria-labelledby="v2-builder-heading" className="bg-inverse-card py-band text-inverse-card-fg">
       <div className="mx-auto max-w-6xl px-4 sm:px-8">
         <div className="text-center">
           <p className="eyebrow text-inverse-card-muted">Make it yours</p>
           <h2 id="v2-builder-heading" className="display mt-3 text-6xl">
             Build your own{" "}
-            <span className={`${styles.jelly} inline-block rotate-1 rounded-lg bg-accent px-[0.16em] pt-[0.06em] text-accent-fg`}>
+            <span className="inline-block rotate-1 rounded-lg bg-accent px-[0.16em] pt-[0.06em] text-accent-fg">
               break
             </span>
           </h2>
@@ -38,7 +122,7 @@ export function DrinkBuilder({ drinks }: { drinks: MenuItem[] }) {
             <span aria-hidden="true" className="absolute top-[9%] text-2xl text-inverse-display">
               <span className={styles.beat}>♥</span>
             </span>
-            <div key={drink.id} className={`${styles.pop} w-[64%]`}>
+            <div ref={previewRef} className="w-[64%] will-change-transform">
               <ProductImage
                 src={drink.image_url}
                 itemType={drink.item_type}
@@ -78,7 +162,7 @@ export function DrinkBuilder({ drinks }: { drinks: MenuItem[] }) {
                   {drink.name} · {sized ? getSizeOption(size).label : servingLabel(drink)}
                 </p>
                 <p className="numeric mt-1 text-3xl" aria-live="polite">
-                  <span key={`${drink.id}-${size}`} className={styles.bump}>
+                  <span ref={priceRef} className="inline-block">
                     {formatPrice(price)}
                   </span>
                 </p>

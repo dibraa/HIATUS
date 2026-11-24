@@ -59,8 +59,7 @@ export function GuestWelcomeV2({
   return (
     // Cross-fades the page in and out on navigation to and from `/` (browser default animation).
     <ViewTransition>
-      {/* motion-ok: this page animates even under prefers-reduced-motion (globals.css). */}
-      <div className={`full-bleed motion-ok -my-8 sm:-my-10 ${styles.page}`}>
+      <div className={`full-bleed -my-8 sm:-my-10 ${styles.page}`}>
         <HeroV2 open={open} today={today} />
         {favorites.length > 0 && <DrinkParade drinks={favorites} />}
         {favorites.length > 0 && <DrinkBuilder drinks={favorites} />}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { GsapStagger } from "@/components/motion/gsap-stagger";
 import { MenuItemCard } from "@/components/menu-item-card";
 import { CategoryBlocks } from "@/components/home/category-blocks";
 import { LiveOrderCard } from "@/components/home/live-order-card";
@@ -52,28 +53,30 @@ export function CustomerHome({
 
   return (
     <div className="flex flex-col gap-section">
-      <section aria-labelledby="home-greeting">
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <h1 id="home-greeting" className="display text-[clamp(2.75rem,8vw,4.5rem)] leading-[0.9] text-ink">
-            {greeting()},<br />
-            {firstName}.
-          </h1>
-          <OpenStatus open={open}>{status}</OpenStatus>
-        </div>
-        {/* The card always holds its place; with nothing on its way it says
-            so plainly. No button here, so "Order again" stays the page's one
-            primary action. */}
-        {activeOrder ? (
-          <LiveOrderCard order={activeOrder} typicalMinutes={typicalMinutes} />
-        ) : (
-          <section
-            aria-label="No order in progress"
-            className="mt-6 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg ring-1 ring-line sm:p-6"
-          >
-            <p className="ui-caps text-2xs text-inverse-card-muted">No order in progress</p>
-          </section>
-        )}
-      </section>
+      <GsapStagger mode="mount" y={10} duration={0.7} stagger={0.08}>
+        <section aria-labelledby="home-greeting">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <h1 id="home-greeting" className="display text-[clamp(2.75rem,8vw,4.5rem)] leading-[0.9] text-ink">
+              {greeting()},<br />
+              {firstName}.
+            </h1>
+            <OpenStatus open={open}>{status}</OpenStatus>
+          </div>
+          {/* The card always holds its place; with nothing on its way it says
+              so plainly. No button here, so "Order again" stays the page's one
+              primary action. */}
+          {activeOrder ? (
+            <LiveOrderCard order={activeOrder} typicalMinutes={typicalMinutes} />
+          ) : (
+            <section
+              aria-label="No order in progress"
+              className="mt-6 rounded-2xl bg-inverse-card p-5 text-inverse-card-fg ring-1 ring-line sm:p-6"
+            >
+              <p className="ui-caps text-2xs text-inverse-card-muted">No order in progress</p>
+            </section>
+          )}
+        </section>
+      </GsapStagger>
 
       {presets.length > 0 && (
         <Section id="usual" title="Your usual" link={{ href: "/favorites", label: "All saved" }}>
@@ -89,22 +92,24 @@ export function CustomerHome({
 
       {popular.length > 0 && (
         <Section id="popular" title="Popular today">
-          <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
-            {popular.map((item) => {
-              const stat = ratingStats.get(item.id);
-              return (
-                <li key={item.id} className="flex">
-                  <MenuItemCard
-                    item={item}
-                    averageRating={stat?.average ?? null}
-                    ratingCount={stat?.count ?? 0}
-                    isFavorite={favoriteIds.has(item.id)}
-                    isLoggedIn
-                  />
-                </li>
-              );
-            })}
-          </ul>
+          <GsapStagger mode="scroll" selector="li" y={10} stagger={0.075} duration={0.7}>
+            <ul className="grid gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+              {popular.map((item) => {
+                const stat = ratingStats.get(item.id);
+                return (
+                  <li key={item.id} className="flex">
+                    <MenuItemCard
+                      item={item}
+                      averageRating={stat?.average ?? null}
+                      ratingCount={stat?.count ?? 0}
+                      isFavorite={favoriteIds.has(item.id)}
+                      isLoggedIn
+                    />
+                  </li>
+                );
+              })}
+            </ul>
+          </GsapStagger>
         </Section>
       )}
     </div>
