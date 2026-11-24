@@ -11,8 +11,9 @@ function fixture(path='/menu'){
  vm.runInNewContext(source,{exports,require:name=>modules[name],window:{location:{reload:()=>reloads++},addEventListener:(name,fn)=>events.set(name,fn),removeEventListener:(name,fn)=>{if(events.get(name)===fn)events.delete(name);}}});
  return{render:kind=>exports.SiteChrome({kind,children:'signed-in',guest:'guest'}),effects,events,setPath:value=>{path=value},counts:()=>({refreshes,reloads})};
 }
-test('authentication and recovery pages immediately select guest navigation and hide customer tabs',()=>{
- for(const path of ['/login','/signup','/session-unavailable']){const f=fixture(path);assert.equal(f.render('navigation').props.children,'guest');assert.equal(f.render('customer-tabs'),null);}
+test('authentication pages select guest navigation, session-unavailable hides the top bar, and both hide customer tabs',()=>{
+ for(const path of ['/login','/signup']){const f=fixture(path);assert.equal(f.render('navigation').props.children,'guest');assert.equal(f.render('customer-tabs'),null);}
+ const unavailable=fixture('/session-unavailable');assert.equal(unavailable.render('navigation'),null);assert.equal(unavailable.render('customer-tabs'),null);
  const f=fixture('/menu');assert.equal(f.render('navigation').props.children,'signed-in');
  for(const path of ['/admin/menu','/staff/menu']){f.setPath(path);assert.equal(f.render('navigation'),null);assert.equal(f.render('footer'),null);}
 });

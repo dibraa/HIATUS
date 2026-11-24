@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ServingInfo } from "@/types/database";
 import { trackEvent } from "./integration-client";
 import { DEFAULT_SIZE, isDrinkSize, type DrinkSize } from "@/lib/sizes";
+import { clearCheckoutAttemptKey } from "./checkout-attempt";
 
 export type CartLine = ServingInfo & {
   menuItemId: string;
@@ -100,6 +101,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+    if (lines.length === 0) clearCheckoutAttemptKey(window.localStorage);
   }, [lines, hydrated]);
 
   const addItem: CartContextValue["addItem"] = (item, quantity = 1) => {
@@ -132,7 +134,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const clear = () => setLines([]);
+  const clear = () => {
+    clearCheckoutAttemptKey(typeof window !== "undefined" ? window.localStorage : null);
+    setLines([]);
+  };
 
   const totalItems = useMemo(
     () => lines.reduce((sum, l) => sum + l.quantity, 0),

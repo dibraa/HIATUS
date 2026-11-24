@@ -12,7 +12,8 @@ export function SiteChrome({ children, guest, kind }: {
   const pathname = usePathname();
   const router = useRouter();
   const lastPath = useRef<string | null>(null);
-  const authPage = pathname === "/login" || pathname === "/signup" || pathname === "/session-unavailable";
+  const sessionUnavailable = pathname === "/session-unavailable";
+  const authPage = pathname === "/login" || pathname === "/signup" || sessionUnavailable;
 
   useEffect(() => {
     if (kind !== "navigation" || lastPath.current === pathname) return;
@@ -37,6 +38,7 @@ export function SiteChrome({ children, guest, kind }: {
   }, [kind, router]);
 
   if (pathname.startsWith("/admin") || pathname.startsWith("/staff")) return null;
+  if (kind === "navigation" && sessionUnavailable) return null;
   if (kind === "customer-tabs" && authPage) return null;
   return <div className="site-chrome">{kind === "navigation" && authPage ? guest : children}</div>;
 }
