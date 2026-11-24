@@ -13,6 +13,7 @@ export type PlaceOrderInput = {
   orderType: OrderType;
   paymentMethod: PaymentMethod;
   tableLabel: string;
+  idempotencyKey?: string;
 };
 
 export async function placeOrder(
@@ -30,6 +31,7 @@ export async function placeOrder(
         order_type: input.orderType,
         payment_method: input.paymentMethod,
         table_label: input.tableLabel || null,
+        ...(input.idempotencyKey ? { idempotency_key: input.idempotencyKey } : {}),
       }),
     });
     revalidatePath("/orders");

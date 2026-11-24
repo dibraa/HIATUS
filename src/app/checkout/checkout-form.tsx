@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { useCart, lineKey } from "@/lib/cart-context";
+import { getCheckoutAttemptKey } from "@/lib/checkout-attempt";
 import { formatPrice } from "@/lib/format";
 import { servingLabel } from "@/lib/sizes";
 import { Button, ButtonLink } from "@/components/ui/button";
@@ -60,6 +61,7 @@ export function CheckoutForm({
 
   const [error, setError] = useState<string | null>(null);
   const [placing, startPlacing] = useTransition();
+  const inFlightRef = useRef(false);
 
   if (!hydrated) return <CheckoutFormSkeleton />;
 
@@ -98,29 +100,43 @@ export function CheckoutForm({
   }
 
   function submit() {
+    if (inFlightRef.current) return;
+    inFlightRef.current = true;
     setError(null);
+    const orderItems = lines.map((l) => ({
+      menuItemId: l.menuItemId,
+      quantity: l.quantity,
+      size: l.size,
+    }));
+    const idempotencyKey = getCheckoutAttemptKey(window.localStorage, orderItems);
     startPlacing(async () => {
-      const result = await placeOrder({
-        items: lines.map((l) => ({
-          menuItemId: l.menuItemId,
-          quantity: l.quantity,
-          size: l.size,
-        })),
-        pickupNote,
-        orderType,
-        paymentMethod: method,
-        tableLabel: orderType === "dine_in" ? tableLabel : "",
-      });
+      try {
+        const result = await placeOrder({
+          items: orderItems,
+          pickupNote,
+          orderType,
+          paymentMethod: method,
+          tableLabel: orderType === "dine_in" ? tableLabel : "",
+          idempotencyKey,
+        });
 
-      if (result.error) {
-        setError(result.error);
-        toast.error(result.error);
-        return;
+        if (result.error || !result.orderId) {
+          const message = result.error || "Could not place your order. Try again.";
+          setError(message);
+          toast.error(message);
+          return;
+        }
+
+        clear();
+        toast.success("Order placed.");
+        router.push(`/orders/${result.orderId}`);
+      } catch {
+        const message = "Connection interrupted. Your cart is saved — try again when you're back online.";
+        setError(message);
+        toast.error(message);
+      } finally {
+        inFlightRef.current = false;
       }
-
-      clear();
-      toast.success("Order placed.");
-      router.push(`/orders/${result.orderId}`);
     });
   }
 
