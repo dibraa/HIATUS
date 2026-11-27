@@ -7,11 +7,11 @@ import ts from "typescript";
 function load(file, modules, globals = {}) {
   const source = ts.transpileModule(readFileSync(new URL("../src/" + file, import.meta.url), "utf8"), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 } }).outputText;
   const exports = {};
-  vm.runInNewContext(source, { exports, require: name => { assert(name in modules, name); return modules[name]; }, Response, AbortSignal, Error, String, Number, JSON, Object, ...globals });
+  vm.runInNewContext(source, { exports, require: name => { assert(name in modules, name); return modules[name]; }, Response, AbortSignal, Error, String, Number, JSON, Object, URL, ...globals });
   return exports;
 }
 const ID = "0123456789abcdef01234567";
-const post = (method, body) => new Request("http://localhost/api/admin/menu-lock", { method, body: JSON.stringify(body) });
+const post = (method, body, origin = "http://localhost") => new Request("http://localhost/api/admin/menu-lock", { method, headers: origin ? { origin } : {}, body: JSON.stringify(body) });
 
 test("the edit-turn route forwards to the API with the admin's token and passes the status through", async () => {
   const calls = [];
@@ -33,7 +33,9 @@ test("the edit-turn route forwards to the API with the admin's token and passes 
   assert.deepEqual(JSON.parse(calls[1].body), { session: "s" }, "DELETE always carries a JSON body");
 
   assert.equal((await route.POST(post("POST", { id: "../../admin", session: "s" }))).status, 404);
-  assert.equal((await route.POST(new Request("http://localhost/x", { method: "POST", body: "not json" }))).status, 404);
+  assert.equal((await route.POST(new Request("http://localhost/x", { method: "POST", headers: { origin: "http://localhost" }, body: "not json" }))).status, 404);
+  assert.equal((await route.POST(post("POST", { id: ID, session: "s" }, null))).status, 403);
+  assert.equal((await route.POST(post("POST", { id: ID, session: "s" }, "http://evil.example"))).status, 403);
   token = null;
   assert.equal((await route.POST(post("POST", { id: ID }))).status, 401);
   assert.equal(calls.length, 2);

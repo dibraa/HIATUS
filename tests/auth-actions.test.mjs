@@ -114,3 +114,41 @@ test("overlapping Google challenges retain distinct verifier cookies and renewal
   assert.notEqual(a.nonce,b.nonce);assert(f.jar.has("google_auth_"+a.nonce));assert(f.jar.has("google_auth_"+b.nonce));
   const c=await f.actions.beginGoogleAuthentication("login",a.nonce);assert(!f.jar.has("google_auth_"+a.nonce));assert(f.jar.has("google_auth_"+b.nonce));assert(f.jar.has("google_auth_"+c.nonce));assert.equal(f.jar.get("token").value,"existing-valid-session");
 });
+
+test("admin login MFA challenge flows through verifyAdminMfa and sets session cookie", async () => {
+  const challenge = { mfa_required: true, challenge_id: "a".repeat(48), expires_at: "2030-01-01T00:00:00Z", recipient: "a***@example.test" };
+  const f = fixture({ jsonResponse: challenge });
+  const step1 = await f.actions.signIn({ error: null }, data({ email: "admin@example.test", password: "ValidPassword123" }));
+  assert.equal(step1.error, null);
+  assert.equal(step1.mfa.challenge_id, challenge.challenge_id);
+  const f2 = fixture({ jsonResponse: { token: "mfa-admin-jwt", user: { role: "admin" } } });
+  await assert.rejects(f2.actions.verifyAdminMfa({ error: null, mfa: challenge }, data({ challenge_id: challenge.challenge_id, code: "123456" })), error => error.redirect === "/admin");
+  assert.equal(f2.jar.get("token").value, "mfa-admin-jwt");
+});
+
+test("forgot-password reports unregistered email and recommends signup", async () => {
+  const f = fixture({
+    response: {
+      status: 404,
+      body: { error: "No account is registered with that email address. Please sign up instead.", code: "ACCOUNT_NOT_FOUND" },
+    },
+  });
+  const result = await f.actions.requestPasswordReset({ error: null, sent: false }, data({ email: "nobody@example.test" }));
+  assert.equal(result.sent, false);
+  assert.equal(result.notRegistered, true);
+  assert.equal(result.email, "nobody@example.test");
+  assert.match(result.error, /sign up/i);
+});
+
+test("forgot-password returns rateLimited metadata when Express answers 429", async () => {
+  const f = fixture({
+    response: {
+      status: 429,
+      body: { error: "Too many requests.", code: "RATE_LIMITED", retry_after_seconds: 45 },
+    },
+  });
+  const result = await f.actions.requestPasswordReset({ error: null, sent: false }, data({ email: "member@example.test" }));
+  assert.equal(result.sent, false);
+  assert.equal(result.rateLimited.retryAfter, 45);
+  assert.equal(result.rateLimited.message, "Too many requests.");
+});

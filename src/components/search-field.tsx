@@ -27,11 +27,13 @@ export function SearchField({
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const [prevQuery, setPrevQuery] = useState(query);
   const [value, setValue] = useState(query ?? "");
 
-  useEffect(() => {
+  if (prevQuery !== query) {
+    setPrevQuery(query);
     setValue(query ?? "");
-  }, [query]);
+  }
 
   useEffect(() => {
     const timeout = window.setTimeout(() => {

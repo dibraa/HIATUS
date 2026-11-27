@@ -81,7 +81,21 @@ function SignupSuccessDialog({ message }: { message: string }) {
 
 export function SignupForm({ authentication }: { authentication: Awaited<ReturnType<typeof getAuthenticationOptions>> }) {
   const { options, error: optionsError } = useAuthenticationOptions(authentication);
-  const [state, formAction, pending] = useActionState(signUp, initialState);
+  const [state, formAction, pending] = useActionState(async (previous: AuthState, data: FormData) => {
+    const result = await signUp(previous, data);
+    if (result.rateLimited) {
+      void fetch("/api/rate-limit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "server",
+          retry_after_seconds: result.rateLimited.retryAfter,
+          message: result.rateLimited.message ?? result.error,
+        }),
+      }).catch(() => {});
+    }
+    return result;
+  }, initialState);
   const [googlePending, setGooglePending] = useState(false);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -157,6 +171,14 @@ export function SignupForm({ authentication }: { authentication: Awaited<ReturnT
       />
 
       <FormError>{state.error}</FormError>
+
+      <p className="text-xs leading-5 text-muted">
+        By creating an account, you acknowledge our{" "}
+        <a href="/privacy" className="underline underline-offset-4 hover:text-ink">
+          Privacy Notice
+        </a>{" "}
+        explaining how we collect, retain, and protect your account and order data.
+      </p>
 
       <Button
         type="submit"

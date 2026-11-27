@@ -6,7 +6,9 @@ export const dynamic = "force-dynamic";
 
 async function adminRequest() {
   const user = await getCurrentUser();
-  if (user?.role !== "admin") throw Object.assign(new Error("Admin access required."), { status: 403 });
+  if (user?.role !== "admin" || !user.permissions.includes("settings.backup")) {
+    throw Object.assign(new Error("Backup permission required."), { status: 403 });
+  }
   const token = await getServerToken();
   if (!token) throw Object.assign(new Error("Sign in again."), { status: 401 });
   return { token };
@@ -26,7 +28,11 @@ export async function GET() {
   }
 }
 
-export async function POST() {
+export async function POST(request: Request) {
+  const origin = request.headers.get("origin");
+  if (origin !== new URL(request.url).origin) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403, headers: { "Cache-Control": "no-store" } });
+  }
   try {
     const { token } = await adminRequest();
     return Response.json(await apiJson("/admin/backup/create", { method: "POST", token, cache: "no-store" }));

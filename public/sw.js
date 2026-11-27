@@ -35,7 +35,12 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = new URL(event.notification.data?.url || "/orders", self.location.origin).href;
+  const fallback = new URL("/orders", self.location.origin).href;
+  let target = fallback;
+  try {
+    const parsed = new URL(event.notification.data?.url || "/orders", self.location.origin);
+    if (parsed.origin === self.location.origin) target = parsed.href;
+  } catch {}
 
   // Reuse a tab that is already on this site rather than opening another.
   event.waitUntil(

@@ -86,7 +86,8 @@ export type OrderItem = ServingInfo & {
 
 export type Rating = {
   id: string;
-  user_id: string;
+  user_id?: string;
+  reviewer_name?: string;
   menu_item_id: string;
   order_id: string;
   rating: number;

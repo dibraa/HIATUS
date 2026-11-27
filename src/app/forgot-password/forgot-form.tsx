@@ -4,10 +4,24 @@ import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { TextField, FormError } from "@/components/ui/field";
 import { TextLink } from "@/components/ui/text-link";
-import { requestPasswordReset } from "@/app/actions/auth";
+import { requestPasswordReset, type ResetState } from "@/app/actions/auth";
 
 export function ForgotPasswordForm() {
-  const [state, formAction, pending] = useActionState(requestPasswordReset, {
+  const [state, formAction, pending] = useActionState(async (prev: ResetState, data: FormData) => {
+    const result = await requestPasswordReset(prev, data);
+    if (result.rateLimited) {
+      void fetch("/api/rate-limit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "server",
+          retry_after_seconds: result.rateLimited.retryAfter,
+          message: result.rateLimited.message ?? result.error,
+        }),
+      }).catch(() => {});
+    }
+    return result;
+  }, {
     error: null,
     sent: false,
   });
@@ -40,8 +54,7 @@ export function ForgotPasswordForm() {
 
         <h2 className="display mt-4 text-2xl text-ink">Check your email</h2>
         <p className="mx-auto mt-tight max-w-[42ch] text-sm text-muted">
-          If that address has an account with us, a link to set a new password
-          is on its way. It expires in an hour.
+          A link to set a new password is on its way. It expires in an hour.
         </p>
 
         <TextLink href="/login" block className="mt-4 text-sm">
@@ -60,10 +73,20 @@ export function ForgotPasswordForm() {
         label="Email address"
         autoComplete="email"
         required
+        defaultValue={state.email}
         placeholder="you@example.com"
       />
 
-      {state.error && <FormError>{state.error}</FormError>}
+      {state.error && (
+        <div className="flex flex-col gap-2">
+          <FormError>{state.error}</FormError>
+          {state.notRegistered && (
+            <p className="text-center text-sm text-muted">
+              New to Hiatus? <TextLink href="/signup">Sign up for an account</TextLink>
+            </p>
+          )}
+        </div>
+      )}
 
       <Button type="submit" size="md" loading={pending} className="mt-1 w-full">
         {pending ? "Sending…" : "Send reset link"}

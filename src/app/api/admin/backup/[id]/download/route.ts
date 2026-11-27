@@ -5,7 +5,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const user = await getCurrentUser();
-  if (user?.role !== "admin") return Response.json({ error: "Admin access required." }, { status: 403 });
+  if (user?.role !== "admin" || !user.permissions.includes("settings.backup")) {
+    return Response.json({ error: "Backup permission required." }, { status: 403 });
+  }
   const token = await getServerToken();
   if (!token) return Response.json({ error: "Sign in again." }, { status: 401 });
   const { id } = await params;

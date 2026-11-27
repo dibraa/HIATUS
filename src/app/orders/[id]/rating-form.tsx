@@ -20,6 +20,7 @@ export function RatingForm({
   const [comment, setComment] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
   const [attachmentError, setAttachmentError] = useState<string | null>(null);
+  const [publicNameConsent, setPublicNameConsent] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [pending, startTransition] = useTransition();
 
@@ -86,13 +87,23 @@ export function RatingForm({
         {attachmentError && <p className="mt-1 text-xs text-danger-fg">{attachmentError}</p>}
       </div>
 
+      <label className="flex min-h-11 items-start gap-2.5 text-xs text-ink-soft">
+        <input
+          type="checkbox"
+          checked={publicNameConsent}
+          onChange={(event) => setPublicNameConsent(event.target.checked)}
+          className="mt-0.5 h-4 w-4 accent-[var(--hi-accent)]"
+        />
+        <span>Show my full name publicly on this review (optional — otherwise initials are shown).</span>
+      </label>
+
       <Button
         size="sm"
         className="self-start"
         disabled={rating === 0 || pending}
         onClick={() =>
           startTransition(async () => {
-            const result = await submitRating(orderId, menuItemId, rating, comment, attachment);
+            const result = await submitRating(orderId, menuItemId, rating, comment, attachment, publicNameConsent);
             if (result.error) {
               toast.error(result.error);
               return;

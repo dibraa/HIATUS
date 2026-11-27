@@ -19,7 +19,8 @@ type Params = { params: Promise<{ id: string }> };
 type PageProps = Params & { searchParams: Promise<{ from?: string }> };
 type MenuRating = Omit<Rating, "user_id" | "menu_item_id"> & {
   _id: string;
-  user_id: string | { full_name: string | null };
+  user_id?: string | { full_name: string | null };
+  reviewer_name?: string;
   menu_item_id: string | { _id: string };
   attachment_url: string | null;
   attachment_type: "image" | "video" | null;
@@ -130,9 +131,10 @@ export default async function MenuItemPage({ params, searchParams }: PageProps) 
                 review={{
                   rating: rating.rating,
                   comment: rating.comment,
-                  reviewerName: typeof rating.user_id === "object" && rating.user_id !== null
-                    ? rating.user_id.full_name?.trim() || "Anonymous customer"
-                    : "Anonymous customer",
+                  reviewerName: rating.reviewer_name?.trim()
+                    || (typeof rating.user_id === "object" && rating.user_id !== null
+                      ? rating.user_id.full_name?.trim() || "Verified customer"
+                      : "Verified customer"),
                   dateLabel: (() => {
                     const createdAt = new Date(rating.created_at);
                     return Number.isNaN(createdAt.getTime()) ? "Date unavailable" : dateFormatter.format(createdAt);

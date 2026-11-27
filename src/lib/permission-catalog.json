@@ -212,6 +212,25 @@
     ]
   },
   {
+    "key": "settings.backup",
+    "role": "admin",
+    "group": "Settings",
+    "label": "Create and download backups",
+    "requires": [
+      "settings.view"
+    ]
+  },
+  {
+    "key": "settings.restore",
+    "role": "admin",
+    "group": "Settings",
+    "label": "Restore database backups",
+    "requires": [
+      "settings.view",
+      "settings.backup"
+    ]
+  },
+  {
     "key": "counter.view",
     "role": "staff",
     "group": "Counter",

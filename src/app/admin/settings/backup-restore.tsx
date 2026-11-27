@@ -114,6 +114,7 @@ async function fetchBackupData() {
 export function BackupRestore() {
   const [file, setFile] = useState<File | null>(null);
   const [confirmed, setConfirmed] = useState(false);
+  const [credentialGrant, setCredentialGrant] = useState("");
   const [pending, setPending] = useState(false);
   const [creating, setCreating] = useState(false);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
@@ -179,7 +180,10 @@ export function BackupRestore() {
     if (!window.confirm(`Restore “${backup.filename}”? Current database records will be replaced.`)) return;
     setRestoringId(backup.id);
     try {
-      const response = await fetch(`/api/admin/backup/${encodeURIComponent(backup.id)}/restore`, { method: "POST" });
+      const response = await fetch(`/api/admin/backup/${encodeURIComponent(backup.id)}/restore`, {
+        method: "POST",
+        headers: credentialGrant.trim() ? { "x-credential-access": credentialGrant.trim() } : undefined,
+      });
       const data = await response.json().catch(() => ({ error: "Restore could not be completed." }));
       if (!response.ok) throw new Error(data.error || "Restore could not be completed.");
       toast.success(`Database restored. ${data.collections ?? 0} collections restored.`);
@@ -225,7 +229,11 @@ export function BackupRestore() {
     try {
       const body = new FormData();
       body.set("backup", file);
-      const response = await fetch("/api/admin/backup/restore", { method: "POST", body });
+      const response = await fetch("/api/admin/backup/restore", {
+        method: "POST",
+        headers: credentialGrant.trim() ? { "x-credential-access": credentialGrant.trim() } : undefined,
+        body,
+      });
       const data = await response.json().catch(() => ({ error: "Restore could not be completed." }));
       if (!response.ok) throw new Error(data.error || "Restore could not be completed.");
       toast.success(`Database restored. ${data.collections ?? 0} collections restored.`);
@@ -245,7 +253,7 @@ export function BackupRestore() {
     <section id="settings-backup" tabIndex={-1} aria-labelledby="backup-heading" className="admin-settings-card min-w-0">
       <h2 id="backup-heading" className="text-xl font-semibold">Database backup and restore</h2>
       <p className="mt-1.5 text-sm text-muted">
-        Admin-only recovery. Backups contain MongoDB records; files in the uploads folder are not included.
+        Admin-only recovery. Saved downloads include MongoDB records, SHA-256 verification, and uploaded media; restores snapshot the current database first.
       </p>
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-4 rounded-md border border-line bg-raised p-4">
@@ -439,8 +447,20 @@ export function BackupRestore() {
 
         <div className="mt-3">
           <p className="rounded-md border border-danger/40 bg-danger-soft-bg px-3 py-2 text-sm text-danger-soft-fg">
-            This replaces every current database record. Files in the uploads folder are not affected.
+            This replaces every current database record after saving an automatic pre-restore snapshot.
           </p>
+
+          <label htmlFor="database-backup-grant" className="mt-4 block text-sm font-medium text-ink-soft">
+            Security unlock token (from Custom credentials OTP + PIN)
+          </label>
+          <input
+            id="database-backup-grant"
+            type="password"
+            value={credentialGrant}
+            onChange={(event) => setCredentialGrant(event.target.value)}
+            placeholder="Paste unlocked credential-access token"
+            className="mt-2 block w-full rounded-md border border-line-strong bg-card px-3 py-2 text-sm text-ink"
+          />
 
           <label htmlFor="database-backup-file" className="mt-4 block text-sm font-medium text-ink-soft">
             Backup file
@@ -449,7 +469,7 @@ export function BackupRestore() {
             id="database-backup-file"
             ref={fileInput}
             type="file"
-            accept=".json,application/json"
+            accept=".json,.zip,application/json,application/zip"
             className="mt-2 block w-full text-sm text-ink-soft file:mr-3 file:rounded-md file:border file:border-line-strong file:bg-card file:px-3 file:py-2 file:text-xs file:font-medium file:text-ink"
             onChange={(event) => {
               setFile(event.target.files?.[0] ?? null);
@@ -474,7 +494,7 @@ export function BackupRestore() {
           >
             Restore database
           </Button>
-          <p className="mt-3 text-xs text-muted">Accepts a .json Hiatus backup, up to 512 MB.</p>
+          <p className="mt-3 text-xs text-muted">Accepts a .json or .zip Hiatus backup, up to 512 MB.</p>
         </div>
       </details>
 

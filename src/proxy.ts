@@ -13,23 +13,13 @@ import type { Role } from "@/types/database";
 import { checkSession, sessionReturnTo } from "@/lib/session";
 import { USE_MOCKS } from "@/lib/mock-staff-data";
 
-// The fallback is public (it is in this file), so a token signed with it can
-// be forged by anyone and would pass every role check below. Development keeps
-// it so the app runs without a .env; production refuses to start without one.
-const DEV_FALLBACK_SECRET = "change_this_secret";
-if (!process.env.JWT_SECRET) {
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(
-      "JWT_SECRET is not set. Set it to the same value the Express backend signs tokens with.",
-    );
-  }
-  console.warn(
-    "[proxy] JWT_SECRET is not set; using the development fallback secret.",
+const rawSecret = process.env.JWT_SECRET;
+if (!rawSecret || rawSecret === "change_this_secret" || (process.env.NODE_ENV !== "test" && rawSecret.length < 32)) {
+  throw new Error(
+    "JWT_SECRET must be set to a strong non-default secret (at least 32 characters) matching the Express backend.",
   );
 }
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET ?? DEV_FALLBACK_SECRET,
-);
+const secret = new TextEncoder().encode(rawSecret);
 
 export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
@@ -55,7 +45,7 @@ export async function proxy(request: NextRequest) {
 
   let rejected = false;
   if (token && path !== "/session-unavailable") {
-    try { await jwtVerify(token, secret); }
+    try { await jwtVerify(token, secret, { algorithms: ["HS256"] }); }
     catch { rejected = true; }
     if (!rejected && (requiresAuth || wantsCustomerArea || path === "/login" || path === "/signup")) {
       const session = await checkSession(token);

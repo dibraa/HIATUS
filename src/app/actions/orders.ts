@@ -85,7 +85,8 @@ export async function submitRating(
   menuItemId: string,
   rating: number,
   comment: string,
-  attachment: File | null
+  attachment: File | null,
+  publicNameConsent = false
 ): Promise<{ error: string | null }> {
   const token = await getServerToken();
   try {
@@ -93,6 +94,7 @@ export async function submitRating(
     body.set("menu_item_id", menuItemId);
     body.set("rating", String(rating));
     body.set("comment", comment);
+    body.set("public_name_consent", String(publicNameConsent));
     if (attachment) body.set("attachment", attachment);
     await apiJson(`/orders/${orderId}/rating`, {
       method: "POST",

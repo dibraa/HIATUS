@@ -7,6 +7,10 @@ export const dynamic = "force-dynamic";
 // seconds; the token lives in an httpOnly cookie, so the browser cannot call the API directly.
 // The item id travels in the body to keep this route static and its URL stable.
 async function forward(request: Request, method: "POST" | "DELETE") {
+  const origin = request.headers.get("origin");
+  if (origin !== new URL(request.url).origin) {
+    return Response.json({ error: "Invalid request origin." }, { status: 403, headers: { "Cache-Control": "no-store" } });
+  }
   const token = await getServerToken();
   if (!token) return Response.json({ error: "Sign in as an administrator to edit the menu." }, { status: 401 });
   const { id, ...body } = (await request.json().catch(() => ({}))) as Record<string, unknown>;

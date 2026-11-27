@@ -15,6 +15,7 @@ import { ROLE_LABELS } from "@/lib/roles";
 import type { NotificationPreferences, Rating } from "@/types/database";
 import { ProfileForm } from "./profile-form";
 import { NotificationForm } from "./notification-form";
+import { PrivacyControls } from "./privacy-controls";
 
 export const metadata: Metadata = { title: "Account" };
 export const dynamic = "force-dynamic";
@@ -65,7 +66,7 @@ export default async function ProfilePage() {
           <Link href={user.role === "admin" ? "/admin" : "/staff"} className="font-medium text-accent-ink underline underline-offset-4 transition-colors hover:text-ink">Go to your dashboard</Link>
         </p>
       ) : null}
-      details={user?.profile ? <div className="max-w-xl"><ProfileForm profile={user.profile} email={user.email} /></div> : null}
+      details={user?.profile ? <div className="max-w-xl"><ProfileForm profile={user.profile} email={user.email} /><PrivacyControls isCustomer={user.role === "customer"} /></div> : null}
       notifications={<div className="max-w-xl"><NotificationForm prefs={prefs ?? null} /></div>}
       reviews={myReviews.length ? (
         <ReviewPagination items={myReviews.map(review => (

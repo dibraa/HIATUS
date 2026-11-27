@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { signIn, type AuthState } from "@/app/actions/auth";
+import { signIn, verifyAdminMfa, type AuthState } from "@/app/actions/auth";
 import { PasswordField, TextField, FormError } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { TextLink } from "@/components/ui/text-link";
@@ -44,11 +44,73 @@ export function LoginForm({ authentication }: { authentication: Awaited<ReturnTy
   const [state, formAction, pending] = useActionState(async (previous: AuthState, data: FormData) => {
     try {
       const result = await signIn(previous, data);
+      if (result.rateLimited) {
+        void fetch("/api/rate-limit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            source: "server",
+            retry_after_seconds: result.rateLimited.retryAfter,
+            message: result.rateLimited.message ?? result.error,
+          }),
+        }).catch(() => {});
+      }
       if (result.error) refresh();
       return result;
     }
     finally { resetCaptcha(); }
   }, initialState);
+
+  const [mfaState, mfaAction, mfaPending] = useActionState(async (previous: AuthState, data: FormData) => {
+    const result = await verifyAdminMfa(previous, data);
+    if (result.rateLimited) {
+      void fetch("/api/rate-limit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          source: "server",
+          retry_after_seconds: result.rateLimited.retryAfter,
+          message: result.rateLimited.message ?? result.error,
+        }),
+      }).catch(() => {});
+    }
+    return result;
+  }, initialState);
+  const [mfaDismissed, setMfaDismissed] = useState(false);
+  const activeMfa = !mfaDismissed ? (mfaState.mfa ?? state.mfa) : undefined;
+
+  if (activeMfa) {
+    return (
+      <form action={mfaAction} className="flex flex-col gap-4">
+        <input type="hidden" name="challenge_id" value={activeMfa.challenge_id} />
+        <input type="hidden" name="expires_at" value={activeMfa.expires_at} />
+        <input type="hidden" name="recipient" value={activeMfa.recipient} />
+        <input type="hidden" name="next" value={next} />
+        <p className="text-sm text-ink-soft">
+          Enter the 6-digit verification code sent to <strong>{activeMfa.recipient || "your email"}</strong>.
+        </p>
+        <TextField
+          id="mfa-code"
+          name="code"
+          label="6-digit verification code"
+          type="text"
+          inputMode="numeric"
+          pattern="[0-9]{6}"
+          maxLength={6}
+          required
+          autoComplete="one-time-code"
+          placeholder="123456"
+        />
+        <FormError>{mfaState.error}</FormError>
+        <Button type="submit" size="md" loading={mfaPending} className="w-full">
+          {mfaPending ? "Verifying…" : "Verify and log in"}
+        </Button>
+        <Button type="button" variant="ghost" size="sm" disabled={mfaPending} onClick={() => setMfaDismissed(true)}>
+          Back to login
+        </Button>
+      </form>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-5">

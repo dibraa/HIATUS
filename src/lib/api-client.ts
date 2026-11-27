@@ -46,6 +46,10 @@ export async function apiJson<T>(
 ): Promise<T> {
   const res = await apiFetch(path, options);
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error((data as { error?: string }).error ?? "Request failed");
+  if (!res.ok) {
+    const payload = data as { error?: string; retry_after_seconds?: number };
+    const retryAfter = Number(res.headers.get("retry-after")) || Number(payload.retry_after_seconds) || undefined;
+    throw Object.assign(new Error(payload.error ?? "Request failed"), { status: res.status, retryAfter });
+  }
   return data as T;
 }

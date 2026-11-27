@@ -2,6 +2,7 @@ export function required(path: string, method: string, role: string, body: Recor
   const write = !["GET", "HEAD"].includes(method);
   path = path.replace(/^\/api(?=\/)/, "").split("?")[0];
   if (path === "/auth/me" || path === "/admin/permissions") return [];
+  if (path.startsWith("/admin/backup")) return /restore$/.test(path) ? ["settings.view", "settings.backup", "settings.restore"] : ["settings.view", "settings.backup"];
   if (path.startsWith("/admin/team")) {
     if (/permissions$/.test(path)) return ["users.view", "users.permissions"];
     if (!write) return ["users.view"];

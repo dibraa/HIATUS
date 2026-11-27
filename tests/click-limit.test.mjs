@@ -89,4 +89,8 @@ test("/api/rate-limit answers 429 with Retry-After and a bounded wait", async ()
   for (const [body, expected] of [[JSON.stringify({ retry_after_seconds: 999 }), 10], [JSON.stringify({ retry_after_seconds: -5 }), 1], ["not json", 10], [JSON.stringify({ retry_after_seconds: "x" }), 10]]) {
     assert.equal((await (await post(body)).json()).retry_after_seconds, expected, body);
   }
+  const serverRes = await post(JSON.stringify({ source: "server", retry_after_seconds: 60, message: "Too many reset requests." }));
+  assert.equal(serverRes.status, 429);
+  assert.equal(serverRes.headers.get("retry-after"), "60");
+  assert.deepEqual(await serverRes.json(), { error: "Too many reset requests.", code: "RATE_LIMITED", retry_after_seconds: 60 });
 });

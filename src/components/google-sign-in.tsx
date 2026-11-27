@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { GoogleLogin, GoogleOAuthProvider } from "@react-oauth/google";
-import { beginGoogleAuthentication, signInWithGoogle } from "@/app/actions/auth";
+import { beginGoogleAuthentication, signInWithGoogle, verifyAdminMfa, type MfaChallenge, type AuthState } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
-import { FormError, PasswordField } from "@/components/ui/field";
+import { FormError, PasswordField, TextField } from "@/components/ui/field";
 import { TextLink } from "@/components/ui/text-link";
 import { unstable_rethrow } from "next/navigation";
 
@@ -20,6 +20,8 @@ export function GoogleSignIn({ clientId, intent, next, captchaToken, captchaRequ
   const [code, setCode] = useState<string>();
   const [credential, setCredential] = useState<string>();
   const [linkPassword, setLinkPassword] = useState("");
+  const [mfaChallenge, setMfaChallenge] = useState<MfaChallenge | null>(null);
+  const [mfaCode, setMfaCode] = useState("");
   const [transitionPending, startTransition] = useTransition();
   const [busy, setBusy] = useState(false);
   const [generation, setGeneration] = useState(0);
@@ -111,6 +113,7 @@ export function GoogleSignIn({ clientId, intent, next, captchaToken, captchaRequ
       const result = await signInWithGoogle(data);
       if (!mounted.current) return;
       if (!result || typeof result.error !== "string") throw new Error(UNAVAILABLE);
+      if (result.code === "MFA_REQUIRED" && result.mfa) { setMfaChallenge(result.mfa); setCode(result.code); setCredential(undefined); return; }
       setError(result.code === "LINK_REQUIRED" && !password ? undefined : result.error);
       if (result.code === "CHALLENGE_EXPIRED" || result.code === "GOOGLE_INVALID") restart(true);
       else if (result.code === "LINK_REQUIRED") { setCode(result.code); setCredential(token); }
@@ -126,7 +129,27 @@ export function GoogleSignIn({ clientId, intent, next, captchaToken, captchaRequ
 
   return (
     <div className="flex min-w-0 flex-col gap-3" aria-busy={pending}>
-      {credential && code === "LINK_REQUIRED" ? (
+      {mfaChallenge ? (
+        <form action={async data => {
+          setBusy(true); setError(undefined);
+          try {
+            const state: AuthState = { error: null, mfa: mfaChallenge };
+            const res = await verifyAdminMfa(state, data);
+            if (mounted.current && res.error) setError(res.error);
+          } catch (failure) {
+            unstable_rethrow(failure);
+            if (mounted.current) setError(UNAVAILABLE);
+          } finally { if (mounted.current) setBusy(false); }
+        }} className="flex flex-col gap-3">
+          <input type="hidden" name="challenge_id" value={mfaChallenge.challenge_id} />
+          <input type="hidden" name="next" value={next || ""} />
+          <p className="text-sm text-ink-soft">Enter the 6-digit verification code sent to <strong>{mfaChallenge.recipient || "your email"}</strong>.</p>
+          <TextField id="google-mfa-code" name="code" label="6-digit verification code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} required value={mfaCode} onChange={e => setMfaCode(e.target.value)} />
+          <FormError>{error}</FormError>
+          <Button type="submit" loading={pending}>Verify and log in</Button>
+          <Button type="button" variant="secondary" disabled={pending} onClick={() => { setMfaChallenge(null); setMfaCode(""); restart(); }}>Cancel</Button>
+        </form>
+      ) : credential && code === "LINK_REQUIRED" ? (
         <form action={async data => { await submit(credential, String(data.get("link_password") || "")); }} className="flex flex-col gap-3">
           <p className="text-sm text-ink-soft">Confirm your current Hiatus password once to connect your Google account.</p>
           <PasswordField id="link-password" name="link_password" label="Current password" autoComplete="current-password" required ref={passwordRef} value={linkPassword} onChange={event => setLinkPassword(event.target.value)} />

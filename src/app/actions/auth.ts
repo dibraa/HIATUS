@@ -9,9 +9,17 @@ import { createHash, randomBytes } from "node:crypto";
 
 const RESET_UNAVAILABLE = "Password reset is temporarily unavailable. Please try again later.";
 
-export type AuthState = { error: string | null; success?: string | null; email?: string };
-export type ResetState = { error: string | null; sent: boolean };
+export type RateLimitedInfo = { retryAfter?: number; message?: string };
+export type MfaChallenge = { challenge_id: string; expires_at: string; recipient: string };
+export type AuthState = { error: string | null; success?: string | null; email?: string; mfa?: MfaChallenge; rateLimited?: RateLimitedInfo };
+export type ResetState = { error: string | null; sent: boolean; notRegistered?: boolean; email?: string; rateLimited?: RateLimitedInfo };
 export type PasswordState = { error: string | null; success: boolean; expired?: boolean };
+
+function rateLimitFromError(err: unknown): RateLimitedInfo | undefined {
+  const error = err as { status?: number; retryAfter?: number; message?: string };
+  if (error?.status !== 429) return undefined;
+  return { retryAfter: error.retryAfter, message: error.message };
+}
 
 export async function signIn(_prevState: AuthState, formData: FormData): Promise<AuthState> {
   const email = String(formData.get("email") ?? "");
@@ -22,10 +30,31 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
   let role: Role;
 
   try {
-    const response = await apiJson<{ token: string; user: { role: Role } }>("/auth/login", {
+    const response = await apiJson<{
+      token?: string;
+      user?: { role: Role };
+      mfa_required?: boolean;
+      challenge_id?: string;
+      expires_at?: string;
+      recipient?: string;
+    }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password, recaptcha_token: String(formData.get("recaptcha_token") ?? "") }),
     });
+    if (response.mfa_required && response.challenge_id) {
+      return {
+        error: null,
+        email,
+        mfa: {
+          challenge_id: response.challenge_id,
+          expires_at: response.expires_at ?? "",
+          recipient: response.recipient ?? "",
+        },
+      };
+    }
+    if (!response.token || !response.user?.role) {
+      return { error: "Unable to sign in. Please try again.", email };
+    }
     token = response.token;
     role = response.user.role;
 
@@ -35,7 +64,40 @@ export async function signIn(_prevState: AuthState, formData: FormData): Promise
   } catch (err: unknown) {
     // Hand the address back: React resets the form after the action, and
     // retyping an email because the password was wrong is pure friction.
-    return { error: (err as Error).message, email };
+    return { error: (err as Error).message, email, rateLimited: rateLimitFromError(err) };
+  }
+
+  if (isSafeNext(next)) redirect(next);
+  redirect(homePathFor(role));
+}
+
+export async function verifyAdminMfa(prevState: AuthState, formData: FormData): Promise<AuthState> {
+  const challengeId = String(formData.get("challenge_id") ?? "");
+  const code = String(formData.get("code") ?? "").trim();
+  const next = String(formData.get("next") ?? "");
+  const mfa = prevState.mfa ?? (challengeId ? {
+    challenge_id: challengeId,
+    expires_at: String(formData.get("expires_at") ?? ""),
+    recipient: String(formData.get("recipient") ?? ""),
+  } : undefined);
+
+  if (!/^\d{6}$/.test(code)) {
+    return { error: "Enter the 6-digit verification code from your email.", email: prevState.email, mfa };
+  }
+
+  let token: string;
+  let role: Role;
+  try {
+    const response = await apiJson<{ token: string; user: { role: Role } }>("/auth/mfa/verify", {
+      method: "POST",
+      body: JSON.stringify({ challenge_id: challengeId, code }),
+    });
+    token = response.token;
+    role = response.user.role;
+    const store = await cookies();
+    store.set("token", token, { httpOnly: true, path: "/", sameSite: "lax", secure: process.env.NODE_ENV === "production" });
+  } catch (err: unknown) {
+    return { error: (err as Error).message, email: prevState.email, mfa, rateLimited: rateLimitFromError(err) };
   }
 
   if (isSafeNext(next)) redirect(next);
@@ -76,7 +138,7 @@ export async function beginGoogleAuthentication(intent: "login" | "signup", prev
   }
 }
 
-export async function signInWithGoogle(formData: FormData): Promise<{ error: string; code?: string }> {
+export async function signInWithGoogle(formData: FormData): Promise<{ error: string; code?: string; mfa?: MfaChallenge }> {
   let role: Role;
   const next = String(formData.get("next") ?? "");
   try {
@@ -91,9 +153,17 @@ export async function signInWithGoogle(formData: FormData): Promise<{ error: str
         password: String(formData.get("password") ?? ""), recaptcha_token: String(formData.get("recaptcha_token") ?? ""),
         browser_hash: createHash("sha256").update(verifier).digest("hex") }),
     });
-    const data = await res.json() as { error?: string; code?: string; token?: string; user?: { role?: Role } };
+    const data = await res.json() as { error?: string; code?: string; token?: string; user?: { role?: Role }; mfa_required?: boolean; challenge_id?: string; expires_at?: string; recipient?: string };
     if (!res.ok) return { error: typeof data?.error === "string" ? data.error : "Google sign-in failed. Please try again.",
       code: typeof data?.code === "string" ? data.code : res.status >= 500 || res.status === 429 ? "GOOGLE_UNAVAILABLE" : undefined };
+    if (data?.mfa_required && data.challenge_id) {
+      store.delete(name);
+      return {
+        error: "",
+        code: "MFA_REQUIRED",
+        mfa: { challenge_id: data.challenge_id, expires_at: data.expires_at ?? "", recipient: data.recipient ?? "" },
+      };
+    }
     if (!data || typeof data.token !== "string" || !data.token.trim() || !data.user?.role || !["customer", "staff", "admin"].includes(data.user.role)) {
       return { error: "Google sign-in could not finish. Please try again.", code: "GOOGLE_UNAVAILABLE" };
     }
@@ -126,18 +196,33 @@ export async function signUp(_prevState: AuthState, formData: FormData): Promise
   if (password.length < 8) return { error: "Password must be at least 8 characters." };
 
   try {
-    await apiJson("/auth/signup", {
+    const result = await apiJson<{ message?: string }>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ email, password, full_name: fullName, phone }),
     });
-    return { error: null, success: "Your account was created successfully." };
+    return { error: null, success: result?.message || "Your account was created successfully." };
   } catch (err: unknown) {
-    return { error: (err as Error).message };
+    return { error: (err as Error).message, rateLimited: rateLimitFromError(err) };
+  }
+}
+
+export async function verifyEmailToken(_prev: { error: string | null; verified: boolean }, formData: FormData): Promise<{ error: string | null; verified: boolean }> {
+  const token = String(formData.get("token") ?? "").trim();
+  if (!token) return { error: "This verification link is incomplete.", verified: false };
+  try {
+    await apiJson("/auth/verify-email", { method: "POST", body: JSON.stringify({ token }) });
+    return { error: null, verified: true };
+  } catch (err: unknown) {
+    return { error: (err as Error).message, verified: false };
   }
 }
 
 export async function signOut() {
   const store = await cookies();
+  const token = store.get("token")?.value;
+  if (token) {
+    await apiFetch("/auth/signout", { method: "POST", token, body: JSON.stringify({}), cache: "no-store" }).catch(() => {});
+  }
   store.delete("token");
   redirect("/login");
 }
@@ -158,18 +243,26 @@ export async function requestPasswordReset(
       method: "POST",
       body: JSON.stringify({ email }),
     });
-    if (res.status === 404) {
-      return { error: "No account is registered with that email address.", sent: false };
-    }
     if (res.status === 429) {
       // The 10-second repeat guard says exactly how long to wait; the per-email reset limit is longer.
-      const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string };
-      return { error: data.code === "RATE_LIMITED" && data.error ? data.error : "Too many reset requests. Wait a few minutes and try again.", sent: false };
+      const data = (await res.json().catch(() => ({}))) as { error?: string; code?: string; retry_after_seconds?: number };
+      const message = data.code === "RATE_LIMITED" && data.error ? data.error : "Too many reset requests. Wait a few minutes and try again.";
+      const retryAfter = Number(res.headers.get("retry-after")) || Number(data.retry_after_seconds) || 60;
+      return { error: message, sent: false, email, rateLimited: { retryAfter, message } };
     }
-    if (!res.ok) return { error: "We couldn't send the reset email. Try again in a moment.", sent: false };
+    if (res.status === 404) {
+      const data = (await res.json().catch(() => ({}))) as { error?: string };
+      return {
+        error: data.error || "No account is registered with that email address. Please sign up instead.",
+        sent: false,
+        notRegistered: true,
+        email,
+      };
+    }
+    if (!res.ok) return { error: "We couldn't send the reset email. Try again in a moment.", sent: false, email };
     return { error: null, sent: true };
   } catch (err: unknown) {
-    return { error: (err as Error).message, sent: false };
+    return { error: (err as Error).message, sent: false, email };
   }
 }
 
